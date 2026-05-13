@@ -346,22 +346,33 @@ export default function LandingPage() {
       <footer style={{
         padding: '1.5rem 2rem',
         borderTop: '1px solid var(--border)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: '0.5rem',
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'center',
+        gap: '0.5rem',
       }}>
         <span style={{
           fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
           color: 'var(--gold)', fontSize: '1.1rem',
+          textAlign: isAr ? 'right' : 'left',
         }}>
           {isAr ? 'ميزان' : 'Mizan'}
         </span>
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-          {isAr ? 'التوازن في كل شيء' : 'Balance in All Things'}
-        </span>
-        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+        <span style={{
+          fontSize: '0.72rem', color: 'var(--text-muted)',
+          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+          textAlign: 'center',
+        }}>
           {isAr
             ? '© ١٤٤٦ هـ / ٢٠٢٥ م · ميزان · جميع الحقوق محفوظة'
             : '© 2025 Mizan · All rights reserved'}
+        </span>
+        <span style={{
+          fontSize: '0.75rem', color: 'var(--text-muted)',
+          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+          textAlign: isAr ? 'left' : 'right',
+        }}>
+          {isAr ? 'التوازن في كل شيء' : 'Balance in All Things'}
         </span>
       </footer>
 
