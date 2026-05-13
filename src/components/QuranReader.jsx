@@ -44,6 +44,7 @@ export default function QuranReader() {
   const [error,       setError]       = useState(null)
   const [showTrans,   setShowTrans]   = useState(false)
   const [pagesRead,   setPagesRead]   = useState(loadPagesRead)
+  const [retryCount,  setRetryCount]  = useState(0)
   const scrollRef = useRef(null)
 
   useEffect(() => {
@@ -53,19 +54,19 @@ export default function QuranReader() {
     setArabicAyahs([])
     setTransAyahs([])
 
-    fetch(`${API}/page/${page}/editions/quran-uthmani,en.sahih`)
-      .then(r => r.json())
-      .then(d => {
-        const editions = d.data || []
-        const ar = editions.find(e => e.edition?.identifier === 'quran-uthmani')
-        const en = editions.find(e => e.edition?.identifier === 'en.sahih')
-        setArabicAyahs(ar?.ayahs || [])
-        setTransAyahs(en?.ayahs || [])
+    // Two separate requests — the combined /editions format for pages differs from surahs
+    Promise.all([
+      fetch(`${API}/page/${page}/quran-uthmani`).then(r => r.json()),
+      fetch(`${API}/page/${page}/en.sahih`).then(r => r.json()),
+    ])
+      .then(([arData, enData]) => {
+        setArabicAyahs(arData.data?.ayahs || [])
+        setTransAyahs(enData.data?.ayahs || [])
         setLoading(false)
         if (scrollRef.current) scrollRef.current.scrollTop = 0
       })
       .catch(() => { setError(true); setLoading(false) })
-  }, [page, expanded])
+  }, [page, expanded, retryCount])
 
   const navPage = useCallback((dir) => {
     const next = page + dir
@@ -231,7 +232,7 @@ export default function QuranReader() {
                     {t('quranError')}
                   </p>
                   <button
-                    onClick={() => { setError(null); setPage(p => { const v = p; return v }) }}
+                    onClick={() => { setError(null); setRetryCount(c => c + 1) }}
                     style={{
                       fontSize: '0.8rem', color: 'var(--gold)',
                       border: '1px solid rgba(212,175,106,0.3)',

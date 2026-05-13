@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
+import AdhanNotifier from './AdhanNotifier'
 
 export default function Layout() {
   const { user, logout } = useAuth()
@@ -242,6 +243,9 @@ export default function Layout() {
           </div>
         </div>
       </motion.aside>
+
+      {/* Adhan notification — renders as a fixed overlay, lives outside scroll flow */}
+      <AdhanNotifier />
 
       {/* Main content */}
       <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>
