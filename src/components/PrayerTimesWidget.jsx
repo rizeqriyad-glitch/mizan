@@ -3,12 +3,13 @@ import { motion } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { formatPrayerTime, getNextPrayer, getCurrentPrayer } from '../utils/prayerTimes'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { getTodayKey } from '../utils/dateUtils'
 
 const PRAYER_ENTRIES = [
   { id: 'fajr',    label: { en: 'Fajr',    ar: 'الفجر'  }, icon: '🌙', timeKey: 'fajr'    },
+  { id: 'duha',    label: { en: 'Duha',    ar: 'الضحى'  }, icon: '🌄', isVoluntary: true  },
   { id: 'dhuhr',   label: { en: 'Dhuhr',   ar: 'الظهر'  }, icon: '☀️',  timeKey: 'dhuhr'   },
   { id: 'asr',     label: { en: 'Asr',     ar: 'العصر'  }, icon: '🌤',  timeKey: 'asr'     },
   { id: 'maghrib', label: { en: 'Maghrib', ar: 'المغرب' }, icon: '🌅',  timeKey: 'maghrib' },
@@ -16,7 +17,7 @@ const PRAYER_ENTRIES = [
 ]
 
 export default function PrayerTimesWidget() {
-  const { prayerTimes, timeFormat, language, markPrayerDone, t } = useApp()
+  const { prayerTimes, timeFormat, language, togglePrayer, t } = useApp()
   const { user } = useAuth()
   const [donePrayers, setDonePrayers] = useState({})
   const [nextPrayer, setNextPrayer] = useState(null)
@@ -24,13 +25,11 @@ export default function PrayerTimesWidget() {
   const [now, setNow] = useState(new Date())
   const isAr = language === 'ar'
 
-  // Live clock
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 30000)
     return () => clearInterval(interval)
   }, [])
 
-  // Update next/current prayer
   useEffect(() => {
     if (prayerTimes) {
       setNextPrayer(getNextPrayer(prayerTimes))
@@ -38,7 +37,6 @@ export default function PrayerTimesWidget() {
     }
   }, [prayerTimes, now])
 
-  // Load done prayers from Firestore
   useEffect(() => {
     if (!user) return
     const load = async () => {
@@ -48,10 +46,10 @@ export default function PrayerTimesWidget() {
     load()
   }, [user])
 
-  const handlePrayerDone = async (prayerId) => {
-    if (donePrayers[prayerId]) return
-    setDonePrayers(prev => ({ ...prev, [prayerId]: true }))
-    await markPrayerDone(prayerId)
+  const handleToggle = async (prayerId) => {
+    const currentlyDone = !!donePrayers[prayerId]
+    setDonePrayers(prev => ({ ...prev, [prayerId]: !currentlyDone }))
+    await togglePrayer(prayerId, currentlyDone)
   }
 
   if (!prayerTimes) {
@@ -115,10 +113,10 @@ export default function PrayerTimesWidget() {
       {/* Prayer list */}
       <div style={{ padding: '0.5rem 0' }}>
         {PRAYER_ENTRIES.map((prayer, i) => {
-          const timeStr = prayerTimes[prayer.timeKey]
-          const isNext    = nextPrayer?.name === prayer.id
-          const isCurrent = currentPrayer?.name === prayer.id
-          const isDone    = donePrayers[prayer.id]
+          const timeStr   = prayer.timeKey ? prayerTimes[prayer.timeKey] : null
+          const isNext    = !prayer.isVoluntary && nextPrayer?.name === prayer.id
+          const isCurrent = !prayer.isVoluntary && currentPrayer?.name === prayer.id
+          const isDone    = !!donePrayers[prayer.id]
 
           return (
             <motion.div
@@ -135,6 +133,7 @@ export default function PrayerTimesWidget() {
                 borderLeft: (!isAr && isCurrent) ? '2px solid var(--gold)' : (!isAr ? '2px solid transparent' : 'none'),
                 borderRight: (isAr && isCurrent) ? '2px solid var(--gold)' : (isAr ? '2px solid transparent' : 'none'),
                 transition: 'background var(--transition)',
+                opacity: prayer.isVoluntary ? 0.9 : 1,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -157,37 +156,66 @@ export default function PrayerTimesWidget() {
                       {t('currentPrayer')}
                     </div>
                   )}
+                  {prayer.isVoluntary && (
+                    <div style={{
+                      fontSize: '0.68rem',
+                      color: 'var(--amber)',
+                      fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                    }}>
+                      {t('sunnah')}
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{
-                  fontSize: '0.85rem',
-                  color: isNext ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  fontVariantNumeric: 'tabular-nums',
-                  fontWeight: isNext ? 500 : 400,
-                }}>
-                  {formatPrayerTime(timeStr, timeFormat)}
-                </span>
+                {timeStr ? (
+                  <span style={{
+                    fontSize: '0.85rem',
+                    color: isNext ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    fontVariantNumeric: 'tabular-nums',
+                    fontWeight: isNext ? 500 : 400,
+                  }}>
+                    {formatPrayerTime(timeStr, timeFormat)}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                    {isAr ? 'بعد الشروق' : 'After sunrise'}
+                  </span>
+                )}
 
-                {/* Done button */}
+                {/* Toggle button */}
                 <button
-                  onClick={() => handlePrayerDone(prayer.id)}
-                  title={isDone ? 'Done ✓' : 'Mark as done'}
+                  onClick={() => handleToggle(prayer.id)}
+                  title={isDone
+                    ? (isAr ? 'إلغاء التأشير' : 'Unmark')
+                    : (isAr ? 'تأشير كمنجز' : 'Mark as done')}
                   style={{
                     width: 28, height: 28,
                     borderRadius: '50%',
                     border: isDone ? '1.5px solid var(--emerald)' : '1.5px solid var(--border-strong)',
                     background: isDone ? 'var(--emerald-dim)' : 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: isDone ? 'default' : 'pointer',
+                    cursor: 'pointer',
                     color: isDone ? 'var(--emerald)' : 'var(--text-muted)',
                     fontSize: '0.75rem',
                     transition: 'all var(--transition)',
                     flexShrink: 0,
                   }}
-                  onMouseEnter={e => { if (!isDone) e.currentTarget.style.borderColor = 'var(--emerald)' }}
-                  onMouseLeave={e => { if (!isDone) e.currentTarget.style.borderColor = 'var(--border-strong)' }}
+                  onMouseEnter={e => {
+                    if (isDone) {
+                      e.currentTarget.style.borderColor = 'var(--ruby)'
+                      e.currentTarget.style.color = 'var(--ruby)'
+                      e.currentTarget.style.background = 'var(--ruby-dim)'
+                    } else {
+                      e.currentTarget.style.borderColor = 'var(--emerald)'
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = isDone ? 'var(--emerald)' : 'var(--border-strong)'
+                    e.currentTarget.style.color = isDone ? 'var(--emerald)' : 'var(--text-muted)'
+                    e.currentTarget.style.background = isDone ? 'var(--emerald-dim)' : 'transparent'
+                  }}
                 >
                   {isDone ? '✓' : '○'}
                 </button>

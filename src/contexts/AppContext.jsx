@@ -193,15 +193,17 @@ export const AppProvider = ({ children }) => {
     }
   }
 
-  const markPrayerDone = async (prayerId) => {
+  const togglePrayer = async (prayerId, currentlyDone) => {
     if (!user) return
     const todayKey = getTodayKey()
+    const newValue = !currentlyDone
     await setDoc(
       doc(db, 'users', user.uid, 'prayers', todayKey),
-      { [prayerId]: true, date: todayKey },
+      { [prayerId]: newValue, date: todayKey },
       { merge: true }
     )
-    const newPrayersDone = (stats.prayersDone || 0) + 1
+    const delta = newValue ? 1 : -1
+    const newPrayersDone = Math.max(0, (stats.prayersDone || 0) + delta)
     await setDoc(
       doc(db, 'users', user.uid, 'stats', 'current'),
       { prayersDone: newPrayersDone },
@@ -227,7 +229,7 @@ export const AppProvider = ({ children }) => {
       prayerTimes, location,
       tasks, customSections,
       completedToday, stats,
-      addTask, editTask, deleteTask, toggleTask, markPrayerDone, reorderTasks,
+      addTask, editTask, deleteTask, toggleTask, togglePrayer, reorderTasks,
       focusTimer, setFocusTimer,
       loading, t,
       FIXED_SECTIONS,
@@ -301,6 +303,18 @@ const translations = {
     pomoWork: 'Focus',
     pomoBreak: 'Break',
     pomoLong: 'Long Break',
+    duha: 'Duha',
+    sunnah: 'Sunnah',
+    notesTitle: 'Notes & Learnings',
+    addNote: 'What did you learn or benefit from today?',
+    saveNote: 'Save',
+    noNotes: 'No notes yet. Record something you learned.',
+    deleteNote: 'Delete',
+    catGeneral: 'General',
+    catQuran: 'Quran',
+    catHadith: 'Hadith',
+    catFiqh: 'Fiqh',
+    catReminder: 'Reminder',
   },
   ar: {
     appName: 'ميزان',
@@ -356,5 +370,17 @@ const translations = {
     pomoWork: 'تركيز',
     pomoBreak: 'استراحة',
     pomoLong: 'استراحة طويلة',
+    duha: 'الضحى',
+    sunnah: 'سُنَّة',
+    notesTitle: 'ملاحظاتي والفوائد',
+    addNote: 'ماذا تعلمت أو استفدت اليوم؟',
+    saveNote: 'حفظ',
+    noNotes: 'لا توجد ملاحظات بعد.',
+    deleteNote: 'حذف',
+    catGeneral: 'عام',
+    catQuran: 'قرآن',
+    catHadith: 'حديث',
+    catFiqh: 'فقه',
+    catReminder: 'تذكير',
   }
 }

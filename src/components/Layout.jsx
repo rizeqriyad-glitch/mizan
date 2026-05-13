@@ -260,7 +260,8 @@ export default function Layout() {
         @media (max-width: 768px) {
           .sidebar {
             position: fixed !important;
-            top: 0 !important; left: 0 !important;
+            top: 0 !important;
+            ${isAr ? 'right: 0 !important; left: auto !important;' : 'left: 0 !important; right: auto !important;'}
             transform: translateX(${sidebarOpen ? '0' : (isAr ? '100%' : '-100%')});
             transition: transform 0.3s ease;
             height: 100vh !important;

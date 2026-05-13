@@ -6,6 +6,7 @@ import TaskSection from '../components/TaskSection'
 import PrayerTimesWidget from '../components/PrayerTimesWidget'
 import FocusTimer from '../components/FocusTimer'
 import StatsBar from '../components/StatsBar'
+import NotesSection from '../components/NotesSection'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -203,6 +204,9 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Notes & Learnings */}
+      <NotesSection />
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
