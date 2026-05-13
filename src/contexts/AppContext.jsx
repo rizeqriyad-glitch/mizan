@@ -1,0 +1,360 @@
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import {
+  doc, collection, onSnapshot, setDoc, updateDoc,
+  addDoc, deleteDoc, serverTimestamp, query, where, orderBy, getDocs
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import { useAuth } from './AuthContext'
+import { fetchPrayerTimes } from '../utils/prayerTimes'
+import { getTodayKey } from '../utils/dateUtils'
+
+const AppContext = createContext(null)
+
+// Fixed sections that cannot be deleted
+export const FIXED_SECTIONS = [
+  { id: 'fajr',           label: { en: 'Fajr',            ar: 'الفجر'         }, type: 'prayer', icon: '🌙' },
+  { id: 'dhuhr',          label: { en: 'Dhuhr',           ar: 'الظهر'         }, type: 'prayer', icon: '☀️' },
+  { id: 'asr',            label: { en: 'Asr',             ar: 'العصر'         }, type: 'prayer', icon: '🌤' },
+  { id: 'maghrib',        label: { en: 'Maghrib',         ar: 'المغرب'        }, type: 'prayer', icon: '🌅' },
+  { id: 'isha',           label: { en: 'Isha',            ar: 'العشاء'        }, type: 'prayer', icon: '🌌' },
+  { id: 'quran',          label: { en: 'Quran',           ar: 'القرآن'        }, type: 'worship', icon: '📖' },
+  { id: 'morning-adhkar', label: { en: 'Morning Adhkar',  ar: 'أذكار الصباح' }, type: 'worship', icon: '🤲' },
+  { id: 'evening-adhkar', label: { en: 'Evening Adhkar',  ar: 'أذكار المساء' }, type: 'worship', icon: '🌿' },
+]
+
+export const AppProvider = ({ children }) => {
+  const { user, userProfile, updateProfile } = useAuth()
+
+  const [language, setLanguage]         = useState('en')
+  const [theme, setTheme]               = useState('dark')
+  const [timeFormat, setTimeFormat]     = useState('12h')
+  const [prayerTimes, setPrayerTimes]   = useState(null)
+  const [location, setLocation]         = useState(null)
+  const [tasks, setTasks]               = useState({})         // keyed by sectionId
+  const [customSections, setCustomSections] = useState([])
+  const [completedToday, setCompletedToday] = useState([])
+  const [stats, setStats]               = useState({ streak: 0, points: 0, prayersDone: 0 })
+  const [focusTimer, setFocusTimer]     = useState({ active: false, seconds: 1500, running: false })
+  const [loading, setLoading]           = useState(true)
+
+  // Sync settings from profile
+  useEffect(() => {
+    if (userProfile) {
+      setLanguage(userProfile.language || 'en')
+      setTheme(userProfile.theme || 'dark')
+      setTimeFormat(userProfile.timeFormat || '12h')
+    }
+  }, [userProfile])
+
+  // Apply theme to DOM
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
+  // Apply language/RTL to DOM
+  useEffect(() => {
+    document.documentElement.setAttribute('lang', language)
+    document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr')
+  }, [language])
+
+  // Fetch prayer times
+  useEffect(() => {
+    const getPrayerTimes = async () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const { latitude, longitude } = pos.coords
+            setLocation({ latitude, longitude })
+            const times = await fetchPrayerTimes(latitude, longitude)
+            setPrayerTimes(times)
+          },
+          async () => {
+            // Fallback to IP-based location
+            const times = await fetchPrayerTimes(21.3891, 39.8579) // Mecca fallback
+            setPrayerTimes(times)
+          }
+        )
+      }
+    }
+    getPrayerTimes()
+  }, [])
+
+  // Load tasks from Firestore
+  useEffect(() => {
+    if (!user) { setLoading(false); return }
+
+    const todayKey = getTodayKey()
+    const tasksRef = collection(db, 'users', user.uid, 'tasks')
+    const q = query(tasksRef, where('date', '==', todayKey))
+
+    const unsubTasks = onSnapshot(q, (snapshot) => {
+      const grouped = {}
+      FIXED_SECTIONS.forEach(s => { grouped[s.id] = [] })
+      snapshot.docs.forEach(doc => {
+        const task = { id: doc.id, ...doc.data() }
+        if (!grouped[task.sectionId]) grouped[task.sectionId] = []
+        grouped[task.sectionId].push(task)
+      })
+      Object.keys(grouped).forEach(k => {
+        grouped[k].sort((a, b) => (a.order || 0) - (b.order || 0))
+      })
+      setTasks(grouped)
+      setLoading(false)
+    })
+
+    // Load completed tasks for today
+    const completedRef = collection(db, 'users', user.uid, 'completed')
+    const qc = query(completedRef, where('date', '==', todayKey))
+    const unsubCompleted = onSnapshot(qc, (snapshot) => {
+      setCompletedToday(snapshot.docs.map(d => ({ id: d.id, ...d.data() })))
+    })
+
+    // Load stats
+    const statsRef = doc(db, 'users', user.uid, 'stats', 'current')
+    const unsubStats = onSnapshot(statsRef, (snap) => {
+      if (snap.exists()) setStats(snap.data())
+    })
+
+    // Load custom sections
+    const sectionsRef = collection(db, 'users', user.uid, 'sections')
+    const unsubSections = onSnapshot(sectionsRef, (snap) => {
+      setCustomSections(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    })
+
+    return () => {
+      unsubTasks()
+      unsubCompleted()
+      unsubStats()
+      unsubSections()
+    }
+  }, [user])
+
+  const changeLanguage = async (lang) => {
+    setLanguage(lang)
+    await updateProfile({ language: lang })
+  }
+
+  const changeTheme = async (t) => {
+    setTheme(t)
+    await updateProfile({ theme: t })
+  }
+
+  const changeTimeFormat = async (fmt) => {
+    setTimeFormat(fmt)
+    await updateProfile({ timeFormat: fmt })
+  }
+
+  const addTask = async (sectionId, text) => {
+    if (!user || !text.trim()) return
+    const sectionTasks = tasks[sectionId] || []
+    await addDoc(collection(db, 'users', user.uid, 'tasks'), {
+      sectionId,
+      text: text.trim(),
+      completed: false,
+      date: getTodayKey(),
+      order: sectionTasks.length,
+      createdAt: serverTimestamp(),
+    })
+  }
+
+  const editTask = async (taskId, text) => {
+    if (!user) return
+    await updateDoc(doc(db, 'users', user.uid, 'tasks', taskId), { text })
+  }
+
+  const deleteTask = async (taskId) => {
+    if (!user) return
+    await deleteDoc(doc(db, 'users', user.uid, 'tasks', taskId))
+  }
+
+  const toggleTask = async (task) => {
+    if (!user) return
+    const newCompleted = !task.completed
+    await updateDoc(doc(db, 'users', user.uid, 'tasks', task.id), {
+      completed: newCompleted,
+      completedAt: newCompleted ? serverTimestamp() : null,
+    })
+
+    if (newCompleted) {
+      await addDoc(collection(db, 'users', user.uid, 'completed'), {
+        taskId: task.id,
+        text: task.text,
+        sectionId: task.sectionId,
+        date: getTodayKey(),
+        completedAt: serverTimestamp(),
+      })
+      // Update stats
+      const newPoints = (stats.points || 0) + 10
+      await setDoc(
+        doc(db, 'users', user.uid, 'stats', 'current'),
+        { points: newPoints },
+        { merge: true }
+      )
+    }
+  }
+
+  const markPrayerDone = async (prayerId) => {
+    if (!user) return
+    const todayKey = getTodayKey()
+    await setDoc(
+      doc(db, 'users', user.uid, 'prayers', todayKey),
+      { [prayerId]: true, date: todayKey },
+      { merge: true }
+    )
+    const newPrayersDone = (stats.prayersDone || 0) + 1
+    await setDoc(
+      doc(db, 'users', user.uid, 'stats', 'current'),
+      { prayersDone: newPrayersDone },
+      { merge: true }
+    )
+  }
+
+  const reorderTasks = async (sectionId, newOrder) => {
+    if (!user) return
+    const updates = newOrder.map((task, index) =>
+      updateDoc(doc(db, 'users', user.uid, 'tasks', task.id), { order: index })
+    )
+    await Promise.all(updates)
+  }
+
+  const t = (key) => translations[language]?.[key] || translations['en'][key] || key
+
+  return (
+    <AppContext.Provider value={{
+      language, changeLanguage,
+      theme, changeTheme,
+      timeFormat, changeTimeFormat,
+      prayerTimes, location,
+      tasks, customSections,
+      completedToday, stats,
+      addTask, editTask, deleteTask, toggleTask, markPrayerDone, reorderTasks,
+      focusTimer, setFocusTimer,
+      loading, t,
+      FIXED_SECTIONS,
+    }}>
+      {children}
+    </AppContext.Provider>
+  )
+}
+
+export const useApp = () => {
+  const ctx = useContext(AppContext)
+  if (!ctx) throw new Error('useApp must be inside AppProvider')
+  return ctx
+}
+
+// ============================================================
+// Translations
+// ============================================================
+const translations = {
+  en: {
+    appName: 'Mizan',
+    tagline: 'Balance in All Things',
+    signInWithGoogle: 'Continue with Google',
+    signOut: 'Sign Out',
+    dashboard: 'Dashboard',
+    today: 'Today',
+    analytics: 'Analytics',
+    settings: 'Settings',
+    focusMode: 'Focus Mode',
+    addTask: 'Add task...',
+    completed: 'Completed',
+    pending: 'Pending',
+    completedToday: 'Completed Today',
+    productivity: 'Productivity',
+    streak: 'Day Streak',
+    points: 'Points',
+    prayersDone: 'Prayers',
+    prayerTimes: 'Prayer Times',
+    startFocus: 'Start Focus',
+    stopFocus: 'Stop',
+    resetTimer: 'Reset',
+    goodMorning: 'Good Morning',
+    goodAfternoon: 'Good Afternoon',
+    goodEvening: 'Good Evening',
+    theme: 'Theme',
+    darkMode: 'Dark Mode',
+    lightMode: 'Light Mode',
+    language: 'Language',
+    timeFormat: 'Time Format',
+    hour12: '12-hour',
+    hour24: '24-hour',
+    english: 'English',
+    arabic: 'العربية',
+    prayerDone: 'Marked as done',
+    noTasksYet: 'No tasks yet. Add one below.',
+    deleteTask: 'Delete task',
+    editTask: 'Edit task',
+    save: 'Save',
+    cancel: 'Cancel',
+    weeklyReview: 'Weekly Review',
+    totalTasks: 'Total Tasks',
+    focusTime: 'Focus Time',
+    minutesFocused: 'min focused today',
+    motivationalQuote: 'The strong person is not the one who overcomes others, but the one who controls himself in anger.',
+    quoteSource: '— Sahih Al-Bukhari',
+    signInTitle: 'Welcome to Mizan',
+    signInSubtitle: 'Your Islamic productivity companion',
+    loadingPrayers: 'Fetching prayer times...',
+    currentPrayer: 'Current',
+    nextPrayer: 'Next prayer',
+    pomoWork: 'Focus',
+    pomoBreak: 'Break',
+    pomoLong: 'Long Break',
+  },
+  ar: {
+    appName: 'ميزان',
+    tagline: 'التوازن في كل شيء',
+    signInWithGoogle: 'المتابعة مع Google',
+    signOut: 'تسجيل الخروج',
+    dashboard: 'لوحة التحكم',
+    today: 'اليوم',
+    analytics: 'التحليلات',
+    settings: 'الإعدادات',
+    focusMode: 'وضع التركيز',
+    addTask: 'أضف مهمة...',
+    completed: 'مكتمل',
+    pending: 'قيد الانتظار',
+    completedToday: 'مكتمل اليوم',
+    productivity: 'الإنتاجية',
+    streak: 'سلسلة أيام',
+    points: 'النقاط',
+    prayersDone: 'الصلوات',
+    prayerTimes: 'مواقيت الصلاة',
+    startFocus: 'ابدأ التركيز',
+    stopFocus: 'إيقاف',
+    resetTimer: 'إعادة تعيين',
+    goodMorning: 'صباح الخير',
+    goodAfternoon: 'مساء الخير',
+    goodEvening: 'مساء النور',
+    theme: 'المظهر',
+    darkMode: 'الوضع الداكن',
+    lightMode: 'الوضع الفاتح',
+    language: 'اللغة',
+    timeFormat: 'تنسيق الوقت',
+    hour12: '12 ساعة',
+    hour24: '24 ساعة',
+    english: 'English',
+    arabic: 'العربية',
+    prayerDone: 'تم التأشير كمنجز',
+    noTasksYet: 'لا توجد مهام بعد. أضف واحدة أدناه.',
+    deleteTask: 'حذف المهمة',
+    editTask: 'تعديل المهمة',
+    save: 'حفظ',
+    cancel: 'إلغاء',
+    weeklyReview: 'المراجعة الأسبوعية',
+    totalTasks: 'إجمالي المهام',
+    focusTime: 'وقت التركيز',
+    minutesFocused: 'دقيقة تركيز اليوم',
+    motivationalQuote: 'ليس الشديد بالصُّرَعة، إنما الشديد الذي يملك نفسه عند الغضب.',
+    quoteSource: '— صحيح البخاري',
+    signInTitle: 'مرحباً بك في ميزان',
+    signInSubtitle: 'رفيقك في الإنتاجية الإسلامية',
+    loadingPrayers: 'جاري تحميل مواقيت الصلاة...',
+    currentPrayer: 'الحالية',
+    nextPrayer: 'الصلاة القادمة',
+    pomoWork: 'تركيز',
+    pomoBreak: 'استراحة',
+    pomoLong: 'استراحة طويلة',
+  }
+}

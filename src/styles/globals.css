@@ -1,0 +1,210 @@
+/* ============================================================
+   MIZAN — Global Design System
+   ============================================================ */
+
+:root {
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'DM Sans', -apple-system, sans-serif;
+  --font-arabic:  'Noto Naskh Arabic', 'Arabic Typesetting', serif;
+
+  --radius-sm:   6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-full: 9999px;
+
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Dark Theme (default) ── */
+[data-theme="dark"] {
+  --bg-base:       #0a0a0f;
+  --bg-surface:    #111118;
+  --bg-card:       #16161f;
+  --bg-card-hover: #1c1c27;
+  --bg-input:      #1e1e2a;
+  --bg-overlay:    rgba(10, 10, 15, 0.85);
+
+  --border:        rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-focus:  rgba(212, 175, 106, 0.6);
+
+  --text-primary:   #f2edd6;
+  --text-secondary: #8b8a9e;
+  --text-muted:     #4d4c63;
+  --text-inverse:   #0a0a0f;
+
+  --gold:          #d4af6a;
+  --gold-light:    #e8cfa0;
+  --gold-dim:      rgba(212, 175, 106, 0.15);
+  --gold-glow:     rgba(212, 175, 106, 0.08);
+
+  --emerald:       #4ade80;
+  --emerald-dim:   rgba(74, 222, 128, 0.12);
+
+  --sapphire:      #60a5fa;
+  --sapphire-dim:  rgba(96, 165, 250, 0.12);
+
+  --ruby:          #f87171;
+  --ruby-dim:      rgba(248, 113, 113, 0.12);
+
+  --amber:         #fbbf24;
+  --amber-dim:     rgba(251, 191, 36, 0.12);
+
+  --prayer-active: linear-gradient(135deg, rgba(212,175,106,0.2), rgba(212,175,106,0.05));
+}
+
+/* ── Light Theme ── */
+[data-theme="light"] {
+  --bg-base:       #fafaf5;
+  --bg-surface:    #f4f3ec;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #f9f8f2;
+  --bg-input:      #f0efe8;
+  --bg-overlay:    rgba(250, 250, 245, 0.9);
+
+  --border:        rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.14);
+  --border-focus:  rgba(160, 117, 36, 0.6);
+
+  --text-primary:   #1a1a0f;
+  --text-secondary: #5c5b4a;
+  --text-muted:     #9b9a88;
+  --text-inverse:   #fafaf5;
+
+  --gold:          #a07524;
+  --gold-light:    #c4963a;
+  --gold-dim:      rgba(160, 117, 36, 0.1);
+  --gold-glow:     rgba(160, 117, 36, 0.05);
+
+  --emerald:       #16a34a;
+  --emerald-dim:   rgba(22, 163, 74, 0.1);
+
+  --sapphire:      #2563eb;
+  --sapphire-dim:  rgba(37, 99, 235, 0.1);
+
+  --ruby:          #dc2626;
+  --ruby-dim:      rgba(220, 38, 38, 0.1);
+
+  --amber:         #d97706;
+  --amber-dim:     rgba(217, 119, 6, 0.1);
+
+  --prayer-active: linear-gradient(135deg, rgba(160,117,36,0.12), rgba(160,117,36,0.03));
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background var(--transition-slow), color var(--transition-slow);
+}
+
+[lang="ar"] body,
+[lang="ar"] .arabic-text {
+  font-family: var(--font-arabic);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+/* ── Focus ── */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Selection ── */
+::selection {
+  background: var(--gold-dim);
+  color: var(--gold-light);
+}
+
+/* ── Typography ── */
+.font-display { font-family: var(--font-display); }
+
+h1 { font-family: var(--font-display); font-size: 2.5rem; font-weight: 600; letter-spacing: -0.01em; }
+h2 { font-family: var(--font-display); font-size: 1.75rem; font-weight: 500; }
+h3 { font-size: 1.125rem; font-weight: 500; }
+
+/* ── Utility classes ── */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+}
+
+.gold-text { color: var(--gold); }
+.gold-bg   { background: var(--gold-dim); }
+
+/* RTL adjustments */
+[dir="rtl"] .rtl-flip  { transform: scaleX(-1); }
+[dir="rtl"] .rtl-mr    { margin-right: 0; margin-left: auto; }
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position: 200% center; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes checkmark {
+  0%   { stroke-dashoffset: 50; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.animate-fade-in  { animation: fadeIn 0.3s ease forwards; }
+.animate-scale-in { animation: scaleIn 0.25s ease forwards; }
+.animate-pulse    { animation: pulse 2s ease infinite; }
+
+/* ── Input & Button reset ── */
+input, textarea, button, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+button { cursor: pointer; border: none; background: none; }
+input, textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 0.5rem 0.75rem;
+  transition: border-color var(--transition);
+}
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+input::placeholder, textarea::placeholder { color: var(--text-muted); }
