@@ -1,4 +1,4 @@
-export const ALARM_URL = 'https://mizantask.netlify.app/iphone_alarm.mp3'
+export const ALARM_URL = 'https://raw.githubusercontent.com/rizeqriyad-glitch/mizan/main/public/iphone_alarm.mp3'
 
 /** Create a pre-loaded, looping alarm Audio element. */
 export function createAlarm() {
