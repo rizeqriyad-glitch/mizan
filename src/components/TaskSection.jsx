@@ -43,7 +43,7 @@ export default function TaskSection({ section, isFixed = false }) {
     const audio = alarmAudioRef.current
     if (audio) {
       audio.currentTime = 0
-      audio.play().catch(() => {})
+      audio.play().catch(err => console.error('[alarm play]', err))
     }
     setTimerAlert(taskText)
     clearTimeout(alarmTimerRef.current)
@@ -65,7 +65,7 @@ export default function TaskSection({ section, isFixed = false }) {
     if (alarmAudioRef.current) {
       alarmAudioRef.current.play()
         .then(() => { alarmAudioRef.current?.pause(); if (alarmAudioRef.current) alarmAudioRef.current.currentTime = 0 })
-        .catch(() => {})
+        .catch(err => console.warn('[alarm unlock]', err))
     }
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
 

@@ -36,6 +36,7 @@ export default function FocusTimer() {
   const [totalFocusTime, setTotalFocusTime] = useState(0)
   const intervalRef    = useRef(null)
   const startSecsRef   = useRef(customMins.work * 60)
+  const secondsRef     = useRef(customMins.work * 60)
   const customMinsRef  = useRef(customMins)
   const alarmAudioRef  = useRef(null)
   const alarmTimerRef  = useRef(null)
@@ -53,32 +54,39 @@ export default function FocusTimer() {
   }, [])
 
   useEffect(() => {
-    if (running) {
-      intervalRef.current = setInterval(() => {
-        setSeconds(s => {
-          if (s <= 1) {
-            clearInterval(intervalRef.current)
-            setRunning(false)
-            if (mode === 'work') {
-              setSessions(prev => prev + 1)
-              setTotalFocusTime(prev => prev + startSecsRef.current)
-            }
-            const audio = alarmAudioRef.current
-            if (audio) { audio.currentTime = 0; audio.play().catch(() => {}) }
-            setAlarming(true)
-            clearTimeout(alarmTimerRef.current)
-            alarmTimerRef.current = setTimeout(() => {
-              if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current.currentTime = 0 }
-              setAlarming(false)
-            }, 8000)
-            return 0
-          }
-          return s - 1
-        })
-      }, 1000)
-    } else {
+    if (!running) {
       clearInterval(intervalRef.current)
+      return () => clearInterval(intervalRef.current)
     }
+
+    intervalRef.current = setInterval(() => {
+      const next = secondsRef.current - 1
+      secondsRef.current = Math.max(0, next)
+
+      if (next <= 0) {
+        clearInterval(intervalRef.current)
+        setSeconds(0)
+        setRunning(false)
+        if (mode === 'work') {
+          setSessions(prev => prev + 1)
+          setTotalFocusTime(prev => prev + startSecsRef.current)
+        }
+        const audio = alarmAudioRef.current
+        if (audio) {
+          audio.currentTime = 0
+          audio.play().catch(err => console.error('[alarm] play failed:', err))
+        }
+        setAlarming(true)
+        clearTimeout(alarmTimerRef.current)
+        alarmTimerRef.current = setTimeout(() => {
+          if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current.currentTime = 0 }
+          setAlarming(false)
+        }, 8000)
+      } else {
+        setSeconds(next)
+      }
+    }, 1000)
+
     return () => clearInterval(intervalRef.current)
   }, [running, mode])
 
@@ -95,13 +103,16 @@ export default function FocusTimer() {
     const secs = customMinsRef.current[newMode] * 60
     setSeconds(secs)
     startSecsRef.current = secs
+    secondsRef.current = secs
     setRunning(false)
   }
 
   const handleReset = () => {
     stopAlarm()
     setRunning(false)
-    setSeconds(customMinsRef.current[mode] * 60)
+    const secs = customMinsRef.current[mode] * 60
+    setSeconds(secs)
+    secondsRef.current = secs
   }
 
   const openEdit = () => {
@@ -123,6 +134,7 @@ export default function FocusTimer() {
     const newSecs = newMins[mode] * 60
     setSeconds(newSecs)
     startSecsRef.current = newSecs
+    secondsRef.current = newSecs
   }
 
   const totalSecs = customMins[mode] * 60
