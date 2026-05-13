@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { formatTimer } from '../utils/dateUtils'
-import { startRadarAlarm } from '../utils/alarmSound'
+import { startRadarAlarm, unlockAlarm } from '../utils/alarmSound'
 
 const MODES = {
   work:  { label: { en: 'Focus',       ar: 'تركيز'         }, color: 'var(--gold)' },
@@ -387,7 +387,7 @@ export default function FocusTimer() {
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={alarming ? stopAlarm : () => setRunning(r => !r)}
+          onClick={alarming ? stopAlarm : () => { if (!running) unlockAlarm(); setRunning(r => !r) }}
           style={{
             flex: 1,
             padding: '0.7rem',

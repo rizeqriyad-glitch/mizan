@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
-import { startRadarAlarm } from '../utils/alarmSound'
+import { startRadarAlarm, unlockAlarm } from '../utils/alarmSound'
 
 function fmtTimer(s) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
@@ -57,6 +57,7 @@ export default function TaskSection({ section, isFixed = false }) {
 
   const startTimer = (task) => {
     if (!task.duration || task.duration <= 0) return
+    unlockAlarm() // pre-load audio during user gesture
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
 
     const totalSecs = task.duration * 60
