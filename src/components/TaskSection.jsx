@@ -9,16 +9,16 @@ function fmtTimer(s) {
 function playAlertSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    ;[0, 0.32, 0.64].forEach(offset => {
+    ;[0, 0.9, 1.8].forEach((offset, i) => {
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.connect(gain)
       gain.connect(ctx.destination)
-      osc.frequency.value = 880
-      gain.gain.setValueAtTime(0.28, ctx.currentTime + offset)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 0.28)
+      osc.frequency.value = [880, 784, 698][i]
+      gain.gain.setValueAtTime(0.55, ctx.currentTime + offset)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 1.0)
       osc.start(ctx.currentTime + offset)
-      osc.stop(ctx.currentTime + offset + 0.28)
+      osc.stop(ctx.currentTime + offset + 1.0)
     })
   } catch {}
 }

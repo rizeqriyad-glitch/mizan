@@ -57,10 +57,10 @@ export default function FocusTimer() {
               oscillator.connect(gainNode)
               gainNode.connect(ctx.destination)
               oscillator.frequency.value = 528
-              gainNode.gain.setValueAtTime(0.3, ctx.currentTime)
-              gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5)
+              gainNode.gain.setValueAtTime(0.55, ctx.currentTime)
+              gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3)
               oscillator.start(ctx.currentTime)
-              oscillator.stop(ctx.currentTime + 1.5)
+              oscillator.stop(ctx.currentTime + 3)
             } catch {}
             return 0
           }
