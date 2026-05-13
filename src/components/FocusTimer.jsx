@@ -61,7 +61,7 @@ export default function FocusTimer() {
             alarmTimerRef.current = setTimeout(() => {
               alarmStopRef.current = null
               setAlarming(false)
-            }, 3000)
+            }, 8000)
             return 0
           }
           return s - 1

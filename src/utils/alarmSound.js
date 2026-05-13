@@ -1,61 +1,50 @@
 /**
- * iPhone alarm audio player.
+ * Once an Audio element has been .play()-ed during a user gesture,
+ * future .play() calls on the SAME element are never blocked — even
+ * minutes later with no gesture. That's the only reliable cross-browser
+ * way to bypass autoplay policy for timer alarms.
  *
- * Browser autoplay policy blocks audio that plays without a direct user
- * gesture. The fix: call unlockAlarm() inside the button click handler
- * (user gesture) so the AudioContext gets unlocked and the file is
- * pre-decoded. When startRadarAlarm() fires later (no gesture), the
- * pre-decoded buffer plays without restriction.
+ * Call unlockAlarm() inside the Start-Task / Start-Focus click handler.
+ * Call startRadarAlarm() when the timer expires.
  */
 
 const ALARM_URL = 'https://mizantask.netlify.app/iphone_alarm.mp3'
 
-let _ctx    = null   // shared AudioContext (unlocked once per session)
-let _buffer = null   // decoded PCM buffer (loaded once)
+let _audio = null  // single pre-activated Audio element
 
 export function unlockAlarm() {
-  // Call this inside a button onClick so the browser allows audio later.
-  ;(async () => {
-    try {
-      if (!_ctx || _ctx.state === 'closed') {
-        _ctx = new (window.AudioContext || window.webkitAudioContext)()
-      }
-      if (_ctx.state === 'suspended') await _ctx.resume()
-
-      if (!_buffer) {
-        const res = await fetch(ALARM_URL)
-        const ab  = await res.arrayBuffer()
-        _buffer   = await _ctx.decodeAudioData(ab)
-      }
-    } catch {}
-  })()
+  try {
+    if (!_audio) {
+      _audio = new Audio(ALARM_URL)
+      _audio.preload = 'auto'
+      _audio.loop    = true
+      _audio.volume  = 0.9
+    }
+    // Play + immediately pause during the user gesture.
+    // This "activates" the element so later .play() calls are never blocked.
+    const p = _audio.play()
+    if (p) p.then(() => { _audio.pause(); _audio.currentTime = 0 }).catch(() => {})
+  } catch {}
 }
 
 export function startRadarAlarm(durationSeconds = 8) {
-  // ── Preferred: pre-buffered AudioContext (no autoplay restriction) ──
-  if (_ctx && _buffer && _ctx.state === 'running') {
-    try {
-      const source = _ctx.createBufferSource()
-      source.buffer = _buffer
-      source.loop   = true
-      source.connect(_ctx.destination)
-      source.start()
+  const audio = _audio || new Audio(ALARM_URL)
+  audio.loop   = true
+  audio.volume = 0.9
 
-      const tid = setTimeout(() => { try { source.stop() } catch {} }, durationSeconds * 1000)
-      return () => { clearTimeout(tid); try { source.stop() } catch {} }
-    } catch {}
-  }
-
-  // ── Fallback: plain Audio element (may still be blocked) ────────────
   try {
-    const audio = new Audio(ALARM_URL)
-    audio.loop   = true
-    audio.volume = 0.9
+    audio.currentTime = 0
     audio.play().catch(() => {})
+  } catch {}
 
-    const tid = setTimeout(() => { audio.pause(); audio.currentTime = 0 }, durationSeconds * 1000)
-    return () => { clearTimeout(tid); audio.pause(); audio.currentTime = 0 }
-  } catch {
-    return () => {}
+  const tid = setTimeout(() => {
+    audio.pause()
+    audio.currentTime = 0
+  }, durationSeconds * 1000)
+
+  return () => {
+    clearTimeout(tid)
+    audio.pause()
+    audio.currentTime = 0
   }
 }

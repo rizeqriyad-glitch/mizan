@@ -45,7 +45,7 @@ export default function TaskSection({ section, isFixed = false }) {
     alarmTimerRef.current = setTimeout(() => {
       alarmStopRef.current = null
       setTimerAlert(null)
-    }, 3000)
+    }, 8000)
   }
 
   const dismissAlarm = () => {
