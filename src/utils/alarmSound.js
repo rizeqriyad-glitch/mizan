@@ -31,7 +31,7 @@ export function unlockAlarm() {
   })()
 }
 
-export function startRadarAlarm(durationSeconds = 3) {
+export function startRadarAlarm(durationSeconds = 8) {
   // ── Preferred: pre-buffered AudioContext (no autoplay restriction) ──
   if (_ctx && _buffer && _ctx.state === 'running') {
     try {

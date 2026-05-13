@@ -39,7 +39,7 @@ export default function TaskSection({ section, isFixed = false }) {
   const triggerAlarm = (taskText) => {
     if (alarmStopRef.current) alarmStopRef.current()
     clearTimeout(alarmTimerRef.current)
-    alarmStopRef.current = startRadarAlarm(3)
+    alarmStopRef.current = startRadarAlarm(8)
     setTimerAlert(taskText)
     // Auto-dismiss after 3 s (alarm duration)
     alarmTimerRef.current = setTimeout(() => {
