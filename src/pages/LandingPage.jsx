@@ -4,7 +4,7 @@ import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 
 const FEATURES = [
-  { icon: '🕌', en: 'Prayer Tracker', ar: 'تتبع الصلوات',  desc: { en: 'Log all 7 daily prayers with one tap and track your consistency over time.', ar: 'سجّل صلواتك السبع اليومية بنقرة واحدة وتابع انتظامك.' } },
+  { icon: '🕌', en: 'Prayer Tracker', ar: 'تتبع الصلوات',  desc: { en: 'Log all 5 daily prayers with one tap and track your consistency over time.', ar: 'سجّل صلواتك الخمس اليومية بنقرة واحدة وتابع انتظامك.' } },
   { icon: '🤲', en: 'Morning & Evening Adhkar', ar: 'أذكار الصباح والمساء', desc: { en: 'Authentic supplications from Hisn al-Muslim with source references and checkmarks.', ar: 'أذكار صحيحة من حصن المسلم مع مراجعها وإمكانية التأشير.' } },
   { icon: '📖', en: 'Quran Reader', ar: 'قارئ القرآن', desc: { en: 'Read the Quran in the Uthmanic script with Sahih International translation.', ar: 'اقرأ القرآن بالرسم العثماني مع ترجمة موثوقة.' } },
   { icon: '📿', en: 'Daily Dhikr', ar: 'أذكار يومية', desc: { en: 'Count your daily remembrance with progress tracking that resets each morning.', ar: 'عدّ أذكارك اليومية مع تتبع التقدم الذي يُعاد صفره كل صباح.' } },
@@ -13,7 +13,7 @@ const FEATURES = [
 ]
 
 const STATS = [
-  { value: '7',   label: { en: 'Daily Prayers', ar: 'صلوات يومية' } },
+  { value: '5',   label: { en: 'Daily Prayers', ar: 'صلوات يومية' } },
   { value: '12',  label: { en: 'Morning Adhkar', ar: 'ذكر صباحي' } },
   { value: '114', label: { en: 'Quran Surahs', ar: 'سورة قرآنية' } },
   { value: '∞',   label: { en: 'Rewards', ar: 'أجر لا يُحصى' } },

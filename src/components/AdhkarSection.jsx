@@ -6,60 +6,68 @@ import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { getTodayKey } from '../utils/dateUtils'
 
-// ─── Authentic adhkar from Hisn al-Muslim (حصن المسلم) ───────────────────────
+// ─── Morning & Evening Adhkar from Hisn al-Muslim ────────────────────────────
+// Source: حصن المسلم — Dr. Sa'id ibn Ali ibn Wahf al-Qahtani
 
 const MORNING_ADHKAR = [
   {
     id: 'm0',
-    arabic: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ',
+    arabic: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ',
+    english: 'Allah — there is no deity except Him, the Ever-Living, the Sustainer of existence. Neither drowsiness overtakes Him nor sleep. To Him belongs whatever is in the heavens and whatever is on the earth. Who is it that can intercede with Him except by His permission? He knows what is before them and what will be after them, and they encompass not a thing of His knowledge except for what He wills. His Kursi extends over the heavens and the earth, and their preservation tires Him not. And He is the Most High, the Most Great.',
     name: { en: 'Ayat al-Kursi', ar: 'آية الكرسي' },
     count: 1,
     source: 'البقرة: ٢٥٥',
-    virtue: { en: 'Whoever recites it in the morning is protected from jinn until evening', ar: 'من قرأها حين يصبح أُجير من الجن حتى يمسي' },
+    virtue: { en: 'Whoever recites it in the morning will be protected by Allah from jinn until evening', ar: 'من قرأها حين يصبح أُجير من الجن حتى يمسي' },
   },
   {
     id: 'm1',
     arabic: 'قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ',
+    english: 'Say: He is Allah, the One. Allah, the Eternal Refuge. He neither begets nor is born. Nor is there to Him any equivalent.',
     name: { en: 'Surat Al-Ikhlas', ar: 'سورة الإخلاص' },
     count: 3,
-    source: 'القرآن الكريم',
-    virtue: { en: 'Equivalent to reciting a third of the Quran', ar: 'تعدل ثلث القرآن' },
+    source: 'سورة الإخلاص (١١٢)',
+    virtue: { en: 'Whoever recites it three times is rewarded as if he recited the entire Quran', ar: 'من قرأها ثلاثاً كان له ثواب قراءة القرآن كاملاً' },
   },
   {
     id: 'm2',
     arabic: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ',
+    english: 'Say: I seek refuge in the Lord of daybreak, from the evil of what He has created, and from the evil of darkness when it settles, and from the evil of the blowers in knots, and from the evil of an envier when he envies.',
     name: { en: 'Surat Al-Falaq', ar: 'سورة الفلق' },
     count: 3,
-    source: 'القرآن الكريم',
-    virtue: { en: 'Sufficient protection against all harm', ar: 'كافية من كل شر' },
+    source: 'سورة الفلق (١١٣)',
+    virtue: { en: 'Sufficient protection against all evil', ar: 'كافية من كل شر' },
   },
   {
     id: 'm3',
     arabic: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ',
+    english: 'Say: I seek refuge in the Lord of mankind, the Sovereign of mankind, the God of mankind, from the evil of the retreating whisperer — who whispers in the breasts of mankind — from among the jinn and mankind.',
     name: { en: 'Surat An-Nas', ar: 'سورة الناس' },
     count: 3,
-    source: 'القرآن الكريم',
-    virtue: { en: 'Sufficient protection against all harm', ar: 'كافية من كل شر' },
+    source: 'سورة الناس (١١٤)',
+    virtue: { en: 'Sufficient protection against all evil', ar: 'كافية من كل شر' },
   },
   {
     id: 'm4',
     arabic: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ',
+    english: 'We have reached the morning, and at this very time all sovereignty belongs to Allah. Praise be to Allah. None has the right to be worshipped except Allah, alone, without partner; to Him belongs all sovereignty and praise, and He is over all things omnipotent. My Lord, I ask You for the good of this day and the good of what follows it; and I seek refuge in You from the evil of this day and the evil of what follows it. My Lord, I seek refuge in You from laziness and the deterioration of old age. My Lord, I seek refuge in You from torment in the Fire and torment in the grave.',
     name: { en: 'Morning Declaration', ar: 'دعاء الصباح' },
     count: 1,
     source: 'مسلم (٢٧٢٣)',
-    virtue: { en: 'A comprehensive morning supplication', ar: 'من أذكار الصباح الجامعة' },
+    virtue: { en: 'A comprehensive morning supplication taught by the Prophet ﷺ', ar: 'من أذكار الصباح الجامعة' },
   },
   {
     id: 'm5',
     arabic: 'اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ',
+    english: 'O Allah, by Your grace we have reached the morning, and by Your grace we reach the evening; by You we live and by You we die, and to You is the resurrection.',
     name: { en: 'Morning Beginning', ar: 'افتتاح الصباح' },
     count: 1,
     source: 'أبو داود (٥٠٦٨)، الترمذي (٣٣٩١)',
-    virtue: { en: 'Affirming complete dependence on Allah', ar: 'إقرار بالتوكل على الله' },
+    virtue: { en: 'Affirming that all life belongs to Allah', ar: 'إقرار بأن الحياة كلها لله' },
   },
   {
     id: 'm6',
     arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ',
+    english: 'O Allah, You are my Lord. None has the right to be worshipped except You. You created me and I am Your servant. I uphold Your covenant and my promise to You as best I can. I seek refuge in You from the evil that I have done. I acknowledge Your blessings upon me and I acknowledge my sin, so forgive me, for none forgives sins except You.',
     name: { en: 'Sayyid al-Istighfar', ar: 'سيد الاستغفار' },
     count: 1,
     source: 'البخاري (٦٣٠٦)',
@@ -68,97 +76,109 @@ const MORNING_ADHKAR = [
   {
     id: 'm7',
     arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
+    english: 'None has the right to be worshipped except Allah, alone, without partner. To Him belongs all sovereignty, to Him is all praise, and He is over all things omnipotent.',
     name: { en: 'Tahlil', ar: 'التهليل' },
     count: 10,
-    source: 'النسائي (٣/٢٤٨)، الطبراني',
-    virtue: { en: '10× = reward of freeing 4 slaves, 100 good deeds, 100 sins erased', ar: '١٠ مرات = أجر عتق ٤ رقاب وكتب له ١٠٠ حسنة ومُحيت ١٠٠ سيئة' },
+    source: 'النسائي (٢٤/٣)، الطبراني',
+    virtue: { en: 'Recited 10× morning and evening: reward equal to freeing 4 slaves, 100 good deeds written, 100 sins erased, and protection from Shaytan all day', ar: '١٠ مرات صباحاً ومساءً = أجر عتق أربع رقاب وكُتب له ١٠٠ حسنة ومُحيت ١٠٠ سيئة وكان في حرز من الشيطان' },
   },
   {
     id: 'm8',
     arabic: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ، وَهُوَ السَّمِيعُ الْعَلِيمُ',
-    name: { en: 'Protection', ar: 'ذكر الحماية' },
+    english: 'In the name of Allah, with whose name nothing on earth or in the heavens can cause harm, and He is the All-Hearing, the All-Knowing.',
+    name: { en: 'Morning Protection', ar: 'ذكر الحماية' },
     count: 3,
-    source: 'أبو داود (٥٠٨٨)، الترمذي (٣٣٨٨)',
-    virtue: { en: 'Nothing will harm him', ar: 'لم يضره شيء' },
+    source: 'أبو داود (٥٠٨٨)، الترمذي (٣٣٨٨)، ابن ماجه (٣٨٦٩)',
+    virtue: { en: 'Whoever says it 3× in the morning: nothing will harm him until evening', ar: 'من قالها ثلاثاً حين يصبح لم يضره شيء حتى يمسي' },
   },
   {
     id: 'm9',
     arabic: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا',
+    english: 'I am pleased with Allah as my Lord, with Islam as my religion, and with Muhammad ﷺ as my Prophet.',
     name: { en: 'Contentment with Allah', ar: 'الرضا بالله' },
     count: 3,
     source: 'أبو داود (٥٠٧٢)، الترمذي (٣٣٨٩)',
-    virtue: { en: 'Allah will please him on the Day of Judgement', ar: 'كان حقاً على الله أن يُرضيه يوم القيامة' },
+    virtue: { en: 'It is a right upon Allah to please the one who says this on the Day of Judgement', ar: 'كان حقاً على الله أن يُرضيه يوم القيامة' },
   },
   {
     id: 'm10',
     arabic: 'اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَهَ إِلَّا أَنْتَ',
+    english: 'O Allah, grant well-being to my body. O Allah, grant well-being to my hearing. O Allah, grant well-being to my sight. There is none worthy of worship except You.',
     name: { en: "Du'a for Well-being", ar: 'دعاء العافية' },
     count: 3,
     source: 'أبو داود (٥٠٩٠)',
-    virtue: { en: 'Supplication for health of body, hearing, and sight', ar: 'دعاء للعافية في البدن والسمع والبصر' },
+    virtue: { en: 'Supplication for sound health in body, hearing, and sight', ar: 'دعاء للعافية في البدن والسمع والبصر' },
   },
   {
     id: 'm11',
     arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
+    english: 'Glory and praise be to Allah.',
     name: { en: 'Tasbih', ar: 'التسبيح' },
     count: 100,
     source: 'مسلم (٢٦٩١)',
-    virtue: { en: 'Sins forgiven even if they are like sea foam', ar: 'حُطَّت خطاياه وإن كانت مثل زبد البحر' },
+    virtue: { en: 'Whoever says it 100× in the morning: his sins are forgiven even if they are like the foam of the sea', ar: 'من قالها مئة مرة حُطَّت خطاياه وإن كانت مثل زبد البحر' },
   },
 ]
 
 const EVENING_ADHKAR = [
   {
     id: 'e0',
-    arabic: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ',
+    arabic: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ',
+    english: 'Allah — there is no deity except Him, the Ever-Living, the Sustainer of existence. Neither drowsiness overtakes Him nor sleep. To Him belongs whatever is in the heavens and whatever is on the earth. Who is it that can intercede with Him except by His permission? He knows what is before them and what will be after them, and they encompass not a thing of His knowledge except for what He wills. His Kursi extends over the heavens and the earth, and their preservation tires Him not. And He is the Most High, the Most Great.',
     name: { en: 'Ayat al-Kursi', ar: 'آية الكرسي' },
     count: 1,
     source: 'البقرة: ٢٥٥',
-    virtue: { en: 'Whoever recites it in the evening is protected from jinn until morning', ar: 'من قرأها حين يمسي أُجير من الجن حتى يصبح' },
+    virtue: { en: 'Whoever recites it in the evening will be protected by Allah from jinn until morning', ar: 'من قرأها حين يمسي أُجير من الجن حتى يصبح' },
   },
   {
     id: 'e1',
     arabic: 'قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ',
+    english: 'Say: He is Allah, the One. Allah, the Eternal Refuge. He neither begets nor is born. Nor is there to Him any equivalent.',
     name: { en: 'Surat Al-Ikhlas', ar: 'سورة الإخلاص' },
     count: 3,
-    source: 'القرآن الكريم',
-    virtue: { en: 'Equivalent to reciting a third of the Quran', ar: 'تعدل ثلث القرآن' },
+    source: 'سورة الإخلاص (١١٢)',
+    virtue: { en: 'Whoever recites it three times morning and evening: it is sufficient for him', ar: 'تكفيه من كل شيء' },
   },
   {
     id: 'e2',
     arabic: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ',
+    english: 'Say: I seek refuge in the Lord of daybreak, from the evil of what He has created, and from the evil of darkness when it settles, and from the evil of the blowers in knots, and from the evil of an envier when he envies.',
     name: { en: 'Surat Al-Falaq', ar: 'سورة الفلق' },
     count: 3,
-    source: 'القرآن الكريم',
-    virtue: { en: 'Sufficient protection against all harm', ar: 'كافية من كل شر' },
+    source: 'سورة الفلق (١١٣)',
+    virtue: { en: 'Sufficient protection against all evil', ar: 'كافية من كل شر' },
   },
   {
     id: 'e3',
     arabic: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ',
+    english: 'Say: I seek refuge in the Lord of mankind, the Sovereign of mankind, the God of mankind, from the evil of the retreating whisperer — who whispers in the breasts of mankind — from among the jinn and mankind.',
     name: { en: 'Surat An-Nas', ar: 'سورة الناس' },
     count: 3,
-    source: 'القرآن الكريم',
-    virtue: { en: 'Sufficient protection against all harm', ar: 'كافية من كل شر' },
+    source: 'سورة الناس (١١٤)',
+    virtue: { en: 'Sufficient protection against all evil', ar: 'كافية من كل شر' },
   },
   {
     id: 'e4',
     arabic: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ',
+    english: 'We have reached the evening, and at this very time all sovereignty belongs to Allah. Praise be to Allah. None has the right to be worshipped except Allah, alone, without partner; to Him belongs all sovereignty and praise, and He is over all things omnipotent. My Lord, I ask You for the good of this night and the good of what follows it; and I seek refuge in You from the evil of this night and the evil of what follows it. My Lord, I seek refuge in You from laziness and the deterioration of old age. My Lord, I seek refuge in You from torment in the Fire and torment in the grave.',
     name: { en: 'Evening Declaration', ar: 'دعاء المساء' },
     count: 1,
     source: 'مسلم (٢٧٢٣)',
-    virtue: { en: 'A comprehensive evening supplication', ar: 'من أذكار المساء الجامعة' },
+    virtue: { en: 'A comprehensive evening supplication taught by the Prophet ﷺ', ar: 'من أذكار المساء الجامعة' },
   },
   {
     id: 'e5',
     arabic: 'اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ',
+    english: 'O Allah, by Your grace we have reached the evening, and by Your grace we reach the morning; by You we live and by You we die, and to You is the final return.',
     name: { en: 'Evening Beginning', ar: 'افتتاح المساء' },
     count: 1,
     source: 'أبو داود (٥٠٦٨)، الترمذي (٣٣٩١)',
-    virtue: { en: 'Affirming complete dependence on Allah', ar: 'إقرار بالتوكل على الله' },
+    virtue: { en: 'Affirming that all life belongs to Allah', ar: 'إقرار بأن الحياة كلها لله' },
   },
   {
     id: 'e6',
     arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ',
+    english: 'O Allah, You are my Lord. None has the right to be worshipped except You. You created me and I am Your servant. I uphold Your covenant and my promise to You as best I can. I seek refuge in You from the evil that I have done. I acknowledge Your blessings upon me and I acknowledge my sin, so forgive me, for none forgives sins except You.',
     name: { en: 'Sayyid al-Istighfar', ar: 'سيد الاستغفار' },
     count: 1,
     source: 'البخاري (٦٣٠٦)',
@@ -167,42 +187,47 @@ const EVENING_ADHKAR = [
   {
     id: 'e7',
     arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
+    english: 'None has the right to be worshipped except Allah, alone, without partner. To Him belongs all sovereignty, to Him is all praise, and He is over all things omnipotent.',
     name: { en: 'Tahlil', ar: 'التهليل' },
     count: 10,
-    source: 'النسائي (٣/٢٤٨)، الطبراني',
-    virtue: { en: '10× = reward of freeing 4 slaves, 100 good deeds, 100 sins erased', ar: '١٠ مرات = أجر عتق ٤ رقاب وكُتب له ١٠٠ حسنة ومُحيت ١٠٠ سيئة' },
+    source: 'النسائي (٢٤/٣)، الطبراني',
+    virtue: { en: 'Recited 10× morning and evening: reward equal to freeing 4 slaves, 100 good deeds written, 100 sins erased', ar: '١٠ مرات = أجر عتق أربع رقاب وكُتب له ١٠٠ حسنة ومُحيت ١٠٠ سيئة' },
   },
   {
     id: 'e8',
     arabic: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ، وَهُوَ السَّمِيعُ الْعَلِيمُ',
-    name: { en: 'Protection', ar: 'ذكر الحماية' },
+    english: 'In the name of Allah, with whose name nothing on earth or in the heavens can cause harm, and He is the All-Hearing, the All-Knowing.',
+    name: { en: 'Evening Protection', ar: 'ذكر الحماية' },
     count: 3,
-    source: 'أبو داود (٥٠٨٨)، الترمذي (٣٣٨٨)',
-    virtue: { en: 'Nothing will harm him', ar: 'لم يضره شيء' },
+    source: 'أبو داود (٥٠٨٨)، الترمذي (٣٣٨٨)، ابن ماجه (٣٨٦٩)',
+    virtue: { en: 'Whoever says it 3× in the evening: nothing will harm him until morning', ar: 'من قالها ثلاثاً حين يمسي لم يضره شيء حتى يصبح' },
   },
   {
     id: 'e9',
-    arabic: 'اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَهَ إِلَّا أَنْتَ',
-    name: { en: "Du'a for Well-being", ar: 'دعاء العافية' },
+    arabic: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا',
+    english: 'I am pleased with Allah as my Lord, with Islam as my religion, and with Muhammad ﷺ as my Prophet.',
+    name: { en: 'Contentment with Allah', ar: 'الرضا بالله' },
     count: 3,
-    source: 'أبو داود (٥٠٩٠)',
-    virtue: { en: 'Supplication for health of body, hearing, and sight', ar: 'دعاء للعافية في البدن والسمع والبصر' },
+    source: 'أبو داود (٥٠٧٢)، الترمذي (٣٣٨٩)',
+    virtue: { en: 'It is a right upon Allah to please the one who says this on the Day of Judgement', ar: 'كان حقاً على الله أن يُرضيه يوم القيامة' },
   },
   {
     id: 'e10',
-    arabic: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي',
-    name: { en: "Du'a for Pardon", ar: 'دعاء العفو والعافية' },
+    arabic: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي وَآمِنْ رَوْعَاتِي',
+    english: 'O Allah, I ask You for pardon and well-being in this life and the next. O Allah, I ask You for pardon and well-being in my religion, my worldly affairs, my family, and my wealth. O Allah, conceal my faults and calm my fears.',
+    name: { en: "Du'a for Pardon & Well-being", ar: 'دعاء العفو والعافية' },
     count: 1,
     source: 'أبو داود (٥٠٧٤)، ابن ماجه (٣٨٧١)',
-    virtue: { en: 'The Prophet ﷺ never abandoned this supplication', ar: 'كان النبي ﷺ لا يدعها' },
+    virtue: { en: 'The Prophet ﷺ never abandoned this supplication morning or evening', ar: 'كان النبي ﷺ لا يدعها صباحاً ولا مساءً' },
   },
   {
     id: 'e11',
     arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
+    english: 'Glory and praise be to Allah.',
     name: { en: 'Tasbih', ar: 'التسبيح' },
     count: 100,
     source: 'مسلم (٢٦٩١)',
-    virtue: { en: 'Sins forgiven even if they are like sea foam', ar: 'حُطَّت خطاياه وإن كانت مثل زبد البحر' },
+    virtue: { en: 'Whoever says it 100× in the evening: his sins are forgiven even if they are like the foam of the sea', ar: 'من قالها مئة مرة حُطَّت خطاياه وإن كانت مثل زبد البحر' },
   },
 ]
 
@@ -214,11 +239,10 @@ export default function AdhkarSection() {
   const isAr = language === 'ar'
 
   const [tab,      setTab]      = useState('morning')
-  const [counts,   setCounts]   = useState({})   // { m0: 1, m1: 3, e0: 0, ... }
+  const [counts,   setCounts]   = useState({})
   const [expanded, setExpanded] = useState(true)
   const saveTimer = useRef(null)
 
-  // Load today's counts from Firestore
   useEffect(() => {
     if (!user) return
     const unsub = onSnapshot(
@@ -229,7 +253,6 @@ export default function AdhkarSection() {
     return unsub
   }, [user])
 
-  // Debounced save (600ms) to avoid excess Firestore writes on rapid taps
   const persistCounts = useCallback((next) => {
     if (!user) return
     clearTimeout(saveTimer.current)
@@ -238,7 +261,7 @@ export default function AdhkarSection() {
         doc(db, 'users', user.uid, 'adhkar', getTodayKey()),
         { ...next, date: getTodayKey() },
         { merge: true }
-      ).catch(err => console.error('Adhkar save error:', err))
+      ).catch(err => console.error('Adhkar save:', err))
     }, 600)
   }, [user])
 
@@ -297,8 +320,7 @@ export default function AdhkarSection() {
             background: doneCount === list.length ? 'var(--emerald-dim)' : 'var(--gold-dim)',
             color:      doneCount === list.length ? 'var(--emerald)' : 'var(--gold)',
             border:     `1px solid ${doneCount === list.length ? 'rgba(74,222,128,0.2)' : 'rgba(212,175,106,0.2)'}`,
-            borderRadius: 'var(--radius-full)',
-            padding: '0.1rem 0.5rem',
+            borderRadius: 'var(--radius-full)', padding: '0.1rem 0.5rem',
           }}>
             {doneCount}/{list.length}
           </span>
@@ -331,10 +353,8 @@ export default function AdhkarSection() {
                     border: 'none',
                     borderBottom: tab === key ? '2px solid var(--gold)' : '2px solid transparent',
                     color: tab === key ? 'var(--gold)' : 'var(--text-muted)',
-                    fontSize: '0.82rem',
-                    fontWeight: tab === key ? 500 : 400,
-                    cursor: 'pointer',
-                    transition: 'all var(--transition)',
+                    fontSize: '0.82rem', fontWeight: tab === key ? 500 : 400,
+                    cursor: 'pointer', transition: 'all var(--transition)',
                     fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
                   }}
                 >
@@ -370,8 +390,7 @@ export default function AdhkarSection() {
                     {/* Number badge */}
                     <div style={{
                       flexShrink: 0,
-                      width: 26, height: 26,
-                      borderRadius: '50%',
+                      width: 26, height: 26, borderRadius: '50%',
                       border: `1.5px solid ${isDone ? 'var(--emerald)' : 'var(--border-strong)'}`,
                       background: isDone ? 'var(--emerald-dim)' : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -401,8 +420,7 @@ export default function AdhkarSection() {
                           fontSize: '0.68rem',
                           background: 'var(--gold-dim)', color: 'var(--gold)',
                           border: '1px solid rgba(212,175,106,0.2)',
-                          borderRadius: 'var(--radius-full)',
-                          padding: '0.05rem 0.45rem',
+                          borderRadius: 'var(--radius-full)', padding: '0.05rem 0.45rem',
                         }}>
                           ×{adhkar.count}
                         </span>
@@ -414,25 +432,38 @@ export default function AdhkarSection() {
                       {/* Arabic text */}
                       <p style={{
                         fontFamily: 'var(--font-arabic)',
-                        fontSize: '1.1rem',
-                        lineHeight: 2,
+                        fontSize: '1.1rem', lineHeight: 2,
                         color: isDone ? 'var(--emerald)' : 'var(--text-primary)',
                         opacity: isDone ? 0.75 : 1,
-                        direction: 'rtl',
-                        textAlign: 'right',
+                        direction: 'rtl', textAlign: 'right',
                         margin: '0 0 0.5rem',
                         transition: 'color var(--transition)',
                       }}>
                         {adhkar.arabic}
                       </p>
 
+                      {/* English translation */}
+                      {language === 'en' && (
+                        <p style={{
+                          fontSize: '0.78rem',
+                          color: 'var(--text-secondary)',
+                          lineHeight: 1.65,
+                          fontStyle: 'italic',
+                          margin: '0 0 0.5rem',
+                          paddingLeft: '0.5rem',
+                          borderLeft: '2px solid var(--border)',
+                          direction: 'ltr',
+                          textAlign: 'left',
+                        }}>
+                          {adhkar.english}
+                        </p>
+                      )}
+
                       {/* Virtue */}
                       <p style={{
-                        fontSize: '0.72rem',
-                        color: 'var(--gold)',
+                        fontSize: '0.72rem', color: 'var(--gold)',
                         fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                        direction: isAr ? 'rtl' : 'ltr',
-                        margin: 0, opacity: 0.85,
+                        direction: isAr ? 'rtl' : 'ltr', margin: 0, opacity: 0.85,
                       }}>
                         ✦ {adhkar.virtue[language] || adhkar.virtue.en}
                       </p>
@@ -444,7 +475,6 @@ export default function AdhkarSection() {
                       display: 'flex', flexDirection: 'column', alignItems: 'center',
                       gap: '0.3rem', marginTop: '0.2rem',
                     }}>
-                      {/* Progress fraction */}
                       <div style={{
                         fontSize: '0.72rem', fontWeight: 600,
                         color: isDone ? 'var(--emerald)' : 'var(--text-secondary)',
@@ -455,30 +485,24 @@ export default function AdhkarSection() {
                         {current}/{adhkar.count}
                       </div>
 
-                      {/* Progress bar */}
                       <div style={{
-                        width: 52, height: 3,
-                        borderRadius: 2,
-                        background: 'var(--border)',
-                        overflow: 'hidden',
+                        width: 52, height: 3, borderRadius: 2,
+                        background: 'var(--border)', overflow: 'hidden',
                       }}>
                         <div style={{
                           height: '100%',
                           width: `${Math.min((current / adhkar.count) * 100, 100)}%`,
                           background: isDone ? 'var(--emerald)' : 'var(--gold)',
-                          borderRadius: 2,
-                          transition: 'width 0.2s ease, background 0.2s',
+                          borderRadius: 2, transition: 'width 0.2s ease, background 0.2s',
                         }} />
                       </div>
 
-                      {/* Tap buttons */}
                       <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.15rem' }}>
                         <button
                           onClick={() => decrement(adhkar.id)}
                           disabled={current === 0}
                           style={{
-                            width: 22, height: 22,
-                            borderRadius: 'var(--radius-sm)',
+                            width: 22, height: 22, borderRadius: 'var(--radius-sm)',
                             border: '1px solid var(--border-strong)',
                             background: 'transparent',
                             color: current === 0 ? 'var(--border-strong)' : 'var(--text-muted)',
@@ -487,15 +511,12 @@ export default function AdhkarSection() {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             transition: 'all var(--transition)',
                           }}
-                        >
-                          −
-                        </button>
+                        >−</button>
                         <button
                           onClick={() => increment(adhkar.id, adhkar.count)}
                           disabled={isDone}
                           style={{
-                            width: 22, height: 22,
-                            borderRadius: 'var(--radius-sm)',
+                            width: 22, height: 22, borderRadius: 'var(--radius-sm)',
                             border: `1px solid ${isDone ? 'var(--emerald)' : 'var(--gold)'}`,
                             background: isDone ? 'var(--emerald-dim)' : 'var(--gold-dim)',
                             color: isDone ? 'var(--emerald)' : 'var(--gold)',
@@ -504,9 +525,7 @@ export default function AdhkarSection() {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             transition: 'all var(--transition)',
                           }}
-                        >
-                          +
-                        </button>
+                        >+</button>
                       </div>
                     </div>
                   </motion.div>

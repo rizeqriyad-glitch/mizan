@@ -6,7 +6,6 @@ import TaskSection from '../components/TaskSection'
 import PrayerTimesWidget from '../components/PrayerTimesWidget'
 import FocusTimer from '../components/FocusTimer'
 import StatsBar from '../components/StatsBar'
-import NotesSection from '../components/NotesSection'
 import QuranReader from '../components/QuranReader'
 import AdhkarSection from '../components/AdhkarSection'
 
@@ -212,9 +211,6 @@ export default function DashboardPage() {
 
       {/* Read Quran */}
       <QuranReader />
-
-      {/* Notes & Learnings */}
-      <NotesSection />
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
