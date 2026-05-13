@@ -9,17 +9,28 @@ function fmtTimer(s) {
 function playAlertSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    ;[0, 0.9, 1.8].forEach((offset, i) => {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.frequency.value = [880, 784, 698][i]
-      gain.gain.setValueAtTime(0.55, ctx.currentTime + offset)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 1.0)
-      osc.start(ctx.currentTime + offset)
-      osc.stop(ctx.currentTime + offset + 1.0)
-    })
+    const now = ctx.currentTime
+    const BEEP  = 0.09  // beep on-time
+    const GAP   = 0.05  // gap between beeps in a group
+    const PAUSE = 0.40  // gap between groups
+    // 5 groups × 2 alternating beeps ≈ 3 seconds total
+    for (let g = 0; g < 5; g++) {
+      const gStart = now + g * (2 * (BEEP + GAP) + PAUSE)
+      ;[1200, 960].forEach((freq, b) => {
+        const t = gStart + b * (BEEP + GAP)
+        const osc  = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.frequency.value = freq
+        gain.gain.setValueAtTime(0, t)
+        gain.gain.linearRampToValueAtTime(0.65, t + 0.005)
+        gain.gain.setValueAtTime(0.65, t + BEEP - 0.01)
+        gain.gain.linearRampToValueAtTime(0, t + BEEP)
+        osc.start(t)
+        osc.stop(t + BEEP + 0.01)
+      })
+    }
   } catch {}
 }
 
