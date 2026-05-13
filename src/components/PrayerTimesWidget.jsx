@@ -1,25 +1,20 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
-import { useAuth } from '../contexts/AuthContext'
 import { formatPrayerTime, getNextPrayer, getCurrentPrayer } from '../utils/prayerTimes'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { db } from '../firebase'
-import { getTodayKey } from '../utils/dateUtils'
 
 const PRAYER_ENTRIES = [
   { id: 'fajr',    label: { en: 'Fajr',    ar: 'الفجر'  }, icon: '🌙', timeKey: 'fajr'    },
-  { id: 'duha',    label: { en: 'Duha',    ar: 'الضحى'  }, icon: '🌄', isVoluntary: true  },
+  { id: 'duha',    label: { en: 'Duha',    ar: 'الضحى'  }, icon: '🌄', isVoluntary: true, timeLabel: { en: 'After sunrise', ar: 'بعد الشروق' } },
   { id: 'dhuhr',   label: { en: 'Dhuhr',   ar: 'الظهر'  }, icon: '☀️',  timeKey: 'dhuhr'   },
   { id: 'asr',     label: { en: 'Asr',     ar: 'العصر'  }, icon: '🌤',  timeKey: 'asr'     },
   { id: 'maghrib', label: { en: 'Maghrib', ar: 'المغرب' }, icon: '🌅',  timeKey: 'maghrib' },
   { id: 'isha',    label: { en: 'Isha',    ar: 'العشاء' }, icon: '🌌',  timeKey: 'isha'    },
+  { id: 'witr',    label: { en: 'Witr',    ar: 'الوتر'  }, icon: '🌜', isVoluntary: true, timeLabel: { en: 'After Isha', ar: 'بعد العشاء' } },
 ]
 
 export default function PrayerTimesWidget() {
-  const { prayerTimes, timeFormat, language, togglePrayer, t } = useApp()
-  const { user } = useAuth()
-  const [donePrayers, setDonePrayers] = useState({})
+  const { prayerTimes, timeFormat, language, togglePrayer, donePrayers, t } = useApp()
   const [nextPrayer, setNextPrayer] = useState(null)
   const [currentPrayer, setCurrentPrayer] = useState(null)
   const [now, setNow] = useState(new Date())
@@ -37,18 +32,8 @@ export default function PrayerTimesWidget() {
     }
   }, [prayerTimes, now])
 
-  useEffect(() => {
-    if (!user) return
-    const load = async () => {
-      const snap = await getDoc(doc(db, 'users', user.uid, 'prayers', getTodayKey()))
-      if (snap.exists()) setDonePrayers(snap.data())
-    }
-    load()
-  }, [user])
-
   const handleToggle = async (prayerId) => {
     const currentlyDone = !!donePrayers[prayerId]
-    setDonePrayers(prev => ({ ...prev, [prayerId]: !currentlyDone }))
     await togglePrayer(prayerId, currentlyDone)
   }
 
@@ -123,24 +108,23 @@ export default function PrayerTimesWidget() {
               key={prayer.id}
               initial={{ opacity: 0, x: isAr ? 10 : -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.06 }}
+              transition={{ delay: i * 0.05 }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '0.65rem 1.25rem',
+                padding: '0.6rem 1.25rem',
                 background: isNext ? 'var(--prayer-active)' : 'transparent',
                 borderLeft: (!isAr && isCurrent) ? '2px solid var(--gold)' : (!isAr ? '2px solid transparent' : 'none'),
                 borderRight: (isAr && isCurrent) ? '2px solid var(--gold)' : (isAr ? '2px solid transparent' : 'none'),
                 transition: 'background var(--transition)',
-                opacity: prayer.isVoluntary ? 0.9 : 1,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ fontSize: '1.1rem' }}>{prayer.icon}</span>
+                <span style={{ fontSize: '1.05rem' }}>{prayer.icon}</span>
                 <div>
                   <div style={{
-                    fontSize: '0.9rem',
+                    fontSize: '0.88rem',
                     fontWeight: isNext ? 600 : 400,
                     color: isNext ? 'var(--gold)' : 'var(--text-primary)',
                     fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
@@ -148,20 +132,12 @@ export default function PrayerTimesWidget() {
                     {prayer.label[language]}
                   </div>
                   {isCurrent && (
-                    <div style={{
-                      fontSize: '0.7rem',
-                      color: 'var(--gold)',
-                      fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                    }}>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--gold)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                       {t('currentPrayer')}
                     </div>
                   )}
                   {prayer.isVoluntary && (
-                    <div style={{
-                      fontSize: '0.68rem',
-                      color: 'var(--amber)',
-                      fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                    }}>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--amber)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                       {t('sunnah')}
                     </div>
                   )}
@@ -171,7 +147,7 @@ export default function PrayerTimesWidget() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 {timeStr ? (
                   <span style={{
-                    fontSize: '0.85rem',
+                    fontSize: '0.83rem',
                     color: isNext ? 'var(--text-primary)' : 'var(--text-secondary)',
                     fontVariantNumeric: 'tabular-nums',
                     fontWeight: isNext ? 500 : 400,
@@ -179,8 +155,12 @@ export default function PrayerTimesWidget() {
                     {formatPrayerTime(timeStr, timeFormat)}
                   </span>
                 ) : (
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                    {isAr ? 'بعد الشروق' : 'After sunrise'}
+                  <span style={{
+                    fontSize: '0.72rem',
+                    color: 'var(--text-muted)',
+                    fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                  }}>
+                    {prayer.timeLabel?.[language]}
                   </span>
                 )}
 

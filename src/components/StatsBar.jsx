@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 
 export default function StatsBar() {
-  const { stats, tasks, language, t } = useApp()
+  const { stats, tasks, language, t, prayersDone } = useApp()
   const isAr = language === 'ar'
 
   // Compute today's productivity score
@@ -28,7 +28,7 @@ export default function StatsBar() {
     },
     {
       icon: '🕌',
-      value: `${stats.prayersDone || 0}/5`,
+      value: `${prayersDone}/7`,
       label: t('prayersDone'),
       color: 'var(--sapphire)',
       dim: 'var(--sapphire-dim)',

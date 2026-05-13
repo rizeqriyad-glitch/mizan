@@ -33,9 +33,13 @@ export const AppProvider = ({ children }) => {
   const [tasks, setTasks]               = useState({})         // keyed by sectionId
   const [customSections, setCustomSections] = useState([])
   const [completedToday, setCompletedToday] = useState([])
-  const [stats, setStats]               = useState({ streak: 0, points: 0, prayersDone: 0 })
+  const [stats, setStats]               = useState({ streak: 0, points: 0 })
+  const [donePrayers, setDonePrayers]   = useState({})
   const [focusTimer, setFocusTimer]     = useState({ active: false, seconds: 1500, running: false })
   const [loading, setLoading]           = useState(true)
+
+  // Derived: count of prayers marked true today (resets each day automatically)
+  const prayersDone = Object.values(donePrayers).filter(v => v === true).length
 
   // Sync settings from profile
   useEffect(() => {
@@ -121,11 +125,18 @@ export const AppProvider = ({ children }) => {
       setCustomSections(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     })
 
+    // Subscribe to today's prayer completion doc (resets each new day)
+    const prayersRef = doc(db, 'users', user.uid, 'prayers', todayKey)
+    const unsubPrayers = onSnapshot(prayersRef, (snap) => {
+      setDonePrayers(snap.exists() ? snap.data() : {})
+    })
+
     return () => {
       unsubTasks()
       unsubCompleted()
       unsubStats()
       unsubSections()
+      unsubPrayers()
     }
   }, [user])
 
@@ -196,17 +207,11 @@ export const AppProvider = ({ children }) => {
   const togglePrayer = async (prayerId, currentlyDone) => {
     if (!user) return
     const todayKey = getTodayKey()
-    const newValue = !currentlyDone
+    // Optimistic update for instant UI feedback
+    setDonePrayers(prev => ({ ...prev, [prayerId]: !currentlyDone }))
     await setDoc(
       doc(db, 'users', user.uid, 'prayers', todayKey),
-      { [prayerId]: newValue, date: todayKey },
-      { merge: true }
-    )
-    const delta = newValue ? 1 : -1
-    const newPrayersDone = Math.max(0, (stats.prayersDone || 0) + delta)
-    await setDoc(
-      doc(db, 'users', user.uid, 'stats', 'current'),
-      { prayersDone: newPrayersDone },
+      { [prayerId]: !currentlyDone, date: todayKey },
       { merge: true }
     )
   }
@@ -229,6 +234,7 @@ export const AppProvider = ({ children }) => {
       prayerTimes, location,
       tasks, customSections,
       completedToday, stats,
+      donePrayers, prayersDone,
       addTask, editTask, deleteTask, toggleTask, togglePrayer, reorderTasks,
       focusTimer, setFocusTimer,
       loading, t,
@@ -304,6 +310,7 @@ const translations = {
     pomoBreak: 'Break',
     pomoLong: 'Long Break',
     duha: 'Duha',
+    witr: 'Witr',
     sunnah: 'Sunnah',
     notesTitle: 'Notes & Learnings',
     addNote: 'What did you learn or benefit from today?',
@@ -371,6 +378,7 @@ const translations = {
     pomoBreak: 'استراحة',
     pomoLong: 'استراحة طويلة',
     duha: 'الضحى',
+    witr: 'الوتر',
     sunnah: 'سُنَّة',
     notesTitle: 'ملاحظاتي والفوائد',
     addNote: 'ماذا تعلمت أو استفدت اليوم؟',
