@@ -1,15 +1,41 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
+
+function fmtTimer(s) {
+  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
+}
+
+function playAlertSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    ;[0, 0.32, 0.64].forEach(offset => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.frequency.value = 880
+      gain.gain.setValueAtTime(0.28, ctx.currentTime + offset)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 0.28)
+      osc.start(ctx.currentTime + offset)
+      osc.stop(ctx.currentTime + offset + 0.28)
+    })
+  } catch {}
+}
 
 export default function TaskSection({ section, isFixed = false }) {
   const { tasks, addTask, editTask, deleteTask, toggleTask, reorderTasks, language, t } = useApp()
   const [newTaskText, setNewTaskText] = useState('')
+  const [newTaskDuration, setNewTaskDuration] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [editText, setEditText] = useState('')
   const [isAdding, setIsAdding] = useState(false)
   const [expanded, setExpanded] = useState(true)
+  const [activeTimer, setActiveTimer] = useState(null) // { taskId, taskText, totalSeconds, secondsLeft }
+  const [timerAlert, setTimerAlert] = useState(null)   // string: task text
   const inputRef = useRef(null)
+  const timerIntervalRef = useRef(null)
+  const activeTimerRef = useRef(null)
   const isAr = language === 'ar'
 
   const sectionTasks = (tasks[section.id] || [])
@@ -17,11 +43,53 @@ export default function TaskSection({ section, isFixed = false }) {
   const doneTasks    = sectionTasks.filter(t => t.completed)
   const label = section.label?.[language] || section.label?.en || section.id
 
+  // Cleanup on unmount
+  useEffect(() => () => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+  }, [])
+
+  const startTimer = (task) => {
+    if (!task.duration || task.duration <= 0) return
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+
+    const totalSecs = task.duration * 60
+    const data = { taskId: task.id, taskText: task.text, totalSeconds: totalSecs, secondsLeft: totalSecs }
+    activeTimerRef.current = data
+    setActiveTimer(data)
+
+    timerIntervalRef.current = setInterval(() => {
+      if (!activeTimerRef.current) return
+      const next = activeTimerRef.current.secondsLeft - 1
+      if (next <= 0) {
+        clearInterval(timerIntervalRef.current)
+        timerIntervalRef.current = null
+        const text = activeTimerRef.current.taskText
+        activeTimerRef.current = null
+        setActiveTimer(null)
+        playAlertSound()
+        setTimerAlert(text)
+        setTimeout(() => setTimerAlert(null), 6000)
+      } else {
+        activeTimerRef.current = { ...activeTimerRef.current, secondsLeft: next }
+        setActiveTimer({ ...activeTimerRef.current })
+      }
+    }, 1000)
+  }
+
+  const stopTimer = () => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+    timerIntervalRef.current = null
+    activeTimerRef.current = null
+    setActiveTimer(null)
+  }
+
   const handleAddTask = async (e) => {
     e.preventDefault()
     if (!newTaskText.trim()) return
-    await addTask(section.id, newTaskText)
+    const dur = newTaskDuration ? parseInt(newTaskDuration, 10) : null
+    await addTask(section.id, newTaskText, dur && dur > 0 ? dur : null)
     setNewTaskText('')
+    setNewTaskDuration('')
     setIsAdding(false)
   }
 
@@ -95,17 +163,13 @@ export default function TaskSection({ section, isFixed = false }) {
             }}>
               {label}
             </div>
-            <div style={{
-              fontSize: '0.72rem',
-              color: 'var(--text-muted)',
-            }}>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
               {pendingTasks.length} {isAr ? 'معلقة' : 'pending'} · {doneTasks.length} {isAr ? 'مكتملة' : 'done'}
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {/* Progress pill */}
           {sectionTasks.length > 0 && (
             <div style={{
               fontSize: '0.7rem',
@@ -117,8 +181,6 @@ export default function TaskSection({ section, isFixed = false }) {
               {Math.round((doneTasks.length / sectionTasks.length) * 100)}%
             </div>
           )}
-
-          {/* Add button */}
           <button
             onClick={(e) => { e.stopPropagation(); setIsAdding(true); setExpanded(true) }}
             style={{
@@ -136,8 +198,6 @@ export default function TaskSection({ section, isFixed = false }) {
           >
             +
           </button>
-
-          {/* Expand chevron */}
           <span style={{
             color: 'var(--text-muted)',
             fontSize: '0.7rem',
@@ -158,7 +218,34 @@ export default function TaskSection({ section, isFixed = false }) {
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             style={{ overflow: 'hidden' }}
           >
-            {/* Pending tasks with drag reorder */}
+            {/* Timer alert banner */}
+            <AnimatePresence>
+              {timerAlert && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  style={{
+                    padding: '0.6rem 1.25rem',
+                    background: 'var(--emerald-dim)',
+                    borderBottom: '1px solid rgba(74,222,128,0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.82rem',
+                    color: 'var(--emerald)',
+                    fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                  }}
+                >
+                  <span>⏰</span>
+                  <span>
+                    {t('timesUp')}
+                    {timerAlert ? ` — "${timerAlert}"` : ''}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {pendingTasks.length === 0 && !isAdding ? (
               <div style={{
                 padding: '1.25rem',
@@ -191,13 +278,17 @@ export default function TaskSection({ section, isFixed = false }) {
                       typeColor={typeColor}
                       isAr={isAr}
                       t={t}
+                      isTimerActive={activeTimer?.taskId === task.id}
+                      timerSeconds={activeTimer?.taskId === task.id ? activeTimer.secondsLeft : 0}
+                      timerTotal={activeTimer?.taskId === task.id ? activeTimer.totalSeconds : (task.duration ? task.duration * 60 : 0)}
+                      onStartTimer={() => startTimer(task)}
+                      onStopTimer={stopTimer}
                     />
                   </Reorder.Item>
                 ))}
               </Reorder.Group>
             )}
 
-            {/* Completed tasks */}
             {doneTasks.length > 0 && (
               <div style={{ borderTop: '1px solid var(--border)', padding: '0.25rem 0' }}>
                 {doneTasks.map(task => (
@@ -215,12 +306,17 @@ export default function TaskSection({ section, isFixed = false }) {
                     typeColor={typeColor}
                     isAr={isAr}
                     t={t}
+                    isTimerActive={false}
+                    timerSeconds={0}
+                    timerTotal={0}
+                    onStartTimer={() => {}}
+                    onStopTimer={() => {}}
                   />
                 ))}
               </div>
             )}
 
-            {/* Add task input */}
+            {/* Add task form */}
             <AnimatePresence>
               {isAdding && (
                 <motion.div
@@ -229,54 +325,98 @@ export default function TaskSection({ section, isFixed = false }) {
                   exit={{ opacity: 0, height: 0 }}
                   style={{ borderTop: '1px solid var(--border)', padding: '0.75rem 1.25rem' }}
                 >
-                  <form onSubmit={handleAddTask} style={{ display: 'flex', gap: '0.5rem' }}>
-                    <input
-                      ref={inputRef}
-                      autoFocus
-                      value={newTaskText}
-                      onChange={e => setNewTaskText(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Escape') setIsAdding(false) }}
-                      placeholder={t('addTask')}
-                      style={{
-                        flex: 1,
-                        background: 'var(--bg-input)',
-                        border: `1px solid ${typeColor}40`,
-                        borderRadius: 'var(--radius-md)',
-                        padding: '0.5rem 0.75rem',
-                        fontSize: '0.875rem',
-                        color: 'var(--text-primary)',
-                        direction: isAr ? 'rtl' : 'ltr',
-                      }}
-                    />
-                    <button
-                      type="submit"
-                      style={{
-                        padding: '0.5rem 1rem',
-                        borderRadius: 'var(--radius-md)',
-                        background: typeDim,
-                        border: `1px solid ${typeColor}40`,
-                        color: typeColor,
-                        fontSize: '0.85rem',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {t('save')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsAdding(false)}
-                      style={{
-                        padding: '0.5rem',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--border)',
+                  <form onSubmit={handleAddTask} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {/* Main row */}
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input
+                        ref={inputRef}
+                        autoFocus
+                        value={newTaskText}
+                        onChange={e => setNewTaskText(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Escape') setIsAdding(false) }}
+                        placeholder={t('addTask')}
+                        style={{
+                          flex: 1,
+                          background: 'var(--bg-input)',
+                          border: `1px solid ${typeColor}40`,
+                          borderRadius: 'var(--radius-md)',
+                          padding: '0.5rem 0.75rem',
+                          fontSize: '0.875rem',
+                          color: 'var(--text-primary)',
+                          direction: isAr ? 'rtl' : 'ltr',
+                        }}
+                      />
+                      <button
+                        type="submit"
+                        style={{
+                          padding: '0.5rem 1rem',
+                          borderRadius: 'var(--radius-md)',
+                          background: typeDim,
+                          border: `1px solid ${typeColor}40`,
+                          color: typeColor,
+                          fontSize: '0.85rem',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {t('save')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setIsAdding(false); setNewTaskDuration('') }}
+                        style={{
+                          padding: '0.5rem',
+                          borderRadius: 'var(--radius-md)',
+                          border: '1px solid var(--border)',
+                          color: 'var(--text-muted)',
+                          background: 'transparent',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Duration row */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      direction: isAr ? 'rtl' : 'ltr',
+                    }}>
+                      <span style={{
+                        fontSize: '0.75rem',
                         color: 'var(--text-muted)',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      ✕
-                    </button>
+                        fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                      }}>
+                        ⏱ {t('durationLabel')}:
+                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="480"
+                        value={newTaskDuration}
+                        onChange={e => setNewTaskDuration(e.target.value)}
+                        placeholder={isAr ? '—' : '—'}
+                        style={{
+                          width: 60,
+                          background: 'var(--bg-input)',
+                          border: `1px solid ${typeColor}30`,
+                          borderRadius: 'var(--radius-md)',
+                          padding: '0.3rem 0.5rem',
+                          fontSize: '0.82rem',
+                          color: 'var(--text-primary)',
+                          textAlign: 'center',
+                        }}
+                      />
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-muted)',
+                        fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                      }}>
+                        {isAr ? 'دقيقة' : 'minutes'}
+                      </span>
+                    </div>
                   </form>
                 </motion.div>
               )}
@@ -288,9 +428,18 @@ export default function TaskSection({ section, isFixed = false }) {
   )
 }
 
-function TaskItem({ task, editingId, editText, setEditText, onToggle, onEdit, onSaveEdit, onDelete, onKeyDown, typeColor, isAr, t }) {
+function TaskItem({
+  task, editingId, editText, setEditText,
+  onToggle, onEdit, onSaveEdit, onDelete, onKeyDown,
+  typeColor, isAr, t,
+  isTimerActive, timerSeconds, timerTotal, onStartTimer, onStopTimer,
+}) {
   const isEditing = editingId === task.id
   const [hovered, setHovered] = useState(false)
+
+  const timerProgress = timerTotal > 0 ? 1 - (timerSeconds / timerTotal) : 0
+  const circumference = 2 * Math.PI * 9
+  const hasDuration = task.duration && task.duration > 0
 
   return (
     <motion.div
@@ -319,6 +468,7 @@ function TaskItem({ task, editingId, editText, setEditText, onToggle, onEdit, on
           opacity: hovered ? 0.6 : 0,
           transition: 'opacity var(--transition)',
           userSelect: 'none',
+          flexShrink: 0,
         }}>
           ⋮⋮
         </span>
@@ -387,7 +537,71 @@ function TaskItem({ task, editingId, editText, setEditText, onToggle, onEdit, on
         </span>
       )}
 
-      {/* Action buttons */}
+      {/* Timer control (only for tasks with duration, not completed) */}
+      {hasDuration && !task.completed && (
+        <button
+          onClick={isTimerActive ? onStopTimer : onStartTimer}
+          title={isTimerActive ? t('stopTask') : t('startTask')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.3rem',
+            padding: '0.2rem 0.55rem',
+            borderRadius: 'var(--radius-full)',
+            border: isTimerActive
+              ? `1px solid ${typeColor}60`
+              : '1px solid var(--border-strong)',
+            background: isTimerActive ? typeColor + '22' : 'transparent',
+            color: isTimerActive ? typeColor : 'var(--text-muted)',
+            fontSize: '0.72rem',
+            fontVariantNumeric: 'tabular-nums',
+            cursor: 'pointer',
+            transition: 'all var(--transition)',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+          }}
+          onMouseEnter={e => {
+            if (!isTimerActive) {
+              e.currentTarget.style.borderColor = typeColor
+              e.currentTarget.style.color = typeColor
+            }
+          }}
+          onMouseLeave={e => {
+            if (!isTimerActive) {
+              e.currentTarget.style.borderColor = 'var(--border-strong)'
+              e.currentTarget.style.color = 'var(--text-muted)'
+            }
+          }}
+        >
+          {isTimerActive ? (
+            <>
+              {/* Mini circular progress */}
+              <svg width="18" height="18" style={{ transform: 'rotate(-90deg)', flexShrink: 0 }}>
+                <circle cx="9" cy="9" r="9" fill="none" stroke="var(--border)" strokeWidth="2" />
+                <circle
+                  cx="9" cy="9" r="9"
+                  fill="none"
+                  stroke={typeColor}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={circumference * (1 - timerProgress)}
+                  style={{ transition: 'stroke-dashoffset 1s linear' }}
+                />
+              </svg>
+              <span>{fmtTimer(timerSeconds)}</span>
+              <span style={{ fontSize: '0.65rem', opacity: 0.7 }}>■</span>
+            </>
+          ) : (
+            <>
+              <span>▶</span>
+              <span>{task.duration}{isAr ? 'د' : 'm'}</span>
+            </>
+          )}
+        </button>
+      )}
+
+      {/* Edit / Delete */}
       <div style={{
         display: 'flex',
         gap: '0.25rem',

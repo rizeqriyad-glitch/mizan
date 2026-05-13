@@ -156,17 +156,19 @@ export const AppProvider = ({ children }) => {
     await updateProfile({ timeFormat: fmt })
   }
 
-  const addTask = async (sectionId, text) => {
+  const addTask = async (sectionId, text, duration = null) => {
     if (!user || !text.trim()) return
     const sectionTasks = tasks[sectionId] || []
-    await addDoc(collection(db, 'users', user.uid, 'tasks'), {
+    const taskData = {
       sectionId,
       text: text.trim(),
       completed: false,
       date: getTodayKey(),
       order: sectionTasks.length,
       createdAt: serverTimestamp(),
-    })
+    }
+    if (duration && duration > 0) taskData.duration = duration
+    await addDoc(collection(db, 'users', user.uid, 'tasks'), taskData)
   }
 
   const editTask = async (taskId, text) => {
@@ -353,6 +355,12 @@ const translations = {
     landingStart: 'Get Started',
     landingFeatures: 'Everything you need',
     landingAbout: 'About',
+    startTask: 'Start Task',
+    stopTask: 'Stop',
+    timesUp: "Time's up!",
+    durationLabel: 'Duration (optional)',
+    durationMin: 'min',
+    editDurations: 'Edit',
   },
   ar: {
     appName: 'ميزان',
@@ -451,5 +459,11 @@ const translations = {
     landingStart: 'ابدأ الآن',
     landingFeatures: 'كل ما تحتاجه',
     landingAbout: 'عن التطبيق',
+    startTask: 'ابدأ المهمة',
+    stopTask: 'إيقاف',
+    timesUp: 'انتهى الوقت!',
+    durationLabel: 'المدة (اختياري)',
+    durationMin: 'د',
+    editDurations: 'تعديل',
   }
 }
