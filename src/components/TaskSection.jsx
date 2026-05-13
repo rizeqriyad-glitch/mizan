@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
-import { startRadarAlarm, unlockAlarm } from '../utils/alarmSound'
+import { createAlarm } from '../utils/alarmSound'
 
 function fmtTimer(s) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
@@ -17,11 +17,11 @@ export default function TaskSection({ section, isFixed = false }) {
   const [expanded, setExpanded] = useState(true)
   const [activeTimer, setActiveTimer] = useState(null) // { taskId, taskText, totalSeconds, secondsLeft }
   const [timerAlert, setTimerAlert] = useState(null)   // string: task text
-  const inputRef = useRef(null)
+  const inputRef         = useRef(null)
   const timerIntervalRef = useRef(null)
   const activeTimerRef   = useRef(null)
-  const alarmStopRef     = useRef(null)  // fn returned by startRadarAlarm
-  const alarmTimerRef    = useRef(null)  // auto-stop timeout
+  const alarmAudioRef    = useRef(null)
+  const alarmTimerRef    = useRef(null)
   const isAr = language === 'ar'
 
   const sectionTasks = (tasks[section.id] || [])
@@ -29,35 +29,44 @@ export default function TaskSection({ section, isFixed = false }) {
   const doneTasks    = sectionTasks.filter(t => t.completed)
   const label = section.label?.[language] || section.label?.en || section.id
 
-  // Cleanup on unmount
-  useEffect(() => () => {
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-    if (alarmStopRef.current)     alarmStopRef.current()
-    if (alarmTimerRef.current)    clearTimeout(alarmTimerRef.current)
+  // Create alarm audio element on mount and clean up on unmount
+  useEffect(() => {
+    alarmAudioRef.current = createAlarm()
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+      clearTimeout(alarmTimerRef.current)
+      if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current = null }
+    }
   }, [])
 
   const triggerAlarm = (taskText) => {
-    if (alarmStopRef.current) alarmStopRef.current()
-    clearTimeout(alarmTimerRef.current)
-    alarmStopRef.current = startRadarAlarm(8)
+    const audio = alarmAudioRef.current
+    if (audio) {
+      audio.currentTime = 0
+      audio.play().catch(() => {})
+    }
     setTimerAlert(taskText)
-    // Auto-dismiss after 3 s (alarm duration)
+    clearTimeout(alarmTimerRef.current)
     alarmTimerRef.current = setTimeout(() => {
-      alarmStopRef.current = null
+      if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current.currentTime = 0 }
       setTimerAlert(null)
     }, 8000)
   }
 
   const dismissAlarm = () => {
-    if (alarmStopRef.current) { alarmStopRef.current(); alarmStopRef.current = null }
+    if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current.currentTime = 0 }
     clearTimeout(alarmTimerRef.current)
-    alarmTimerRef.current = null
     setTimerAlert(null)
   }
 
   const startTimer = (task) => {
     if (!task.duration || task.duration <= 0) return
-    unlockAlarm() // pre-load audio during user gesture
+    // Unlock audio during user gesture: play briefly then pause
+    if (alarmAudioRef.current) {
+      alarmAudioRef.current.play()
+        .then(() => { alarmAudioRef.current?.pause(); if (alarmAudioRef.current) alarmAudioRef.current.currentTime = 0 })
+        .catch(() => {})
+    }
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
 
     const totalSecs = task.duration * 60

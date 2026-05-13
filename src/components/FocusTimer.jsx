@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { formatTimer } from '../utils/dateUtils'
-import { startRadarAlarm, unlockAlarm } from '../utils/alarmSound'
+import { createAlarm } from '../utils/alarmSound'
 
 const MODES = {
   work:  { label: { en: 'Focus',       ar: 'تركيز'         }, color: 'var(--gold)' },
@@ -37,11 +37,20 @@ export default function FocusTimer() {
   const intervalRef    = useRef(null)
   const startSecsRef   = useRef(customMins.work * 60)
   const customMinsRef  = useRef(customMins)
-  const alarmStopRef   = useRef(null)
+  const alarmAudioRef  = useRef(null)
   const alarmTimerRef  = useRef(null)
 
   // Keep ref in sync so interval callbacks see latest values
   useEffect(() => { customMinsRef.current = customMins }, [customMins])
+
+  // Create alarm audio on mount
+  useEffect(() => {
+    alarmAudioRef.current = createAlarm()
+    return () => {
+      clearTimeout(alarmTimerRef.current)
+      if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current = null }
+    }
+  }, [])
 
   useEffect(() => {
     if (running) {
@@ -54,12 +63,12 @@ export default function FocusTimer() {
               setSessions(prev => prev + 1)
               setTotalFocusTime(prev => prev + startSecsRef.current)
             }
-            if (alarmStopRef.current) alarmStopRef.current()
-            clearTimeout(alarmTimerRef.current)
-            alarmStopRef.current = startRadarAlarm(8)
+            const audio = alarmAudioRef.current
+            if (audio) { audio.currentTime = 0; audio.play().catch(() => {}) }
             setAlarming(true)
+            clearTimeout(alarmTimerRef.current)
             alarmTimerRef.current = setTimeout(() => {
-              alarmStopRef.current = null
+              if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current.currentTime = 0 }
               setAlarming(false)
             }, 8000)
             return 0
@@ -74,7 +83,7 @@ export default function FocusTimer() {
   }, [running, mode])
 
   const stopAlarm = () => {
-    if (alarmStopRef.current) { alarmStopRef.current(); alarmStopRef.current = null }
+    if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current.currentTime = 0 }
     clearTimeout(alarmTimerRef.current)
     alarmTimerRef.current = null
     setAlarming(false)
@@ -387,7 +396,14 @@ export default function FocusTimer() {
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={alarming ? stopAlarm : () => { if (!running) unlockAlarm(); setRunning(r => !r) }}
+          onClick={alarming ? stopAlarm : () => {
+            if (!running && alarmAudioRef.current) {
+              alarmAudioRef.current.play()
+                .then(() => { alarmAudioRef.current?.pause(); if (alarmAudioRef.current) alarmAudioRef.current.currentTime = 0 })
+                .catch(() => {})
+            }
+            setRunning(r => !r)
+          }}
           style={{
             flex: 1,
             padding: '0.7rem',
