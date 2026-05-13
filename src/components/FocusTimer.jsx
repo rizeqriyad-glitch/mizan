@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { formatTimer } from '../utils/dateUtils'
-import { createAlarm } from '../utils/alarmSound'
 
 const MODES = {
   work:  { label: { en: 'Focus',       ar: 'تركيز'         }, color: 'var(--gold)' },
@@ -31,27 +30,15 @@ export default function FocusTimer() {
   const [mode, setMode]       = useState('work')
   const [seconds, setSeconds] = useState(customMins.work * 60)
   const [running, setRunning] = useState(false)
-  const [alarming, setAlarming] = useState(false)
   const [sessions, setSessions] = useState(0)
   const [totalFocusTime, setTotalFocusTime] = useState(0)
   const intervalRef    = useRef(null)
   const startSecsRef   = useRef(customMins.work * 60)
   const secondsRef     = useRef(customMins.work * 60)
   const customMinsRef  = useRef(customMins)
-  const alarmAudioRef  = useRef(null)
-  const alarmTimerRef  = useRef(null)
 
   // Keep ref in sync so interval callbacks see latest values
   useEffect(() => { customMinsRef.current = customMins }, [customMins])
-
-  // Create alarm audio on mount
-  useEffect(() => {
-    alarmAudioRef.current = createAlarm()
-    return () => {
-      clearTimeout(alarmTimerRef.current)
-      if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current = null }
-    }
-  }, [])
 
   useEffect(() => {
     if (!running) {
@@ -71,17 +58,6 @@ export default function FocusTimer() {
           setSessions(prev => prev + 1)
           setTotalFocusTime(prev => prev + startSecsRef.current)
         }
-        const audio = alarmAudioRef.current
-        if (audio) {
-          audio.currentTime = 0
-          audio.play().catch(err => console.error('[alarm] play failed:', err))
-        }
-        setAlarming(true)
-        clearTimeout(alarmTimerRef.current)
-        alarmTimerRef.current = setTimeout(() => {
-          if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current.currentTime = 0 }
-          setAlarming(false)
-        }, 8000)
       } else {
         setSeconds(next)
       }
@@ -90,15 +66,7 @@ export default function FocusTimer() {
     return () => clearInterval(intervalRef.current)
   }, [running, mode])
 
-  const stopAlarm = () => {
-    if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current.currentTime = 0 }
-    clearTimeout(alarmTimerRef.current)
-    alarmTimerRef.current = null
-    setAlarming(false)
-  }
-
   const handleModeChange = (newMode) => {
-    stopAlarm()
     setMode(newMode)
     const secs = customMinsRef.current[newMode] * 60
     setSeconds(secs)
@@ -108,7 +76,6 @@ export default function FocusTimer() {
   }
 
   const handleReset = () => {
-    stopAlarm()
     setRunning(false)
     const secs = customMinsRef.current[mode] * 60
     setSeconds(secs)
@@ -408,25 +375,14 @@ export default function FocusTimer() {
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={alarming ? stopAlarm : () => {
-            if (!running && alarmAudioRef.current) {
-              alarmAudioRef.current.play()
-                .then(() => { alarmAudioRef.current?.pause(); if (alarmAudioRef.current) alarmAudioRef.current.currentTime = 0 })
-                .catch(() => {})
-            }
-            setRunning(r => !r)
-          }}
+          onClick={() => setRunning(r => !r)}
           style={{
             flex: 1,
             padding: '0.7rem',
             borderRadius: 'var(--radius-md)',
-            border: alarming
-              ? '1px solid rgba(74,222,128,0.5)'
-              : `1px solid ${currentColor}40`,
-            background: alarming
-              ? 'rgba(74,222,128,0.15)'
-              : running ? currentColor + '22' : currentColor + '15',
-            color: alarming ? 'var(--emerald)' : currentColor,
+            border: `1px solid ${currentColor}40`,
+            background: running ? currentColor + '22' : currentColor + '15',
+            color: currentColor,
             fontSize: '0.875rem',
             fontWeight: 500,
             cursor: 'pointer',
@@ -434,9 +390,7 @@ export default function FocusTimer() {
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}
         >
-          {alarming
-            ? (isAr ? '⏰ إيقاف التنبيه' : '⏰ Stop Alarm')
-            : running ? t('stopFocus') : t('startFocus')}
+          {running ? t('stopFocus') : t('startFocus')}
         </motion.button>
         <button
           onClick={handleReset}

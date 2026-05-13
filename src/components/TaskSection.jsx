@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
-import { createAlarm } from '../utils/alarmSound'
+import { primeAlarm, startAlarm, stopAlarm } from '../utils/alarmSound'
 
 function fmtTimer(s) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
@@ -20,7 +20,6 @@ export default function TaskSection({ section, isFixed = false }) {
   const inputRef         = useRef(null)
   const timerIntervalRef = useRef(null)
   const activeTimerRef   = useRef(null)
-  const alarmAudioRef    = useRef(null)
   const alarmTimerRef    = useRef(null)
   const isAr = language === 'ar'
 
@@ -29,44 +28,33 @@ export default function TaskSection({ section, isFixed = false }) {
   const doneTasks    = sectionTasks.filter(t => t.completed)
   const label = section.label?.[language] || section.label?.en || section.id
 
-  // Create alarm audio element on mount and clean up on unmount
   useEffect(() => {
-    alarmAudioRef.current = createAlarm()
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
       clearTimeout(alarmTimerRef.current)
-      if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current = null }
+      stopAlarm()
     }
   }, [])
 
   const triggerAlarm = (taskText) => {
-    const audio = alarmAudioRef.current
-    if (audio) {
-      audio.currentTime = 0
-      audio.play().catch(err => console.error('[alarm play]', err))
-    }
+    startAlarm()
     setTimerAlert(taskText)
     clearTimeout(alarmTimerRef.current)
     alarmTimerRef.current = setTimeout(() => {
-      if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current.currentTime = 0 }
+      stopAlarm()
       setTimerAlert(null)
     }, 8000)
   }
 
   const dismissAlarm = () => {
-    if (alarmAudioRef.current) { alarmAudioRef.current.pause(); alarmAudioRef.current.currentTime = 0 }
+    stopAlarm()
     clearTimeout(alarmTimerRef.current)
     setTimerAlert(null)
   }
 
   const startTimer = (task) => {
     if (!task.duration || task.duration <= 0) return
-    // Unlock audio during user gesture: play briefly then pause
-    if (alarmAudioRef.current) {
-      alarmAudioRef.current.play()
-        .then(() => { alarmAudioRef.current?.pause(); if (alarmAudioRef.current) alarmAudioRef.current.currentTime = 0 })
-        .catch(err => console.warn('[alarm unlock]', err))
-    }
+    primeAlarm()
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
 
     const totalSecs = task.duration * 60
