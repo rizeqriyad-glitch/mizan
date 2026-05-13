@@ -9,6 +9,7 @@ import StatsBar from '../components/StatsBar'
 import NotesSection from '../components/NotesSection'
 import DhikrSection from '../components/DhikrSection'
 import QuranReader from '../components/QuranReader'
+import AdhkarSection from '../components/AdhkarSection'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -206,6 +207,9 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Morning & Evening Adhkar */}
+      <AdhkarSection />
 
       {/* Daily Dhikr */}
       <DhikrSection />

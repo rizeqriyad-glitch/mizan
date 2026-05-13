@@ -40,6 +40,11 @@ service cloud.firestore {
       match /dhikr/{dhikrId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+
+      // Daily adhkar completion subcollection
+      match /adhkar/{adhkarId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // Deny all other access

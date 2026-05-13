@@ -15,6 +15,7 @@ export default function Layout() {
     { to: '/',          icon: '◈', label: t('dashboard'),  exact: true },
     { to: '/analytics', icon: '◉', label: t('analytics') },
     { to: '/settings',  icon: '◎', label: t('settings') },
+    { to: '/about',     icon: '◇', label: t('about') },
   ]
 
   const handleLogout = async () => {

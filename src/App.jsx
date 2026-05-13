@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import SettingsPage from './pages/SettingsPage'
+import LandingPage from './pages/LandingPage'
 import Layout from './components/Layout'
 
 function ProtectedRoute({ children }) {
@@ -53,6 +54,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/about" element={<LandingPage />} />
       <Route path="/" element={
         <ProtectedRoute>
           <Layout />
