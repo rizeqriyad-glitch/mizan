@@ -1,4 +1,4 @@
-const ALARM_URL = 'https://mizantask.netlify.app/alarm.mp3'
+const ALARM_URL = 'https://mizantask.netlify.app/iphone_alarm.mp3'
 
 /**
  * Plays the alarm audio file, looping until stopped or durationSeconds elapses.
