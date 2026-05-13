@@ -1,37 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
+import { startRadarAlarm } from '../utils/alarmSound'
 
 function fmtTimer(s) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
-}
-
-function playAlertSound() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    const now = ctx.currentTime
-    const BEEP  = 0.09  // beep on-time
-    const GAP   = 0.05  // gap between beeps in a group
-    const PAUSE = 0.40  // gap between groups
-    // 5 groups × 2 alternating beeps ≈ 3 seconds total
-    for (let g = 0; g < 5; g++) {
-      const gStart = now + g * (2 * (BEEP + GAP) + PAUSE)
-      ;[1200, 960].forEach((freq, b) => {
-        const t = gStart + b * (BEEP + GAP)
-        const osc  = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.frequency.value = freq
-        gain.gain.setValueAtTime(0, t)
-        gain.gain.linearRampToValueAtTime(0.65, t + 0.005)
-        gain.gain.setValueAtTime(0.65, t + BEEP - 0.01)
-        gain.gain.linearRampToValueAtTime(0, t + BEEP)
-        osc.start(t)
-        osc.stop(t + BEEP + 0.01)
-      })
-    }
-  } catch {}
 }
 
 export default function TaskSection({ section, isFixed = false }) {
@@ -46,7 +19,9 @@ export default function TaskSection({ section, isFixed = false }) {
   const [timerAlert, setTimerAlert] = useState(null)   // string: task text
   const inputRef = useRef(null)
   const timerIntervalRef = useRef(null)
-  const activeTimerRef = useRef(null)
+  const activeTimerRef   = useRef(null)
+  const alarmStopRef     = useRef(null)  // fn returned by startRadarAlarm
+  const alarmTimerRef    = useRef(null)  // auto-stop timeout
   const isAr = language === 'ar'
 
   const sectionTasks = (tasks[section.id] || [])
@@ -57,7 +32,28 @@ export default function TaskSection({ section, isFixed = false }) {
   // Cleanup on unmount
   useEffect(() => () => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+    if (alarmStopRef.current)     alarmStopRef.current()
+    if (alarmTimerRef.current)    clearTimeout(alarmTimerRef.current)
   }, [])
+
+  const triggerAlarm = (taskText) => {
+    if (alarmStopRef.current) alarmStopRef.current()
+    clearTimeout(alarmTimerRef.current)
+    alarmStopRef.current = startRadarAlarm(3)
+    setTimerAlert(taskText)
+    // Auto-dismiss after 3 s (alarm duration)
+    alarmTimerRef.current = setTimeout(() => {
+      alarmStopRef.current = null
+      setTimerAlert(null)
+    }, 3000)
+  }
+
+  const dismissAlarm = () => {
+    if (alarmStopRef.current) { alarmStopRef.current(); alarmStopRef.current = null }
+    clearTimeout(alarmTimerRef.current)
+    alarmTimerRef.current = null
+    setTimerAlert(null)
+  }
 
   const startTimer = (task) => {
     if (!task.duration || task.duration <= 0) return
@@ -77,9 +73,7 @@ export default function TaskSection({ section, isFixed = false }) {
         const text = activeTimerRef.current.taskText
         activeTimerRef.current = null
         setActiveTimer(null)
-        playAlertSound()
-        setTimerAlert(text)
-        setTimeout(() => setTimerAlert(null), 6000)
+        triggerAlarm(text)
       } else {
         activeTimerRef.current = { ...activeTimerRef.current, secondsLeft: next }
         setActiveTimer({ ...activeTimerRef.current })
@@ -248,11 +242,33 @@ export default function TaskSection({ section, isFixed = false }) {
                     fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
                   }}
                 >
-                  <span>⏰</span>
-                  <span>
+                  <motion.span
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ repeat: Infinity, duration: 0.54 }}
+                  >
+                    ⏰
+                  </motion.span>
+                  <span style={{ flex: 1 }}>
                     {t('timesUp')}
                     {timerAlert ? ` — "${timerAlert}"` : ''}
                   </span>
+                  <button
+                    onClick={dismissAlarm}
+                    style={{
+                      padding: '0.2rem 0.65rem',
+                      borderRadius: 'var(--radius-full)',
+                      border: '1px solid rgba(74,222,128,0.4)',
+                      background: 'rgba(74,222,128,0.12)',
+                      color: 'var(--emerald)',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isAr ? 'إيقاف' : 'Stop'}
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
