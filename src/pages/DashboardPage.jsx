@@ -7,7 +7,6 @@ import PrayerTimesWidget from '../components/PrayerTimesWidget'
 import FocusTimer from '../components/FocusTimer'
 import StatsBar from '../components/StatsBar'
 import NotesSection from '../components/NotesSection'
-import DhikrSection from '../components/DhikrSection'
 import QuranReader from '../components/QuranReader'
 import AdhkarSection from '../components/AdhkarSection'
 
@@ -210,9 +209,6 @@ export default function DashboardPage() {
 
       {/* Morning & Evening Adhkar */}
       <AdhkarSection />
-
-      {/* Daily Dhikr */}
-      <DhikrSection />
 
       {/* Read Quran */}
       <QuranReader />

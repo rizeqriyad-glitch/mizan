@@ -1,4 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -68,33 +68,19 @@ export default function LandingPage() {
           >
             {isAr ? 'English' : 'العربية'}
           </button>
-          {user ? (
-            <button
-              onClick={() => navigate('/')}
-              style={{
-                padding: '0.4rem 1.1rem',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--gold-dim)',
-                border: '1px solid rgba(212,175,106,0.3)',
-                color: 'var(--gold)', fontSize: '0.82rem', cursor: 'pointer',
-                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-              }}
-            >
-              {isAr ? 'الداشبورد' : 'Dashboard'}
-            </button>
-          ) : (
-            <Link to="/login" style={{
+          <button
+            onClick={() => navigate(user ? '/dashboard' : '/login')}
+            style={{
               padding: '0.4rem 1.1rem',
               borderRadius: 'var(--radius-md)',
               background: 'var(--gold-dim)',
               border: '1px solid rgba(212,175,106,0.3)',
-              color: 'var(--gold)', fontSize: '0.82rem',
-              textDecoration: 'none',
+              color: 'var(--gold)', fontSize: '0.82rem', cursor: 'pointer',
               fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-            }}>
-              {t('landingStart')}
-            </Link>
-          )}
+            }}
+          >
+            {user ? (isAr ? 'لوحة التحكم' : 'Dashboard') : t('landingStart')}
+          </button>
         </div>
       </nav>
 
@@ -181,19 +167,21 @@ export default function LandingPage() {
           {/* CTA */}
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link to="/login" style={{
-                display: 'inline-block',
-                padding: '0.75rem 2rem',
-                borderRadius: 'var(--radius-lg)',
-                background: 'var(--gold)',
-                color: 'var(--text-inverse)',
-                fontWeight: 600, fontSize: '0.95rem',
-                textDecoration: 'none',
-                transition: 'opacity var(--transition)',
-                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-              }}>
+              <button
+                onClick={() => navigate(user ? '/dashboard' : '/login')}
+                style={{
+                  display: 'inline-block',
+                  padding: '0.75rem 2rem',
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'var(--gold)',
+                  color: 'var(--text-inverse)',
+                  fontWeight: 600, fontSize: '0.95rem',
+                  border: 'none', cursor: 'pointer',
+                  transition: 'opacity var(--transition)',
+                  fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                }}>
                 {t('landingStart')} →
-              </Link>
+              </button>
             </motion.div>
           </div>
         </motion.div>
@@ -337,17 +325,19 @@ export default function LandingPage() {
             الذاريات: ٥٦
           </p>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} style={{ display: 'inline-block' }}>
-            <Link to="/login" style={{
-              padding: '0.8rem 2.5rem',
-              borderRadius: 'var(--radius-lg)',
-              background: 'var(--gold)',
-              color: 'var(--text-inverse)',
-              fontWeight: 600, fontSize: '1rem',
-              textDecoration: 'none',
-              fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-            }}>
+            <button
+              onClick={() => navigate(user ? '/dashboard' : '/login')}
+              style={{
+                padding: '0.8rem 2.5rem',
+                borderRadius: 'var(--radius-lg)',
+                background: 'var(--gold)',
+                color: 'var(--text-inverse)',
+                fontWeight: 600, fontSize: '1rem',
+                border: 'none', cursor: 'pointer',
+                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+              }}>
               {t('landingStart')}
-            </Link>
+            </button>
           </motion.div>
         </motion.div>
       </section>

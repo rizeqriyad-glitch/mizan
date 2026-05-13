@@ -10,16 +10,15 @@ import { getTodayKey } from '../utils/dateUtils'
 
 const AppContext = createContext(null)
 
+const OBLIGATORY_PRAYER_IDS = new Set(['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'])
+
 // Fixed sections that cannot be deleted
 export const FIXED_SECTIONS = [
-  { id: 'fajr',           label: { en: 'Fajr',            ar: 'الفجر'         }, type: 'prayer', icon: '🌙' },
-  { id: 'dhuhr',          label: { en: 'Dhuhr',           ar: 'الظهر'         }, type: 'prayer', icon: '☀️' },
-  { id: 'asr',            label: { en: 'Asr',             ar: 'العصر'         }, type: 'prayer', icon: '🌤' },
-  { id: 'maghrib',        label: { en: 'Maghrib',         ar: 'المغرب'        }, type: 'prayer', icon: '🌅' },
-  { id: 'isha',           label: { en: 'Isha',            ar: 'العشاء'        }, type: 'prayer', icon: '🌌' },
-  { id: 'quran',          label: { en: 'Quran',           ar: 'القرآن'        }, type: 'worship', icon: '📖' },
-  { id: 'morning-adhkar', label: { en: 'Morning Adhkar',  ar: 'أذكار الصباح' }, type: 'worship', icon: '🤲' },
-  { id: 'evening-adhkar', label: { en: 'Evening Adhkar',  ar: 'أذكار المساء' }, type: 'worship', icon: '🌿' },
+  { id: 'fajr',    label: { en: 'Fajr',    ar: 'الفجر'  }, type: 'prayer', icon: '🌙' },
+  { id: 'dhuhr',   label: { en: 'Dhuhr',   ar: 'الظهر'  }, type: 'prayer', icon: '☀️' },
+  { id: 'asr',     label: { en: 'Asr',     ar: 'العصر'  }, type: 'prayer', icon: '🌤' },
+  { id: 'maghrib', label: { en: 'Maghrib', ar: 'المغرب' }, type: 'prayer', icon: '🌅' },
+  { id: 'isha',    label: { en: 'Isha',    ar: 'العشاء' }, type: 'prayer', icon: '🌌' },
 ]
 
 export const AppProvider = ({ children }) => {
@@ -38,8 +37,10 @@ export const AppProvider = ({ children }) => {
   const [focusTimer, setFocusTimer]     = useState({ active: false, seconds: 1500, running: false })
   const [loading, setLoading]           = useState(true)
 
-  // Derived: count of prayers marked true today (resets each day automatically)
-  const prayersDone = Object.values(donePrayers).filter(v => v === true).length
+  // Only count the 5 obligatory prayers (Duha / Witr are sunnah, excluded from counter)
+  const prayersDone = Object.entries(donePrayers)
+    .filter(([id, val]) => OBLIGATORY_PRAYER_IDS.has(id) && val === true)
+    .length
 
   // Sync settings from profile
   useEffect(() => {

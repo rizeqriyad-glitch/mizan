@@ -2,10 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
-import {
-  collection, addDoc, deleteDoc, doc,
-  onSnapshot, orderBy, query, serverTimestamp, Timestamp,
-} from 'firebase/firestore'
+import { doc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore'
 import { db } from '../firebase'
 
 export const CATEGORIES = ['catGeneral', 'catQuran', 'catHadith', 'catFiqh', 'catReminder']
@@ -27,18 +24,22 @@ export default function NotesSection() {
   const [text,     setText]     = useState('')
   const [category, setCategory] = useState('catGeneral')
   const [saving,   setSaving]   = useState(false)
-  const [saveMsg,  setSaveMsg]  = useState(null)   // { type: 'ok'|'err', text }
+  const [saveMsg,  setSaveMsg]  = useState(null)
   const [expanded, setExpanded] = useState(true)
 
+  // Store notes inside the user document (notes.{id} fields) — works with existing Firestore rules
   useEffect(() => {
     if (!user) return
-    const q = query(
-      collection(db, 'users', user.uid, 'notes'),
-      orderBy('createdAt', 'desc')
-    )
-    const unsub = onSnapshot(q,
-      snap => setNotes(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
-      err  => console.error('Notes listener error:', err)
+    const unsub = onSnapshot(
+      doc(db, 'users', user.uid),
+      snap => {
+        const notesMap = snap.data()?.notes || {}
+        const list = Object.entries(notesMap)
+          .map(([id, data]) => ({ id, ...data }))
+          .sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0))
+        setNotes(list)
+      },
+      err => console.error('Notes listener error:', err)
     )
     return unsub
   }, [user])
@@ -47,14 +48,15 @@ export default function NotesSection() {
     if (!text.trim() || !user || saving) return
     setSaving(true)
     setSaveMsg(null)
+    const noteId = String(Date.now())
     try {
-      await addDoc(collection(db, 'users', user.uid, 'notes'), {
-        text:       text.trim(),
-        category,
-        createdAt:  serverTimestamp(),
-        // Local timestamp as fallback for ordering while serverTimestamp resolves
-        createdAtMs: Date.now(),
-        language,
+      await updateDoc(doc(db, 'users', user.uid), {
+        [`notes.${noteId}`]: {
+          text:        text.trim(),
+          category,
+          createdAtMs: Date.now(),
+          language,
+        },
       })
       setText('')
       setSaveMsg({ type: 'ok', text: t('notesSaved') })
@@ -70,19 +72,18 @@ export default function NotesSection() {
   const handleDelete = async (noteId) => {
     if (!user) return
     try {
-      await deleteDoc(doc(db, 'users', user.uid, 'notes', noteId))
+      await updateDoc(doc(db, 'users', user.uid), {
+        [`notes.${noteId}`]: deleteField(),
+      })
     } catch (err) {
       console.error('Delete note failed:', err)
     }
   }
 
-  const formatDate = (ts) => {
-    if (!ts) return ''
+  const formatDate = (ms) => {
+    if (!ms) return ''
     try {
-      const d = ts instanceof Timestamp ? ts.toDate()
-              : ts?.toDate ? ts.toDate()
-              : new Date(ts)
-      return d.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+      return new Date(ms).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
         month: 'short', day: 'numeric', year: 'numeric',
       })
     } catch { return '' }
@@ -110,7 +111,6 @@ export default function NotesSection() {
           padding: '1rem 1.25rem',
           borderBottom: expanded ? '1px solid var(--border)' : 'none',
           background: 'transparent', border: 'none',
-          borderBottom: expanded ? '1px solid var(--border)' : 'none',
           cursor: 'pointer', textAlign: isAr ? 'right' : 'left',
         }}
       >
@@ -298,7 +298,7 @@ export default function NotesSection() {
                               {t(note.category || 'catGeneral')}
                             </span>
                             <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                              {formatDate(note.createdAt)}
+                              {formatDate(note.createdAtMs)}
                             </span>
                           </div>
                           <p style={{

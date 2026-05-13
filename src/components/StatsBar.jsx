@@ -28,7 +28,7 @@ export default function StatsBar() {
     },
     {
       icon: '🕌',
-      value: `${prayersDone}/7`,
+      value: `${prayersDone}/5`,
       label: t('prayersDone'),
       color: 'var(--sapphire)',
       dim: 'var(--sapphire-dim)',

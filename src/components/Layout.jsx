@@ -12,10 +12,10 @@ export default function Layout() {
   const isAr = language === 'ar'
 
   const navItems = [
-    { to: '/',          icon: '◈', label: t('dashboard'),  exact: true },
-    { to: '/analytics', icon: '◉', label: t('analytics') },
-    { to: '/settings',  icon: '◎', label: t('settings') },
-    { to: '/about',     icon: '◇', label: t('about') },
+    { to: '/dashboard',            icon: '◈', label: t('dashboard'),  exact: true },
+    { to: '/dashboard/analytics',  icon: '◉', label: t('analytics') },
+    { to: '/dashboard/settings',   icon: '◎', label: t('settings') },
+    { to: '/',                     icon: '◇', label: t('about') },
   ]
 
   const handleLogout = async () => {

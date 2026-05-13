@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { getTodayKey } from '../utils/dateUtils'
 
 // ─── Authentic adhkar from Hisn al-Muslim (حصن المسلم) ───────────────────────
-// Source: Dr. Sa'id ibn Ali al-Qahtani — based on Sahih hadiths
 
 const MORNING_ADHKAR = [
   {
@@ -72,7 +71,7 @@ const MORNING_ADHKAR = [
     name: { en: 'Tahlil', ar: 'التهليل' },
     count: 10,
     source: 'النسائي (٣/٢٤٨)، الطبراني',
-    virtue: { en: '10× morning/evening = reward of freeing 4 slaves, 100 good deeds, 100 sins erased', ar: '١٠ مرات صباحاً ومساءً = أجر عتق ٤ رقاب وكتب له ١٠٠ حسنة' },
+    virtue: { en: '10× = reward of freeing 4 slaves, 100 good deeds, 100 sins erased', ar: '١٠ مرات = أجر عتق ٤ رقاب وكتب له ١٠٠ حسنة ومُحيت ١٠٠ سيئة' },
   },
   {
     id: 'm8',
@@ -93,7 +92,7 @@ const MORNING_ADHKAR = [
   {
     id: 'm10',
     arabic: 'اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَهَ إِلَّا أَنْتَ',
-    name: { en: 'Du\'a for Well-being', ar: 'دعاء العافية' },
+    name: { en: "Du'a for Well-being", ar: 'دعاء العافية' },
     count: 3,
     source: 'أبو داود (٥٠٩٠)',
     virtue: { en: 'Supplication for health of body, hearing, and sight', ar: 'دعاء للعافية في البدن والسمع والبصر' },
@@ -171,7 +170,7 @@ const EVENING_ADHKAR = [
     name: { en: 'Tahlil', ar: 'التهليل' },
     count: 10,
     source: 'النسائي (٣/٢٤٨)، الطبراني',
-    virtue: { en: '10× morning/evening = reward of freeing 4 slaves, 100 good deeds, 100 sins erased', ar: '١٠ مرات = أجر عتق ٤ رقاب وكُتب له ١٠٠ حسنة ومُحيت ١٠٠ سيئة' },
+    virtue: { en: '10× = reward of freeing 4 slaves, 100 good deeds, 100 sins erased', ar: '١٠ مرات = أجر عتق ٤ رقاب وكُتب له ١٠٠ حسنة ومُحيت ١٠٠ سيئة' },
   },
   {
     id: 'e8',
@@ -184,7 +183,7 @@ const EVENING_ADHKAR = [
   {
     id: 'e9',
     arabic: 'اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَهَ إِلَّا أَنْتَ',
-    name: { en: 'Du\'a for Well-being', ar: 'دعاء العافية' },
+    name: { en: "Du'a for Well-being", ar: 'دعاء العافية' },
     count: 3,
     source: 'أبو داود (٥٠٩٠)',
     virtue: { en: 'Supplication for health of body, hearing, and sight', ar: 'دعاء للعافية في البدن والسمع والبصر' },
@@ -192,7 +191,7 @@ const EVENING_ADHKAR = [
   {
     id: 'e10',
     arabic: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي',
-    name: { en: 'Du\'a for Pardon', ar: 'دعاء العفو والعافية' },
+    name: { en: "Du'a for Pardon", ar: 'دعاء العفو والعافية' },
     count: 1,
     source: 'أبو داود (٥٠٧٤)، ابن ماجه (٣٨٧١)',
     virtue: { en: 'The Prophet ﷺ never abandoned this supplication', ar: 'كان النبي ﷺ لا يدعها' },
@@ -207,43 +206,60 @@ const EVENING_ADHKAR = [
   },
 ]
 
-const SETS = {
-  morning: MORNING_ADHKAR,
-  evening: EVENING_ADHKAR,
-}
+const SETS = { morning: MORNING_ADHKAR, evening: EVENING_ADHKAR }
 
 export default function AdhkarSection() {
   const { language, t } = useApp()
   const { user } = useAuth()
   const isAr = language === 'ar'
 
-  const [tab, setTab]           = useState('morning')
-  const [done, setDone]         = useState({})
+  const [tab,      setTab]      = useState('morning')
+  const [counts,   setCounts]   = useState({})   // { m0: 1, m1: 3, e0: 0, ... }
   const [expanded, setExpanded] = useState(true)
+  const saveTimer = useRef(null)
 
+  // Load today's counts from Firestore
   useEffect(() => {
     if (!user) return
-    const load = async () => {
-      const snap = await getDoc(doc(db, 'users', user.uid, 'adhkar', getTodayKey()))
-      if (snap.exists()) setDone(snap.data())
-    }
-    load()
+    const unsub = onSnapshot(
+      doc(db, 'users', user.uid, 'adhkar', getTodayKey()),
+      snap => { if (snap.exists()) setCounts(snap.data()) },
+      err  => console.error('Adhkar listener:', err)
+    )
+    return unsub
   }, [user])
 
-  const toggle = async (id) => {
-    const next = { ...done, [id]: !done[id] }
-    setDone(next)
-    if (user) {
-      await setDoc(
+  // Debounced save (600ms) to avoid excess Firestore writes on rapid taps
+  const persistCounts = useCallback((next) => {
+    if (!user) return
+    clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      setDoc(
         doc(db, 'users', user.uid, 'adhkar', getTodayKey()),
-        next,
+        { ...next, date: getTodayKey() },
         { merge: true }
-      )
-    }
+      ).catch(err => console.error('Adhkar save error:', err))
+    }, 600)
+  }, [user])
+
+  const increment = (id, target) => {
+    setCounts(prev => {
+      const next = { ...prev, [id]: Math.min((prev[id] || 0) + 1, target) }
+      persistCounts(next)
+      return next
+    })
   }
 
-  const list    = SETS[tab]
-  const doneCount = list.filter(a => done[a.id]).length
+  const decrement = (id) => {
+    setCounts(prev => {
+      const next = { ...prev, [id]: Math.max((prev[id] || 0) - 1, 0) }
+      persistCounts(next)
+      return next
+    })
+  }
+
+  const list      = SETS[tab]
+  const doneCount = list.filter(a => (counts[a.id] || 0) >= a.count).length
 
   return (
     <motion.div
@@ -262,7 +278,7 @@ export default function AdhkarSection() {
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '1rem 1.25rem',
-          borderBottom: '1px solid var(--border)',
+          borderBottom: expanded ? '1px solid var(--border)' : 'none',
           cursor: 'pointer',
         }}
         onClick={() => setExpanded(v => !v)}
@@ -279,8 +295,8 @@ export default function AdhkarSection() {
           <span style={{
             fontSize: '0.7rem',
             background: doneCount === list.length ? 'var(--emerald-dim)' : 'var(--gold-dim)',
-            color: doneCount === list.length ? 'var(--emerald)' : 'var(--gold)',
-            border: `1px solid ${doneCount === list.length ? 'rgba(74,222,128,0.2)' : 'rgba(212,175,106,0.2)'}`,
+            color:      doneCount === list.length ? 'var(--emerald)' : 'var(--gold)',
+            border:     `1px solid ${doneCount === list.length ? 'rgba(74,222,128,0.2)' : 'rgba(212,175,106,0.2)'}`,
             borderRadius: 'var(--radius-full)',
             padding: '0.1rem 0.5rem',
           }}>
@@ -289,9 +305,8 @@ export default function AdhkarSection() {
         </div>
         <span style={{
           color: 'var(--text-muted)', fontSize: '0.8rem',
-          transition: 'transform 0.2s',
+          transition: 'transform 0.2s', display: 'inline-block',
           transform: expanded ? 'rotate(0deg)' : 'rotate(-90deg)',
-          display: 'inline-block',
         }}>▼</span>
       </div>
 
@@ -305,29 +320,27 @@ export default function AdhkarSection() {
             style={{ overflow: 'hidden' }}
           >
             {/* Tab switcher */}
-            <div style={{
-              display: 'flex',
-              borderBottom: '1px solid var(--border)',
-            }}>
-              {['morning', 'evening'].map(t2 => (
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
+              {['morning', 'evening'].map(key => (
                 <button
-                  key={t2}
-                  onClick={(e) => { e.stopPropagation(); setTab(t2) }}
+                  key={key}
+                  onClick={e => { e.stopPropagation(); setTab(key) }}
                   style={{
-                    flex: 1,
-                    padding: '0.65rem',
-                    background: tab === t2 ? 'var(--gold-dim)' : 'transparent',
+                    flex: 1, padding: '0.65rem',
+                    background: tab === key ? 'var(--gold-dim)' : 'transparent',
                     border: 'none',
-                    borderBottom: tab === t2 ? '2px solid var(--gold)' : '2px solid transparent',
-                    color: tab === t2 ? 'var(--gold)' : 'var(--text-muted)',
+                    borderBottom: tab === key ? '2px solid var(--gold)' : '2px solid transparent',
+                    color: tab === key ? 'var(--gold)' : 'var(--text-muted)',
                     fontSize: '0.82rem',
-                    fontWeight: tab === t2 ? 500 : 400,
+                    fontWeight: tab === key ? 500 : 400,
                     cursor: 'pointer',
                     transition: 'all var(--transition)',
                     fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
                   }}
                 >
-                  {t2 === 'morning' ? (isAr ? 'أذكار الصباح ☀️' : '☀️ Morning') : (isAr ? 'أذكار المساء 🌙' : '🌙 Evening')}
+                  {key === 'morning'
+                    ? (isAr ? '☀️ أذكار الصباح' : '☀️ Morning')
+                    : (isAr ? '🌙 أذكار المساء' : '🌙 Evening')}
                 </button>
               ))}
             </div>
@@ -335,45 +348,46 @@ export default function AdhkarSection() {
             {/* Adhkar list */}
             <div style={{ padding: '0.25rem 0' }}>
               {list.map((adhkar, i) => {
-                const isDone = !!done[adhkar.id]
+                const current = counts[adhkar.id] || 0
+                const isDone  = current >= adhkar.count
+
                 return (
                   <motion.div
                     key={adhkar.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: i * 0.03 }}
+                    transition={{ delay: i * 0.025 }}
                     style={{
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: '0.875rem',
                       padding: '1rem 1.25rem',
                       borderBottom: '1px solid var(--border)',
-                      background: isDone ? 'var(--emerald-dim)' : 'transparent',
+                      background: isDone ? 'rgba(74,222,128,0.04)' : 'transparent',
                       transition: 'background var(--transition)',
                     }}
                   >
-                    {/* Number */}
+                    {/* Number badge */}
                     <div style={{
                       flexShrink: 0,
-                      width: 24, height: 24,
+                      width: 26, height: 26,
                       borderRadius: '50%',
                       border: `1.5px solid ${isDone ? 'var(--emerald)' : 'var(--border-strong)'}`,
                       background: isDone ? 'var(--emerald-dim)' : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '0.65rem',
+                      fontSize: '0.65rem', fontWeight: 600,
                       color: isDone ? 'var(--emerald)' : 'var(--text-muted)',
-                      fontWeight: 600,
-                      marginTop: '0.2rem',
+                      marginTop: '0.25rem',
                     }}>
-                      {i + 1}
+                      {isDone ? '✓' : i + 1}
                     </div>
 
                     {/* Content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      {/* Name + count badge */}
+                      {/* Name row */}
                       <div style={{
-                        display: 'flex', alignItems: 'center',
-                        gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap',
+                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                        marginBottom: '0.5rem', flexWrap: 'wrap',
                         flexDirection: isAr ? 'row-reverse' : 'row',
                       }}>
                         <span style={{
@@ -385,18 +399,14 @@ export default function AdhkarSection() {
                         </span>
                         <span style={{
                           fontSize: '0.68rem',
-                          background: 'var(--gold-dim)',
-                          color: 'var(--gold)',
+                          background: 'var(--gold-dim)', color: 'var(--gold)',
                           border: '1px solid rgba(212,175,106,0.2)',
                           borderRadius: 'var(--radius-full)',
                           padding: '0.05rem 0.45rem',
                         }}>
                           ×{adhkar.count}
                         </span>
-                        <span style={{
-                          fontSize: '0.65rem', color: 'var(--text-muted)',
-                          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                        }}>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                           {adhkar.source}
                         </span>
                       </div>
@@ -407,12 +417,11 @@ export default function AdhkarSection() {
                         fontSize: '1.1rem',
                         lineHeight: 2,
                         color: isDone ? 'var(--emerald)' : 'var(--text-primary)',
+                        opacity: isDone ? 0.75 : 1,
                         direction: 'rtl',
                         textAlign: 'right',
                         margin: '0 0 0.5rem',
                         transition: 'color var(--transition)',
-                        textDecoration: isDone ? 'none' : 'none',
-                        opacity: isDone ? 0.75 : 1,
                       }}>
                         {adhkar.arabic}
                       </p>
@@ -423,48 +432,83 @@ export default function AdhkarSection() {
                         color: 'var(--gold)',
                         fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
                         direction: isAr ? 'rtl' : 'ltr',
-                        margin: 0,
-                        opacity: 0.85,
+                        margin: 0, opacity: 0.85,
                       }}>
                         ✦ {adhkar.virtue[language] || adhkar.virtue.en}
                       </p>
                     </div>
 
-                    {/* Checkmark button */}
-                    <button
-                      onClick={() => toggle(adhkar.id)}
-                      title={isDone ? (isAr ? 'إلغاء' : 'Unmark') : (isAr ? 'تم' : 'Mark done')}
-                      style={{
-                        flexShrink: 0,
-                        width: 32, height: 32,
-                        borderRadius: '50%',
-                        border: isDone ? '1.5px solid var(--emerald)' : '1.5px solid var(--border-strong)',
-                        background: isDone ? 'var(--emerald-dim)' : 'transparent',
-                        color: isDone ? 'var(--emerald)' : 'var(--text-muted)',
-                        fontSize: '0.85rem',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer',
-                        transition: 'all var(--transition)',
-                        marginTop: '0.15rem',
-                      }}
-                      onMouseEnter={e => {
-                        if (isDone) {
-                          e.currentTarget.style.borderColor = 'var(--ruby)'
-                          e.currentTarget.style.color = 'var(--ruby)'
-                          e.currentTarget.style.background = 'var(--ruby-dim)'
-                        } else {
-                          e.currentTarget.style.borderColor = 'var(--emerald)'
-                          e.currentTarget.style.color = 'var(--emerald)'
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.borderColor = isDone ? 'var(--emerald)' : 'var(--border-strong)'
-                        e.currentTarget.style.color = isDone ? 'var(--emerald)' : 'var(--text-muted)'
-                        e.currentTarget.style.background = isDone ? 'var(--emerald-dim)' : 'transparent'
-                      }}
-                    >
-                      {isDone ? '✓' : '○'}
-                    </button>
+                    {/* Counter widget */}
+                    <div style={{
+                      flexShrink: 0,
+                      display: 'flex', flexDirection: 'column', alignItems: 'center',
+                      gap: '0.3rem', marginTop: '0.2rem',
+                    }}>
+                      {/* Progress fraction */}
+                      <div style={{
+                        fontSize: '0.72rem', fontWeight: 600,
+                        color: isDone ? 'var(--emerald)' : 'var(--text-secondary)',
+                        fontVariantNumeric: 'tabular-nums',
+                        minWidth: 36, textAlign: 'center',
+                        transition: 'color var(--transition)',
+                      }}>
+                        {current}/{adhkar.count}
+                      </div>
+
+                      {/* Progress bar */}
+                      <div style={{
+                        width: 52, height: 3,
+                        borderRadius: 2,
+                        background: 'var(--border)',
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          height: '100%',
+                          width: `${Math.min((current / adhkar.count) * 100, 100)}%`,
+                          background: isDone ? 'var(--emerald)' : 'var(--gold)',
+                          borderRadius: 2,
+                          transition: 'width 0.2s ease, background 0.2s',
+                        }} />
+                      </div>
+
+                      {/* Tap buttons */}
+                      <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.15rem' }}>
+                        <button
+                          onClick={() => decrement(adhkar.id)}
+                          disabled={current === 0}
+                          style={{
+                            width: 22, height: 22,
+                            borderRadius: 'var(--radius-sm)',
+                            border: '1px solid var(--border-strong)',
+                            background: 'transparent',
+                            color: current === 0 ? 'var(--border-strong)' : 'var(--text-muted)',
+                            fontSize: '0.9rem', lineHeight: 1,
+                            cursor: current === 0 ? 'default' : 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            transition: 'all var(--transition)',
+                          }}
+                        >
+                          −
+                        </button>
+                        <button
+                          onClick={() => increment(adhkar.id, adhkar.count)}
+                          disabled={isDone}
+                          style={{
+                            width: 22, height: 22,
+                            borderRadius: 'var(--radius-sm)',
+                            border: `1px solid ${isDone ? 'var(--emerald)' : 'var(--gold)'}`,
+                            background: isDone ? 'var(--emerald-dim)' : 'var(--gold-dim)',
+                            color: isDone ? 'var(--emerald)' : 'var(--gold)',
+                            fontSize: '0.9rem', lineHeight: 1,
+                            cursor: isDone ? 'default' : 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            transition: 'all var(--transition)',
+                          }}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
                   </motion.div>
                 )
               })}
