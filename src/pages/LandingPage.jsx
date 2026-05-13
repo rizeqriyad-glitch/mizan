@@ -14,7 +14,7 @@ const FEATURES = [
 
 const STATS = [
   { value: '5',   label: { en: 'Daily Prayers', ar: 'صلوات يومية' } },
-  { value: '12',  label: { en: 'Morning Adhkar', ar: 'ذكر صباحي' } },
+  { value: '23',  label: { en: 'Morning Adhkar', ar: 'ذكر صباحي' } },
   { value: '114', label: { en: 'Quran Surahs', ar: 'سورة قرآنية' } },
   { value: '∞',   label: { en: 'Rewards', ar: 'أجر لا يُحصى' } },
 ]
@@ -357,6 +357,11 @@ export default function LandingPage() {
         </span>
         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
           {isAr ? 'التوازن في كل شيء' : 'Balance in All Things'}
+        </span>
+        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+          {isAr
+            ? '© ١٤٤٦ هـ / ٢٠٢٥ م · ميزان · جميع الحقوق محفوظة'
+            : '© 2025 Mizan · All rights reserved'}
         </span>
       </footer>
 

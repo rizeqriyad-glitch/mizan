@@ -226,6 +226,20 @@ export default function Layout() {
             <span>↩</span>
             <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{t('signOut')}</span>
           </button>
+
+          {/* Copyright */}
+          <div style={{
+            paddingTop: '0.5rem',
+            marginTop: '0.25rem',
+            borderTop: '1px solid var(--border)',
+            fontSize: '0.62rem',
+            color: 'var(--text-muted)',
+            textAlign: 'center',
+            fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+            opacity: 0.7,
+          }}>
+            {isAr ? '© ٢٠٢٥ ميزان · جميع الحقوق محفوظة' : '© 2025 Mizan · All rights reserved'}
+          </div>
         </div>
       </motion.aside>
 
