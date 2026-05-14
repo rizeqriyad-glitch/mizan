@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
@@ -498,13 +498,163 @@ function fmt12h(str) {
   return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
+// ── ScheduleTimePicker ────────────────────────────────────────────────────────
+function ScheduleTimePicker({ value, onChange, isAr }) {
+  const [open, setOpen] = useState(false)
+  const [h,    setH]    = useState(12)
+  const [m,    setM]    = useState(0)
+  const [ampm, setAmpm] = useState('AM')
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (!value) return
+    const [hh, mm] = value.split(':').map(Number)
+    setH(hh % 12 || 12); setM(mm); setAmpm(hh >= 12 ? 'PM' : 'AM')
+  }, [value])
+
+  useEffect(() => {
+    if (!open) return
+    const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const commit = (nh, nm, na) => {
+    let h24 = nh % 12; if (na === 'PM') h24 += 12
+    onChange(`${String(h24).padStart(2,'0')}:${String(nm).padStart(2,'0')}`)
+  }
+  const btnLabel = value ? fmt12h(value) : (isAr ? '🔔 تذكير' : '🔔 Remind')
+
+  return (
+    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button type="button" onClick={() => setOpen(o => !o)} style={{
+        padding: '0.28rem 0.65rem', borderRadius: 'var(--radius-md)',
+        border: `1px solid ${value ? 'rgba(99,179,237,0.4)' : 'var(--border)'}`,
+        background: value ? 'var(--sapphire-dim)' : 'transparent',
+        color: value ? 'var(--sapphire)' : 'var(--text-muted)',
+        fontSize: '0.78rem', cursor: 'pointer',
+      }}>{btnLabel}</button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: '110%', left: 0, zIndex: 300,
+          background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
+          borderRadius: 'var(--radius-lg)', padding: '0.75rem',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.35)', minWidth: 200,
+        }}>
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '0.3rem' }}>{isAr ? 'ساعة' : 'Hour'}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.2rem' }}>
+                {[12,1,2,3,4,5,6,7,8,9,10,11].map(hr => (
+                  <button key={hr} type="button" onClick={() => { setH(hr); commit(hr, m, ampm) }}
+                    style={{ padding: '0.25rem', borderRadius: 'var(--radius-sm)', border: 'none', fontSize: '0.78rem', background: h===hr ? 'var(--sapphire-dim)' : 'transparent', color: h===hr ? 'var(--sapphire)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: h===hr ? 600 : 400 }}
+                  >{hr}</button>
+                ))}
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '0.3rem' }}>{isAr ? 'دقيقة' : 'Min'}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.2rem' }}>
+                {[0,5,10,15,20,25,30,35,40,45,50,55].map(mn => (
+                  <button key={mn} type="button" onClick={() => { setM(mn); commit(h, mn, ampm) }}
+                    style={{ padding: '0.25rem', borderRadius: 'var(--radius-sm)', border: 'none', fontSize: '0.78rem', background: m===mn ? 'var(--sapphire-dim)' : 'transparent', color: m===mn ? 'var(--sapphire)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: m===mn ? 600 : 400 }}
+                  >{String(mn).padStart(2,'0')}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '0.3rem', marginBottom: value ? '0.4rem' : 0 }}>
+            {['AM','PM'].map(ap => (
+              <button key={ap} type="button" onClick={() => { setAmpm(ap); commit(h, m, ap) }}
+                style={{ flex: 1, padding: '0.3rem', borderRadius: 'var(--radius-sm)', border: `1px solid ${ampm===ap ? 'var(--sapphire)' : 'var(--border)'}`, background: ampm===ap ? 'var(--sapphire-dim)' : 'transparent', color: ampm===ap ? 'var(--sapphire)' : 'var(--text-muted)', cursor: 'pointer', fontSize: '0.78rem', fontWeight: ampm===ap ? 600 : 400 }}
+              >{ap}</button>
+            ))}
+          </div>
+          {value && (
+            <button type="button" onClick={() => { onChange(''); setOpen(false) }}
+              style={{ width: '100%', padding: '0.25rem', fontSize: '0.72rem', color: 'var(--ruby)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            >{isAr ? '× مسح الوقت' : '× Clear time'}</button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── DayAddForm ─────────────────────────────────────────────────────────────────
+function DayAddForm({ dayStr, sections, language, isAr, addTask, onClose }) {
+  const [text,      setText]      = useState('')
+  const [sectionId, setSectionId] = useState(sections[0]?.id || '')
+  const [reminder,  setReminder]  = useState('')
+  const [saving,    setSaving]    = useState(false)
+
+  const handleSave = async () => {
+    if (!text.trim()) return
+    setSaving(true)
+    await addTask(sectionId || sections[0]?.id || 'fajr', text.trim(), null, reminder || null, dayStr)
+    setSaving(false)
+    onClose()
+  }
+
+  return (
+    <div style={{ padding: '0.625rem 1.25rem', borderTop: '1px solid var(--border)', background: 'rgba(99,179,237,0.04)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+        <input
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') onClose() }}
+          placeholder={isAr ? 'وصف المهمة...' : 'Task description...'}
+          autoFocus
+          style={{
+            background: 'var(--bg-input)', border: '1px solid var(--border-strong)',
+            borderRadius: 'var(--radius-md)', padding: '0.42rem 0.75rem',
+            color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none',
+            fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+          }}
+        />
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <select value={sectionId} onChange={e => setSectionId(e.target.value)} style={{
+            background: 'var(--bg-input)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)', padding: '0.28rem 0.5rem',
+            color: 'var(--text-secondary)', fontSize: '0.78rem', outline: 'none', cursor: 'pointer',
+            fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+          }}>
+            {sections.map(s => {
+              const name = s.label?.[language] || s.label?.en || s.name || s.id
+              return <option key={s.id} value={s.id}>{s.icon ? `${s.icon} ${name}` : name}</option>
+            })}
+          </select>
+          <ScheduleTimePicker value={reminder} onChange={setReminder} isAr={isAr} />
+          <div style={{ marginInlineStart: 'auto', display: 'flex', gap: '0.3rem' }}>
+            <button type="button" onClick={onClose} style={{
+              padding: '0.28rem 0.6rem', borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border)', background: 'transparent',
+              color: 'var(--text-muted)', fontSize: '0.78rem', cursor: 'pointer',
+            }}>{isAr ? 'إلغاء' : 'Cancel'}</button>
+            <button type="button" onClick={handleSave} disabled={!text.trim() || saving} style={{
+              padding: '0.28rem 0.7rem', borderRadius: 'var(--radius-md)', border: 'none',
+              background: text.trim() ? 'var(--sapphire)' : 'var(--bg-input)',
+              color: text.trim() ? 'white' : 'var(--text-muted)',
+              fontSize: '0.78rem', fontWeight: 600,
+              cursor: text.trim() ? 'pointer' : 'default', transition: 'all 0.2s',
+            }}>{saving ? '...' : (isAr ? 'حفظ' : 'Save')}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── ScheduleTab ───────────────────────────────────────────────────────────────
 function ScheduleTab({ isAr, language }) {
   const { user } = useAuth()
-  const { toggleTask, deleteTask } = useApp()
-  const [weekOffset, setWeekOffset] = useState(0)
-  const [weekTasks, setWeekTasks]   = useState({})
-  const [loading, setLoading]       = useState(true)
+  const { toggleTask, deleteTask, addTask, customSections, FIXED_SECTIONS: FS } = useApp()
+  const [weekOffset,  setWeekOffset]  = useState(0)
+  const [weekTasks,   setWeekTasks]   = useState({})
+  const [loading,     setLoading]     = useState(true)
+  const [addingToDay, setAddingToDay] = useState(null)
+
+  const allSections = useMemo(() => [...FS, ...customSections], [FS, customSections])
 
   const weekDays = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
@@ -600,23 +750,19 @@ function ScheduleTab({ isAr, language }) {
       )}
 
       {!loading && totalScheduled === 0 && (
-        <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📅</div>
-          <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.4rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-            {isAr ? 'لا توجد مهام مجدولة' : 'No tasks scheduled'}
-          </div>
+        <div style={{ textAlign: 'center', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border)', color: 'var(--text-muted)', marginBottom: '1rem' }}>
           <div style={{ fontSize: '0.83rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-            {isAr ? 'أضف مهمة وحدد يوم إنجازها من قسم المهام' : 'Add tasks and pick a day when creating them'}
+            {isAr ? 'لا توجد مهام — أضف مهمة لأي يوم أدناه' : 'No tasks yet — add one to any day below'}
           </div>
         </div>
       )}
 
       {/* Day cards */}
       {!loading && weekDays.map(day => {
-        const dayTasks = weekTasks[day.str] || []
-        if (dayTasks.length === 0 && !day.isToday) return null
-        const done  = dayTasks.filter(t => t.completed).length
-        const total = dayTasks.length
+        const dayTasks  = weekTasks[day.str] || []
+        const done      = dayTasks.filter(t => t.completed).length
+        const total     = dayTasks.length
+        const isAdding  = addingToDay === day.str
 
         return (
           <motion.div
@@ -634,12 +780,11 @@ function ScheduleTab({ isAr, language }) {
             {/* Day header */}
             <div style={{
               padding: '0.75rem 1.25rem',
-              borderBottom: dayTasks.length > 0 ? '1px solid var(--border)' : 'none',
+              borderBottom: (dayTasks.length > 0 || isAdding) ? '1px solid var(--border)' : 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               background: day.isToday ? 'rgba(99,179,237,0.06)' : 'transparent',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                {/* Date badge */}
                 <div style={{
                   width: 38, height: 38, borderRadius: 'var(--radius-md)', flexShrink: 0,
                   background: day.isToday ? 'var(--sapphire-dim)' : 'var(--bg-input)',
@@ -664,83 +809,101 @@ function ScheduleTab({ isAr, language }) {
                   )}
                 </div>
               </div>
-              {total > 0 && (
-                <span style={{ fontSize: '0.72rem', color: done === total ? 'var(--emerald)' : 'var(--text-muted)', fontVariantNumeric: 'tabular-nums', fontWeight: done === total ? 600 : 400 }}>
-                  {done}/{total}
-                </span>
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {total > 0 && (
+                  <span style={{ fontSize: '0.72rem', color: done === total ? 'var(--emerald)' : 'var(--text-muted)', fontVariantNumeric: 'tabular-nums', fontWeight: done === total ? 600 : 400 }}>
+                    {done}/{total}
+                  </span>
+                )}
+                {!isAdding && (
+                  <button
+                    onClick={() => setAddingToDay(day.str)}
+                    style={{
+                      padding: '0.22rem 0.6rem', borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border)', background: 'transparent',
+                      color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer',
+                      transition: 'all var(--transition)',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sapphire)'; e.currentTarget.style.color = 'var(--sapphire)'; e.currentTarget.style.background = 'var(--sapphire-dim)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent' }}
+                  >+ {isAr ? 'مهمة' : 'Task'}</button>
+                )}
+              </div>
             </div>
 
             {/* Task rows */}
-            {dayTasks.length === 0 ? (
-              <div style={{ padding: '0.75rem 1.25rem', fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                {isAr ? 'لا توجد مهام لهذا اليوم' : 'No tasks for this day'}
-              </div>
-            ) : (
-              <AnimatePresence initial={false}>
-                {dayTasks.map(task => (
-                  <motion.div
-                    key={task.id}
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+            <AnimatePresence initial={false}>
+              {dayTasks.map(task => (
+                <motion.div
+                  key={task.id}
+                  layout
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.55rem 1.25rem',
+                    borderTop: '1px solid var(--border)',
+                  }}
+                >
+                  <button
+                    onClick={() => toggleTask(task)}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: '0.75rem',
-                      padding: '0.55rem 1.25rem',
-                      borderTop: '1px solid var(--border)',
+                      width: 18, height: 18, flexShrink: 0, borderRadius: 'var(--radius-sm)',
+                      border: task.completed ? '1.5px solid var(--emerald)' : '1.5px solid var(--border-strong)',
+                      background: task.completed ? 'var(--emerald)' : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', transition: 'all 0.2s', color: 'white', fontSize: '0.6rem',
                     }}
-                  >
-                    {/* Checkbox */}
-                    <button
-                      onClick={() => toggleTask(task)}
-                      style={{
-                        width: 18, height: 18, flexShrink: 0, borderRadius: 'var(--radius-sm)',
-                        border: task.completed ? '1.5px solid var(--emerald)' : '1.5px solid var(--border-strong)',
-                        background: task.completed ? 'var(--emerald)' : 'transparent',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', transition: 'all 0.2s', color: 'white', fontSize: '0.6rem',
-                      }}
-                    >{task.completed ? '✓' : ''}</button>
+                  >{task.completed ? '✓' : ''}</button>
 
-                    {/* Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: '0.875rem',
-                        color: task.completed ? 'var(--text-muted)' : 'var(--text-primary)',
-                        textDecoration: task.completed ? 'line-through' : 'none',
-                        fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>{task.text}</div>
-                      <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
-                        {task.sectionId && (
-                          <span style={{ fontSize: '0.63rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
-                            {task.sectionId}
-                          </span>
-                        )}
-                        {task.reminderTime && !task.completed && (
-                          <span style={{ fontSize: '0.63rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
-                            🔔 {fmt12h(task.reminderTime)}
-                          </span>
-                        )}
-                        {task.duration && (
-                          <span style={{ fontSize: '0.63rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
-                            ⏱ {task.duration}{isAr ? 'د' : 'm'}
-                          </span>
-                        )}
-                      </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      color: task.completed ? 'var(--text-muted)' : 'var(--text-primary)',
+                      textDecoration: task.completed ? 'line-through' : 'none',
+                      fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>{task.text}</div>
+                    <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
+                      {task.sectionId && (
+                        <span style={{ fontSize: '0.63rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
+                          {task.sectionId}
+                        </span>
+                      )}
+                      {task.reminderTime && !task.completed && (
+                        <span style={{ fontSize: '0.63rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
+                          🔔 {fmt12h(task.reminderTime)}
+                        </span>
+                      )}
+                      {task.duration && (
+                        <span style={{ fontSize: '0.63rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
+                          ⏱ {task.duration}{isAr ? 'د' : 'm'}
+                        </span>
+                      )}
                     </div>
+                  </div>
 
-                    {/* Delete */}
-                    <button
-                      onClick={() => deleteTask(task.id)}
-                      style={{ width: 24, height: 24, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all var(--transition)' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ruby)'; e.currentTarget.style.color = 'var(--ruby)' }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-                    >✕</button>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                  <button
+                    onClick={() => deleteTask(task.id)}
+                    style={{ width: 24, height: 24, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all var(--transition)' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ruby)'; e.currentTarget.style.color = 'var(--ruby)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                  >✕</button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Inline add form */}
+            {isAdding && (
+              <DayAddForm
+                dayStr={day.str}
+                sections={allSections}
+                language={language}
+                isAr={isAr}
+                addTask={addTask}
+                onClose={() => setAddingToDay(null)}
+              />
             )}
           </motion.div>
         )
