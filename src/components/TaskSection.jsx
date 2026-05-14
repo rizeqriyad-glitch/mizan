@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
-import { primeAlarm, startAlarm, stopAlarm } from '../utils/alarmSound'
+import { startRadarAlarm } from '../utils/alarmSound'
 
 function fmtTimer(s) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
@@ -17,10 +17,11 @@ export default function TaskSection({ section, isFixed = false }) {
   const [expanded, setExpanded] = useState(true)
   const [activeTimer, setActiveTimer] = useState(null) // { taskId, taskText, totalSeconds, secondsLeft }
   const [timerAlert, setTimerAlert] = useState(null)   // string: task text
-  const inputRef         = useRef(null)
+  const inputRef = useRef(null)
   const timerIntervalRef = useRef(null)
   const activeTimerRef   = useRef(null)
-  const alarmTimerRef    = useRef(null)
+  const alarmStopRef     = useRef(null)  // fn returned by startRadarAlarm
+  const alarmTimerRef    = useRef(null)  // auto-stop timeout
   const isAr = language === 'ar'
 
   const sectionTasks = (tasks[section.id] || [])
@@ -28,33 +29,34 @@ export default function TaskSection({ section, isFixed = false }) {
   const doneTasks    = sectionTasks.filter(t => t.completed)
   const label = section.label?.[language] || section.label?.en || section.id
 
-  useEffect(() => {
-    return () => {
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-      clearTimeout(alarmTimerRef.current)
-      stopAlarm()
-    }
+  // Cleanup on unmount
+  useEffect(() => () => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+    if (alarmStopRef.current)     alarmStopRef.current()
+    if (alarmTimerRef.current)    clearTimeout(alarmTimerRef.current)
   }, [])
 
   const triggerAlarm = (taskText) => {
-    startAlarm()
-    setTimerAlert(taskText)
+    if (alarmStopRef.current) alarmStopRef.current()
     clearTimeout(alarmTimerRef.current)
+    alarmStopRef.current = startRadarAlarm(3)
+    setTimerAlert(taskText)
+    // Auto-dismiss after 3 s (alarm duration)
     alarmTimerRef.current = setTimeout(() => {
-      stopAlarm()
+      alarmStopRef.current = null
       setTimerAlert(null)
-    }, 8000)
+    }, 3000)
   }
 
   const dismissAlarm = () => {
-    stopAlarm()
+    if (alarmStopRef.current) { alarmStopRef.current(); alarmStopRef.current = null }
     clearTimeout(alarmTimerRef.current)
+    alarmTimerRef.current = null
     setTimerAlert(null)
   }
 
   const startTimer = (task) => {
     if (!task.duration || task.duration <= 0) return
-    primeAlarm()
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
 
     const totalSecs = task.duration * 60

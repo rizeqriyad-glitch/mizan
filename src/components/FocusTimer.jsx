@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { formatTimer } from '../utils/dateUtils'
+import { startRadarAlarm } from '../utils/alarmSound'
 
 const MODES = {
   work:  { label: { en: 'Focus',       ar: 'تركيز'         }, color: 'var(--gold)' },
@@ -30,56 +31,68 @@ export default function FocusTimer() {
   const [mode, setMode]       = useState('work')
   const [seconds, setSeconds] = useState(customMins.work * 60)
   const [running, setRunning] = useState(false)
+  const [alarming, setAlarming] = useState(false)
   const [sessions, setSessions] = useState(0)
   const [totalFocusTime, setTotalFocusTime] = useState(0)
   const intervalRef    = useRef(null)
   const startSecsRef   = useRef(customMins.work * 60)
-  const secondsRef     = useRef(customMins.work * 60)
   const customMinsRef  = useRef(customMins)
+  const alarmStopRef   = useRef(null)
+  const alarmTimerRef  = useRef(null)
 
   // Keep ref in sync so interval callbacks see latest values
   useEffect(() => { customMinsRef.current = customMins }, [customMins])
 
   useEffect(() => {
-    if (!running) {
+    if (running) {
+      intervalRef.current = setInterval(() => {
+        setSeconds(s => {
+          if (s <= 1) {
+            clearInterval(intervalRef.current)
+            setRunning(false)
+            if (mode === 'work') {
+              setSessions(prev => prev + 1)
+              setTotalFocusTime(prev => prev + startSecsRef.current)
+            }
+            if (alarmStopRef.current) alarmStopRef.current()
+            clearTimeout(alarmTimerRef.current)
+            alarmStopRef.current = startRadarAlarm(3)
+            setAlarming(true)
+            alarmTimerRef.current = setTimeout(() => {
+              alarmStopRef.current = null
+              setAlarming(false)
+            }, 3000)
+            return 0
+          }
+          return s - 1
+        })
+      }, 1000)
+    } else {
       clearInterval(intervalRef.current)
-      return () => clearInterval(intervalRef.current)
     }
-
-    intervalRef.current = setInterval(() => {
-      const next = secondsRef.current - 1
-      secondsRef.current = Math.max(0, next)
-
-      if (next <= 0) {
-        clearInterval(intervalRef.current)
-        setSeconds(0)
-        setRunning(false)
-        if (mode === 'work') {
-          setSessions(prev => prev + 1)
-          setTotalFocusTime(prev => prev + startSecsRef.current)
-        }
-      } else {
-        setSeconds(next)
-      }
-    }, 1000)
-
     return () => clearInterval(intervalRef.current)
   }, [running, mode])
 
+  const stopAlarm = () => {
+    if (alarmStopRef.current) { alarmStopRef.current(); alarmStopRef.current = null }
+    clearTimeout(alarmTimerRef.current)
+    alarmTimerRef.current = null
+    setAlarming(false)
+  }
+
   const handleModeChange = (newMode) => {
+    stopAlarm()
     setMode(newMode)
     const secs = customMinsRef.current[newMode] * 60
     setSeconds(secs)
     startSecsRef.current = secs
-    secondsRef.current = secs
     setRunning(false)
   }
 
   const handleReset = () => {
+    stopAlarm()
     setRunning(false)
-    const secs = customMinsRef.current[mode] * 60
-    setSeconds(secs)
-    secondsRef.current = secs
+    setSeconds(customMinsRef.current[mode] * 60)
   }
 
   const openEdit = () => {
@@ -101,7 +114,6 @@ export default function FocusTimer() {
     const newSecs = newMins[mode] * 60
     setSeconds(newSecs)
     startSecsRef.current = newSecs
-    secondsRef.current = newSecs
   }
 
   const totalSecs = customMins[mode] * 60
@@ -375,14 +387,18 @@ export default function FocusTimer() {
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={() => setRunning(r => !r)}
+          onClick={alarming ? stopAlarm : () => setRunning(r => !r)}
           style={{
             flex: 1,
             padding: '0.7rem',
             borderRadius: 'var(--radius-md)',
-            border: `1px solid ${currentColor}40`,
-            background: running ? currentColor + '22' : currentColor + '15',
-            color: currentColor,
+            border: alarming
+              ? '1px solid rgba(74,222,128,0.5)'
+              : `1px solid ${currentColor}40`,
+            background: alarming
+              ? 'rgba(74,222,128,0.15)'
+              : running ? currentColor + '22' : currentColor + '15',
+            color: alarming ? 'var(--emerald)' : currentColor,
             fontSize: '0.875rem',
             fontWeight: 500,
             cursor: 'pointer',
@@ -390,7 +406,9 @@ export default function FocusTimer() {
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}
         >
-          {running ? t('stopFocus') : t('startFocus')}
+          {alarming
+            ? (isAr ? '⏰ إيقاف التنبيه' : '⏰ Stop Alarm')
+            : running ? t('stopFocus') : t('startFocus')}
         </motion.button>
         <button
           onClick={handleReset}
