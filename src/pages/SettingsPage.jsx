@@ -1,7 +1,10 @@
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
 import { useNavigate } from 'react-router-dom'
+import { saveAlarmFile, clearAlarmFile } from '../utils/alarmStorage'
+import { setCustomAlarm, clearCustomAlarm, getCustomAlarmName } from '../utils/alarmSound'
 
 function SettingRow({ label, description, children, isAr }) {
   return (
@@ -68,6 +71,95 @@ function ToggleGroup({ options, value, onChange, color = 'var(--gold)', colorDim
           {opt.label}
         </button>
       ))}
+    </div>
+  )
+}
+
+function AlarmUploader({ isAr }) {
+  const [fileName, setFileName] = useState(getCustomAlarmName)
+  const inputRef = useRef(null)
+
+  const handleFile = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    try {
+      const buffer = await file.arrayBuffer()
+      await saveAlarmFile(buffer, file.name)
+      const blob = new Blob([buffer], { type: file.type || 'audio/mpeg' })
+      const url  = URL.createObjectURL(blob)
+      setCustomAlarm(url, file.name)
+      setFileName(file.name)
+    } catch {}
+    e.target.value = ''
+  }
+
+  const handleRemove = async () => {
+    await clearAlarmFile()
+    clearCustomAlarm()
+    setFileName(null)
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <span style={{
+        fontSize: '0.78rem',
+        color: fileName ? 'var(--emerald)' : 'var(--text-muted)',
+        maxWidth: 170,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+      }}>
+        {fileName ? `🎵 ${fileName}` : (isAr ? 'افتراضي (رادار)' : 'Default (Radar)')}
+      </span>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".mp3,.wav,.ogg,.m4a,audio/*"
+        onChange={handleFile}
+        style={{ display: 'none' }}
+      />
+
+      <button
+        onClick={() => inputRef.current?.click()}
+        style={{
+          padding: '0.35rem 0.8rem',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border-strong)',
+          background: 'transparent',
+          color: 'var(--text-secondary)',
+          fontSize: '0.78rem',
+          cursor: 'pointer',
+          transition: 'all var(--transition)',
+          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.color = 'var(--gold)' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+      >
+        {isAr ? '⬆ رفع ملف' : '⬆ Upload'}
+      </button>
+
+      {fileName && (
+        <button
+          onClick={handleRemove}
+          style={{
+            padding: '0.35rem 0.7rem',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border)',
+            background: 'transparent',
+            color: 'var(--text-muted)',
+            fontSize: '0.78rem',
+            cursor: 'pointer',
+            transition: 'all var(--transition)',
+            fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ruby)'; e.currentTarget.style.color = 'var(--ruby)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+        >
+          {isAr ? 'حذف' : 'Remove'}
+        </button>
+      )}
     </div>
   )
 }
@@ -239,11 +331,46 @@ export default function SettingsPage() {
         </SettingRow>
       </motion.div>
 
-      {/* About */}
+      {/* Alarm Sound */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
+        style={{
+          background: 'var(--bg-card)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border)',
+          marginBottom: '1.5rem',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{
+          padding: '1rem 1.5rem',
+          borderBottom: '1px solid var(--border)',
+          fontSize: '0.78rem',
+          fontWeight: 500,
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+        }}>
+          {isAr ? 'صوت التنبيه' : 'Alarm Sound'}
+        </div>
+
+        <SettingRow
+          label={isAr ? 'نغمة التنبيه' : 'Alert tone'}
+          description={isAr ? 'ارفع ملف صوتي ليُستخدم كتنبيه للمؤقت' : 'Upload an audio file to use as the timer alert'}
+          isAr={isAr}
+        >
+          <AlarmUploader isAr={isAr} />
+        </SettingRow>
+      </motion.div>
+
+      {/* About */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
         style={{
           background: 'var(--bg-card)',
           borderRadius: 'var(--radius-lg)',
