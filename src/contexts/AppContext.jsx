@@ -301,11 +301,11 @@ export const AppProvider = ({ children }) => {
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-  const addGoal = async ({ title, titleAr, icon, color, weekStart }) => {
+  const addGoal = async ({ title, titleAr, icon, color, deadline = null }) => {
     if (!user) return
     await addDoc(collection(db, 'users', user.uid, 'goals'), {
       title, titleAr: titleAr || '', icon: icon || '🎯', color: color || 'gold',
-      weekStart, milestones: [], createdAt: serverTimestamp(),
+      deadline, milestones: [], createdAt: serverTimestamp(),
     })
   }
 

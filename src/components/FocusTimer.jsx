@@ -56,12 +56,12 @@ export default function FocusTimer() {
             }
             if (alarmStopRef.current) alarmStopRef.current()
             clearTimeout(alarmTimerRef.current)
-            alarmStopRef.current = startRadarAlarm(3)
+            alarmStopRef.current = startRadarAlarm(8)
             setAlarming(true)
             alarmTimerRef.current = setTimeout(() => {
               alarmStopRef.current = null
               setAlarming(false)
-            }, 3000)
+            }, 8000)
             return 0
           }
           return s - 1

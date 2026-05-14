@@ -136,6 +136,17 @@ export default function PrayerTimesWidget() {
                       {t('currentPrayer')}
                     </div>
                   )}
+                  {/* Prayer window end hint */}
+                  {prayer.id === 'fajr' && prayerTimes?.sunrise && (
+                    <div style={{ fontSize: '0.63rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                      {isAr ? `ينتهي عند الشروق ${formatPrayerTime(prayerTimes.sunrise, timeFormat)}` : `Ends at sunrise · ${formatPrayerTime(prayerTimes.sunrise, timeFormat)}`}
+                    </div>
+                  )}
+                  {prayer.id === 'isha' && prayerTimes?.fajr && (
+                    <div style={{ fontSize: '0.63rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                      {isAr ? `يمتد حتى الفجر ${formatPrayerTime(prayerTimes.fajr, timeFormat)}` : `Extends until Fajr · ${formatPrayerTime(prayerTimes.fajr, timeFormat)}`}
+                    </div>
+                  )}
                   {prayer.isVoluntary && (
                     <div style={{ fontSize: '0.68rem', color: 'var(--amber)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                       {t('sunnah')}
