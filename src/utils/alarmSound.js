@@ -14,7 +14,7 @@ export function startRadarAlarm(durationSeconds = 3) {
 
     // ── Master output ──────────────────────────────────────────────
     const master = ctx.createGain()
-    master.gain.value = 0.9
+    master.gain.value = 1.0
     master.connect(ctx.destination)
 
     // ── Echo / reverb ──────────────────────────────────────────────
@@ -55,8 +55,8 @@ export function startRadarAlarm(durationSeconds = 3) {
 
         // Envelope: fast attack → sustain → exponential decay
         gain.gain.setValueAtTime(0,    t)
-        gain.gain.linearRampToValueAtTime(0.28,  t + 0.008)
-        gain.gain.setValueAtTime(0.28, t + PULSE * 0.44)
+        gain.gain.linearRampToValueAtTime(0.45,  t + 0.008)
+        gain.gain.setValueAtTime(0.45, t + PULSE * 0.44)
         gain.gain.exponentialRampToValueAtTime(0.001, t + PULSE)
 
         osc.start(t)
@@ -74,7 +74,7 @@ export function startRadarAlarm(durationSeconds = 3) {
       harm.frequency.exponentialRampToValueAtTime(2400, t + PULSE * 0.65)
 
       harmGain.gain.setValueAtTime(0,    t)
-      harmGain.gain.linearRampToValueAtTime(0.055, t + 0.008)
+      harmGain.gain.linearRampToValueAtTime(0.09, t + 0.008)
       harmGain.gain.exponentialRampToValueAtTime(0.001, t + PULSE * 0.55)
 
       harm.start(t)
