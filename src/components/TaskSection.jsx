@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
-import { startRadarAlarm } from '../utils/alarmSound'
+import { primeAlarm, startAlarm, stopAlarm } from '../utils/alarmSound'
 
 function fmtTimer(s) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
@@ -20,7 +20,6 @@ export default function TaskSection({ section, isFixed = false }) {
   const inputRef = useRef(null)
   const timerIntervalRef = useRef(null)
   const activeTimerRef   = useRef(null)
-  const alarmStopRef     = useRef(null)  // fn returned by startRadarAlarm
   const alarmTimerRef    = useRef(null)  // auto-stop timeout
   const isAr = language === 'ar'
 
@@ -32,24 +31,24 @@ export default function TaskSection({ section, isFixed = false }) {
   // Cleanup on unmount
   useEffect(() => () => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-    if (alarmStopRef.current)     alarmStopRef.current()
-    if (alarmTimerRef.current)    clearTimeout(alarmTimerRef.current)
+    stopAlarm()
+    if (alarmTimerRef.current) clearTimeout(alarmTimerRef.current)
   }, [])
 
   const triggerAlarm = (taskText) => {
-    if (alarmStopRef.current) alarmStopRef.current()
+    stopAlarm()
     clearTimeout(alarmTimerRef.current)
-    alarmStopRef.current = startRadarAlarm(3)
+    startAlarm()
     setTimerAlert(taskText)
-    // Auto-dismiss after 3 s (alarm duration)
+    // Auto-dismiss after 3 s
     alarmTimerRef.current = setTimeout(() => {
-      alarmStopRef.current = null
+      stopAlarm()
       setTimerAlert(null)
     }, 3000)
   }
 
   const dismissAlarm = () => {
-    if (alarmStopRef.current) { alarmStopRef.current(); alarmStopRef.current = null }
+    stopAlarm()
     clearTimeout(alarmTimerRef.current)
     alarmTimerRef.current = null
     setTimerAlert(null)
@@ -308,7 +307,7 @@ export default function TaskSection({ section, isFixed = false }) {
                       isTimerActive={activeTimer?.taskId === task.id}
                       timerSeconds={activeTimer?.taskId === task.id ? activeTimer.secondsLeft : 0}
                       timerTotal={activeTimer?.taskId === task.id ? activeTimer.totalSeconds : (task.duration ? task.duration * 60 : 0)}
-                      onStartTimer={() => startTimer(task)}
+                      onStartTimer={() => { primeAlarm(); startTimer(task) }}
                       onStopTimer={stopTimer}
                     />
                   </Reorder.Item>

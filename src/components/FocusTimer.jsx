@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { formatTimer } from '../utils/dateUtils'
-import { startRadarAlarm } from '../utils/alarmSound'
+import { primeAlarm, startAlarm, stopAlarm } from '../utils/alarmSound'
 
 const MODES = {
   work:  { label: { en: 'Focus',       ar: 'تركيز'         }, color: 'var(--gold)' },
@@ -37,7 +37,6 @@ export default function FocusTimer() {
   const intervalRef    = useRef(null)
   const startSecsRef   = useRef(customMins.work * 60)
   const customMinsRef  = useRef(customMins)
-  const alarmStopRef   = useRef(null)
   const alarmTimerRef  = useRef(null)
 
   // Keep ref in sync so interval callbacks see latest values
@@ -54,12 +53,12 @@ export default function FocusTimer() {
               setSessions(prev => prev + 1)
               setTotalFocusTime(prev => prev + startSecsRef.current)
             }
-            if (alarmStopRef.current) alarmStopRef.current()
+            stopAlarm()
             clearTimeout(alarmTimerRef.current)
-            alarmStopRef.current = startRadarAlarm(3)
+            startAlarm()
             setAlarming(true)
             alarmTimerRef.current = setTimeout(() => {
-              alarmStopRef.current = null
+              stopAlarm()
               setAlarming(false)
             }, 3000)
             return 0
@@ -73,15 +72,15 @@ export default function FocusTimer() {
     return () => clearInterval(intervalRef.current)
   }, [running, mode])
 
-  const stopAlarm = () => {
-    if (alarmStopRef.current) { alarmStopRef.current(); alarmStopRef.current = null }
+  const handleStopAlarm = () => {
+    stopAlarm()
     clearTimeout(alarmTimerRef.current)
     alarmTimerRef.current = null
     setAlarming(false)
   }
 
   const handleModeChange = (newMode) => {
-    stopAlarm()
+    handleStopAlarm()
     setMode(newMode)
     const secs = customMinsRef.current[newMode] * 60
     setSeconds(secs)
@@ -90,7 +89,7 @@ export default function FocusTimer() {
   }
 
   const handleReset = () => {
-    stopAlarm()
+    handleStopAlarm()
     setRunning(false)
     setSeconds(customMinsRef.current[mode] * 60)
   }
@@ -387,7 +386,7 @@ export default function FocusTimer() {
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={alarming ? stopAlarm : () => setRunning(r => !r)}
+          onClick={alarming ? handleStopAlarm : () => { if (!running) primeAlarm(); setRunning(r => !r) }}
           style={{
             flex: 1,
             padding: '0.7rem',
