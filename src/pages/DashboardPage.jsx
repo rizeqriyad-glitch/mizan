@@ -8,11 +8,21 @@ import FocusTimer from '../components/FocusTimer'
 import StatsBar from '../components/StatsBar'
 import QuranReader from '../components/QuranReader'
 import AdhkarSection from '../components/AdhkarSection'
+import ScheduleManager from '../components/ScheduleManager'
+
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const { language, completedToday, t, loading } = useApp()
+  const { language, completedToday, t, loading, scheduleType, scheduleFrequency, scheduleBlocks } = useApp()
   const isAr = language === 'ar'
+
+  const todayDay = DAY_KEYS[new Date().getDay()]
+  const activeSections = scheduleType === 'prayer'
+    ? FIXED_SECTIONS
+    : scheduleFrequency === 'weekly'
+      ? scheduleBlocks.filter(b => !b.days || b.days.includes(todayDay))
+      : scheduleBlocks
 
   const greeting = getGreeting(language)
   const firstName = user?.displayName?.split(' ')[0] || ''
@@ -144,9 +154,30 @@ export default function DashboardPage() {
       >
         {/* Left: task sections */}
         <div>
-          {FIXED_SECTIONS.map(section => (
-            <TaskSection key={section.id} section={section} isFixed={true} />
-          ))}
+          <ScheduleManager />
+
+          {activeSections.length > 0 ? (
+            activeSections.map(section => (
+              <TaskSection key={section.id} section={section} isFixed={scheduleType === 'prayer'} />
+            ))
+          ) : (
+            <div style={{
+              padding: '2rem',
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+              fontSize: '0.875rem',
+              fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+              background: 'var(--bg-card)',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border)',
+            }}>
+              {scheduleType === 'custom'
+                ? (isAr
+                    ? 'لا توجد أقسام لهذا اليوم. اضغط على "الجدول الزمني" أعلاه لإضافة أقسام.'
+                    : 'No blocks for today. Click "Schedule" above to add time blocks.')
+                : (isAr ? 'لا توجد مهام.' : 'No tasks yet.')}
+            </div>
+          )}
         </div>
 
         {/* Right: prayer times + focus */}

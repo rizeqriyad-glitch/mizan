@@ -27,6 +27,9 @@ export const AppProvider = ({ children }) => {
   const [language, setLanguage]         = useState('en')
   const [theme, setTheme]               = useState('dark')
   const [timeFormat, setTimeFormat]     = useState('12h')
+  const [scheduleType, setScheduleTypeState]           = useState('prayer')  // 'prayer' | 'custom'
+  const [scheduleFrequency, setScheduleFrequencyState] = useState('daily')   // 'daily'  | 'weekly'
+  const [scheduleBlocks, setScheduleBlocks]            = useState([])
   const [prayerTimes, setPrayerTimes]   = useState(null)
   const [location, setLocation]         = useState(null)
   const [tasks, setTasks]               = useState({})         // keyed by sectionId
@@ -48,6 +51,8 @@ export const AppProvider = ({ children }) => {
       setLanguage(userProfile.language || 'en')
       setTheme(userProfile.theme || 'dark')
       setTimeFormat(userProfile.timeFormat || '12h')
+      setScheduleTypeState(userProfile.scheduleType || 'prayer')
+      setScheduleFrequencyState(userProfile.scheduleFrequency || 'daily')
     }
   }, [userProfile])
 
@@ -126,6 +131,13 @@ export const AppProvider = ({ children }) => {
       setCustomSections(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     })
 
+    // Load schedule blocks (custom schedule)
+    const blocksRef = collection(db, 'users', user.uid, 'scheduleBlocks')
+    const unsubBlocks = onSnapshot(
+      query(blocksRef, orderBy('order', 'asc')),
+      (snap) => setScheduleBlocks(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    )
+
     // Subscribe to today's prayer completion doc (resets each new day)
     const prayersRef = doc(db, 'users', user.uid, 'prayers', todayKey)
     const unsubPrayers = onSnapshot(prayersRef, (snap) => {
@@ -137,6 +149,7 @@ export const AppProvider = ({ children }) => {
       unsubCompleted()
       unsubStats()
       unsubSections()
+      unsubBlocks()
       unsubPrayers()
     }
   }, [user])
@@ -154,6 +167,44 @@ export const AppProvider = ({ children }) => {
   const changeTimeFormat = async (fmt) => {
     setTimeFormat(fmt)
     await updateProfile({ timeFormat: fmt })
+  }
+
+  const changeScheduleType = async (type) => {
+    setScheduleTypeState(type)
+    await updateProfile({ scheduleType: type })
+  }
+
+  const changeScheduleFrequency = async (freq) => {
+    setScheduleFrequencyState(freq)
+    await updateProfile({ scheduleFrequency: freq })
+  }
+
+  const addScheduleBlock = async (data) => {
+    if (!user) return
+    await addDoc(collection(db, 'users', user.uid, 'scheduleBlocks'), {
+      ...data,
+      order: scheduleBlocks.length,
+      createdAt: serverTimestamp(),
+    })
+  }
+
+  const editScheduleBlock = async (blockId, data) => {
+    if (!user) return
+    await updateDoc(doc(db, 'users', user.uid, 'scheduleBlocks', blockId), data)
+  }
+
+  const deleteScheduleBlock = async (blockId) => {
+    if (!user) return
+    await deleteDoc(doc(db, 'users', user.uid, 'scheduleBlocks', blockId))
+  }
+
+  const reorderScheduleBlocks = async (newOrder) => {
+    if (!user) return
+    await Promise.all(
+      newOrder.map((block, idx) =>
+        updateDoc(doc(db, 'users', user.uid, 'scheduleBlocks', block.id), { order: idx })
+      )
+    )
   }
 
   const addTask = async (sectionId, text, duration = null) => {
@@ -234,6 +285,9 @@ export const AppProvider = ({ children }) => {
       language, changeLanguage,
       theme, changeTheme,
       timeFormat, changeTimeFormat,
+      scheduleType, scheduleFrequency, scheduleBlocks,
+      changeScheduleType, changeScheduleFrequency,
+      addScheduleBlock, editScheduleBlock, deleteScheduleBlock, reorderScheduleBlocks,
       prayerTimes, location,
       tasks, customSections,
       completedToday, stats,

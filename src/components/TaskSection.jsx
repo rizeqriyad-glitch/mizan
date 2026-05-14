@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
-import { primeAlarm, startAlarm, stopAlarm } from '../utils/alarmSound'
+import { startRadarAlarm } from '../utils/alarmSound'
 
 function fmtTimer(s) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
@@ -20,6 +20,7 @@ export default function TaskSection({ section, isFixed = false }) {
   const inputRef = useRef(null)
   const timerIntervalRef = useRef(null)
   const activeTimerRef   = useRef(null)
+  const alarmStopRef     = useRef(null)  // fn returned by startRadarAlarm
   const alarmTimerRef    = useRef(null)  // auto-stop timeout
   const isAr = language === 'ar'
 
@@ -31,24 +32,24 @@ export default function TaskSection({ section, isFixed = false }) {
   // Cleanup on unmount
   useEffect(() => () => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-    stopAlarm()
-    if (alarmTimerRef.current) clearTimeout(alarmTimerRef.current)
+    if (alarmStopRef.current)     alarmStopRef.current()
+    if (alarmTimerRef.current)    clearTimeout(alarmTimerRef.current)
   }, [])
 
   const triggerAlarm = (taskText) => {
-    stopAlarm()
+    if (alarmStopRef.current) alarmStopRef.current()
     clearTimeout(alarmTimerRef.current)
-    startAlarm()
+    alarmStopRef.current = startRadarAlarm(3)
     setTimerAlert(taskText)
-    // Auto-dismiss after 3 s
+    // Auto-dismiss after 3 s (alarm duration)
     alarmTimerRef.current = setTimeout(() => {
-      stopAlarm()
+      alarmStopRef.current = null
       setTimerAlert(null)
     }, 3000)
   }
 
   const dismissAlarm = () => {
-    stopAlarm()
+    if (alarmStopRef.current) { alarmStopRef.current(); alarmStopRef.current = null }
     clearTimeout(alarmTimerRef.current)
     alarmTimerRef.current = null
     setTimerAlert(null)
@@ -113,11 +114,20 @@ export default function TaskSection({ section, isFixed = false }) {
     if (e.key === 'Escape') { setEditingId(null); setIsAdding(false) }
   }
 
-  const typeColor = section.type === 'prayer' ? 'var(--gold)' :
-                    section.type === 'worship' ? 'var(--sapphire)' : 'var(--emerald)'
+  const COLOR_MAP = {
+    gold:     ['var(--gold)',     'var(--gold-dim)'],
+    emerald:  ['var(--emerald)', 'var(--emerald-dim)'],
+    sapphire: ['var(--sapphire)','var(--sapphire-dim)'],
+    ruby:     ['var(--ruby)',    'var(--ruby-dim)'],
+  }
 
-  const typeDim = section.type === 'prayer' ? 'var(--gold-dim)' :
-                  section.type === 'worship' ? 'var(--sapphire-dim)' : 'var(--emerald-dim)'
+  const [typeColor, typeDim] = section.color
+    ? (COLOR_MAP[section.color] || COLOR_MAP.emerald)
+    : section.type === 'prayer'
+      ? COLOR_MAP.gold
+      : section.type === 'worship'
+        ? COLOR_MAP.sapphire
+        : COLOR_MAP.emerald
 
   return (
     <motion.div
@@ -307,7 +317,7 @@ export default function TaskSection({ section, isFixed = false }) {
                       isTimerActive={activeTimer?.taskId === task.id}
                       timerSeconds={activeTimer?.taskId === task.id ? activeTimer.secondsLeft : 0}
                       timerTotal={activeTimer?.taskId === task.id ? activeTimer.totalSeconds : (task.duration ? task.duration * 60 : 0)}
-                      onStartTimer={() => { primeAlarm(); startTimer(task) }}
+                      onStartTimer={() => startTimer(task)}
                       onStopTimer={stopTimer}
                     />
                   </Reorder.Item>
