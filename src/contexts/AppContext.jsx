@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import {
   doc, collection, onSnapshot, setDoc, updateDoc,
   addDoc, deleteDoc, serverTimestamp, query, where, orderBy, getDocs
@@ -27,6 +27,7 @@ export const AppProvider = ({ children }) => {
   const [language, setLanguage]         = useState('en')
   const [theme, setTheme]               = useState('dark')
   const [timeFormat, setTimeFormat]     = useState('12h')
+  const [prayerNotifications, setPrayerNotifications] = useState(true)
   const [scheduleType, setScheduleTypeState]           = useState('prayer')  // 'prayer' | 'custom'
   const [scheduleFrequency, setScheduleFrequencyState] = useState('daily')   // 'daily'  | 'weekly'
   const [scheduleBlocks, setScheduleBlocks]            = useState([])
@@ -53,6 +54,7 @@ export const AppProvider = ({ children }) => {
       setLanguage(userProfile.language || 'en')
       setTheme(userProfile.theme || 'dark')
       setTimeFormat(userProfile.timeFormat || '12h')
+      setPrayerNotifications(userProfile.prayerNotifications !== false) // default true
       setScheduleTypeState(userProfile.scheduleType || 'prayer')
       setScheduleFrequencyState(userProfile.scheduleFrequency || 'daily')
     }
@@ -69,27 +71,40 @@ export const AppProvider = ({ children }) => {
     document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr')
   }, [language])
 
-  // Fetch prayer times
-  useEffect(() => {
-    const getPrayerTimes = async () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (pos) => {
-            const { latitude, longitude } = pos.coords
-            setLocation({ latitude, longitude })
-            const times = await fetchPrayerTimes(latitude, longitude)
-            setPrayerTimes(times)
-          },
-          async () => {
-            // Fallback to IP-based location
-            const times = await fetchPrayerTimes(21.3891, 39.8579) // Mecca fallback
-            setPrayerTimes(times)
-          }
-        )
-      }
+  // Fetch prayer times for current location
+  const fetchLocationPrayerTimes = useCallback(async () => {
+    if (!navigator.geolocation) {
+      const times = await fetchPrayerTimes(21.3891, 39.8579)
+      setPrayerTimes(times)
+      return
     }
-    getPrayerTimes()
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords
+        setLocation({ latitude, longitude })
+        const times = await fetchPrayerTimes(latitude, longitude)
+        setPrayerTimes(times)
+      },
+      async () => {
+        const times = await fetchPrayerTimes(21.3891, 39.8579)
+        setPrayerTimes(times)
+      }
+    )
   }, [])
+
+  useEffect(() => { fetchLocationPrayerTimes() }, [fetchLocationPrayerTimes])
+
+  // Re-fetch prayer times when window regains focus (handles moving between cities)
+  useEffect(() => {
+    let lastFetch = Date.now()
+    const onFocus = () => {
+      if (Date.now() - lastFetch < 10 * 60 * 1000) return
+      lastFetch = Date.now()
+      fetchLocationPrayerTimes()
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [fetchLocationPrayerTimes])
 
   // Load tasks from Firestore
   useEffect(() => {
@@ -184,6 +199,11 @@ export const AppProvider = ({ children }) => {
   const changeTimeFormat = async (fmt) => {
     setTimeFormat(fmt)
     await updateProfile({ timeFormat: fmt })
+  }
+
+  const changePrayerNotifications = async (val) => {
+    setPrayerNotifications(val)
+    await updateProfile({ prayerNotifications: val })
   }
 
   const changeScheduleType = async (type) => {
@@ -415,6 +435,7 @@ export const AppProvider = ({ children }) => {
       language, changeLanguage,
       theme, changeTheme,
       timeFormat, changeTimeFormat,
+      prayerNotifications, changePrayerNotifications,
       scheduleType, scheduleFrequency, scheduleBlocks,
       changeScheduleType, changeScheduleFrequency,
       addScheduleBlock, editScheduleBlock, deleteScheduleBlock, reorderScheduleBlocks,
@@ -548,6 +569,10 @@ const translations = {
     durationMin: 'min',
     editDurations: 'Edit',
     planner: 'Planner',
+    prayerAlerts: 'Prayer Alerts',
+    prayerAlertsDesc: 'Play Adhan and show notification at prayer times',
+    enabled: 'On',
+    disabled: 'Off',
   },
   ar: {
     appName: 'ميزان',
@@ -653,5 +678,9 @@ const translations = {
     durationMin: 'د',
     editDurations: 'تعديل',
     planner: 'المخطط',
+    prayerAlerts: 'تنبيهات الصلاة',
+    prayerAlertsDesc: 'تشغيل الأذان وإرسال إشعار عند دخول وقت الصلاة',
+    enabled: 'مفعّل',
+    disabled: 'معطّل',
   }
 }

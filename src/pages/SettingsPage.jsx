@@ -166,7 +166,7 @@ function AlarmUploader({ isAr }) {
 
 export default function SettingsPage() {
   const { user, logout } = useAuth()
-  const { language, changeLanguage, theme, changeTheme, timeFormat, changeTimeFormat, t } = useApp()
+  const { language, changeLanguage, theme, changeTheme, timeFormat, changeTimeFormat, prayerNotifications, changePrayerNotifications, t } = useApp()
   const navigate = useNavigate()
   const isAr = language === 'ar'
 
@@ -318,7 +318,6 @@ export default function SettingsPage() {
           label={t('timeFormat')}
           description={isAr ? 'صيغة عرض الوقت' : 'How times are displayed'}
           isAr={isAr}
-          style={{ borderBottom: 'none' }}
         >
           <ToggleGroup
             options={[
@@ -327,6 +326,23 @@ export default function SettingsPage() {
             ]}
             value={timeFormat}
             onChange={changeTimeFormat}
+          />
+        </SettingRow>
+
+        <SettingRow
+          label={t('prayerAlerts')}
+          description={t('prayerAlertsDesc')}
+          isAr={isAr}
+        >
+          <ToggleGroup
+            options={[
+              { value: true,  label: t('enabled')  },
+              { value: false, label: t('disabled') },
+            ]}
+            value={prayerNotifications}
+            onChange={changePrayerNotifications}
+            color="var(--emerald)"
+            colorDim="var(--emerald-dim)"
           />
         </SettingRow>
       </motion.div>

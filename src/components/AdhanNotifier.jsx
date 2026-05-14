@@ -29,19 +29,21 @@ function loadPlayed() {
 function savePlayed(played) {
   try {
     localStorage.setItem('mizan_adhan_played', JSON.stringify({
-      date: todayKey(),
-      prayers: [...played],
+      date: todayKey(), prayers: [...played],
     }))
   } catch {}
 }
 
 export default function AdhanNotifier() {
-  const { prayerTimes, language } = useApp()
+  const { prayerTimes, language, prayerNotifications } = useApp()
   const isAr = language === 'ar'
-  const [toast, setToast] = useState(null) // { id, label }
+  const [toast, setToast]             = useState(null)
   const [audioBlocked, setAudioBlocked] = useState(false)
-  const playedRef = useRef(loadPlayed())
-  const audioRef = useRef(null)
+  const playedRef  = useRef(loadPlayed())
+  const audioRef   = useRef(null)
+  // Keep a ref so setTimeout callbacks always read the latest flag value
+  const notifRef   = useRef(prayerNotifications)
+  useEffect(() => { notifRef.current = prayerNotifications }, [prayerNotifications])
 
   const stopAudio = () => {
     if (audioRef.current) {
@@ -61,49 +63,77 @@ export default function AdhanNotifier() {
       await audio.play()
       setAudioBlocked(false)
     } catch (err) {
-      if (err.name === 'NotAllowedError') {
-        setAudioBlocked(true)
-      } else {
-        console.warn('Adhan audio failed to load:', err)
-      }
+      if (err.name === 'NotAllowedError') setAudioBlocked(true)
+      else console.warn('Adhan audio failed:', err)
     }
   }
 
+  const fire = (id) => {
+    if (!notifRef.current) return
+    playedRef.current.add(id)
+    savePlayed(playedRef.current)
+    setAudioBlocked(false)
+    setToast({ id, label: PRAYER_LABELS[id] })
+    playAdhan()
+
+    // Browser notification
+    if (Notification.permission === 'granted') {
+      const label = PRAYER_LABELS[id]
+      try {
+        new Notification(isAr ? `حان وقت صلاة ${label.ar}` : `${label.en} Prayer Time`, {
+          body: isAr ? 'حَيَّ عَلَى الصَّلَاةِ' : 'Come to prayer',
+          icon: '/favicon.ico',
+          silent: true,
+        })
+      } catch {}
+    }
+  }
+
+  // Schedule timeouts precisely at each prayer time
   useEffect(() => {
     if (!prayerTimes) return
 
-    const check = () => {
-      const now = new Date()
-      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+    const timeouts = []
+    const now = new Date()
 
-      for (const id of OBLIGATORY) {
-        const t = prayerTimes[id]
-        if (!t) continue
-        // Compare HH:MM only
-        if (t.substring(0, 5) === timeStr && !playedRef.current.has(id)) {
-          playedRef.current.add(id)
-          savePlayed(playedRef.current)
-          setAudioBlocked(false)
-          setToast({ id, label: PRAYER_LABELS[id] })
-          playAdhan()
-          break
-        }
+    // Immediate check — fires if we're within the current prayer minute and it hasn't played yet
+    const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+    for (const id of OBLIGATORY) {
+      if (prayerTimes[id]?.substring(0, 5) === hhmm && !playedRef.current.has(id)) {
+        fire(id)
+        break
       }
     }
 
-    check()
-    const interval = setInterval(check, 30_000)
-    return () => clearInterval(interval)
+    // Schedule a precise setTimeout for every remaining prayer today
+    for (const id of OBLIGATORY) {
+      const t = prayerTimes[id]?.substring(0, 5)
+      if (!t) continue
+      const [ph, pm] = t.split(':').map(Number)
+      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), ph, pm, 0, 0)
+      const delay  = target.getTime() - now.getTime()
+      if (delay <= 0) continue
+
+      const tid = setTimeout(() => {
+        if (!playedRef.current.has(id)) fire(id)
+      }, delay)
+      timeouts.push(tid)
+    }
+
+    return () => timeouts.forEach(clearTimeout)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prayerTimes])
 
-  // Cleanup audio on unmount
+  // Request notification permission once
+  useEffect(() => {
+    if (prayerNotifications && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {})
+    }
+  }, [prayerNotifications])
+
   useEffect(() => () => stopAudio(), [])
 
-  const dismiss = () => {
-    stopAudio()
-    setToast(null)
-    setAudioBlocked(false)
-  }
+  const dismiss = () => { stopAudio(); setToast(null); setAudioBlocked(false) }
 
   return (
     <AnimatePresence>
@@ -115,95 +145,56 @@ export default function AdhanNotifier() {
           exit={{ opacity: 0, y: -24, scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 340, damping: 28 }}
           style={{
-            position: 'fixed',
-            top: '1.25rem',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 9999,
+            position: 'fixed', top: '1.25rem', left: '50%',
+            transform: 'translateX(-50%)', zIndex: 9999,
             background: 'var(--bg-card)',
             border: '1px solid rgba(212,175,106,0.45)',
             borderRadius: 'var(--radius-lg)',
             padding: '1rem 1.25rem',
             boxShadow: '0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(212,175,106,0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.875rem',
-            minWidth: 300,
-            maxWidth: '90vw',
+            display: 'flex', alignItems: 'center', gap: '0.875rem',
+            minWidth: 300, maxWidth: '90vw',
             direction: isAr ? 'rtl' : 'ltr',
           }}
         >
-          {/* Mosque icon */}
           <div style={{
             width: 44, height: 44, borderRadius: 'var(--radius-md)',
-            background: 'var(--gold-dim)',
-            border: '1px solid rgba(212,175,106,0.3)',
+            background: 'var(--gold-dim)', border: '1px solid rgba(212,175,106,0.3)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '1.4rem', flexShrink: 0,
-          }}>
-            🕌
-          </div>
+          }}>🕌</div>
 
-          {/* Text */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontFamily: 'var(--font-arabic)',
-              fontSize: '1rem',
-              color: 'var(--gold)',
-              direction: 'rtl',
-              marginBottom: '0.2rem',
-            }}>
+            <div style={{ fontFamily: 'var(--font-arabic)', fontSize: '1rem', color: 'var(--gold)', direction: 'rtl', marginBottom: '0.2rem' }}>
               حَيَّ عَلَى الصَّلَاةِ
             </div>
-            <div style={{
-              fontSize: '0.82rem',
-              color: 'var(--text-secondary)',
-              fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-            }}>
-              {isAr
-                ? `حان وقت صلاة ${toast.label.ar}`
-                : `It's time for ${toast.label.en} prayer`}
+            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+              {isAr ? `حان وقت صلاة ${toast.label.ar}` : `It's time for ${toast.label.en} prayer`}
             </div>
-
-            {/* Play button shown only if browser blocked autoplay */}
             {audioBlocked && (
-              <button
-                onClick={playAdhan}
-                style={{
-                  marginTop: '0.45rem',
-                  padding: '0.25rem 0.75rem',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid rgba(212,175,106,0.35)',
-                  background: 'var(--gold-dim)',
-                  color: 'var(--gold)',
-                  fontSize: '0.75rem',
-                  cursor: 'pointer',
-                  fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                }}
-              >
+              <button onClick={playAdhan} style={{
+                marginTop: '0.45rem', padding: '0.25rem 0.75rem',
+                borderRadius: 'var(--radius-sm)', border: '1px solid rgba(212,175,106,0.35)',
+                background: 'var(--gold-dim)', color: 'var(--gold)',
+                fontSize: '0.75rem', cursor: 'pointer',
+                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+              }}>
                 ▶ {isAr ? 'تشغيل الأذان' : 'Play Adhan'}
               </button>
             )}
           </div>
 
-          {/* Dismiss */}
-          <button
-            onClick={dismiss}
-            style={{
-              width: 28, height: 28, borderRadius: '50%',
-              border: '1px solid var(--border-strong)',
-              background: 'transparent',
-              color: 'var(--text-muted)',
-              fontSize: '1rem', lineHeight: 1,
-              cursor: 'pointer', flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all var(--transition)',
-            }}
+          <button onClick={dismiss} style={{
+            width: 28, height: 28, borderRadius: '50%',
+            border: '1px solid var(--border-strong)', background: 'transparent',
+            color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1,
+            cursor: 'pointer', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all var(--transition)',
+          }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--ruby-dim)'; e.currentTarget.style.color = 'var(--ruby)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
-          >
-            ×
-          </button>
+          >×</button>
         </motion.div>
       )}
     </AnimatePresence>

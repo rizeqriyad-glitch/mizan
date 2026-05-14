@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
@@ -6,9 +6,54 @@ import { useApp } from '../contexts/AppContext'
 import AdhanNotifier from './AdhanNotifier'
 import ReminderNotifier from './ReminderNotifier'
 
+function DigitalClock({ timeFormat, isAr }) {
+  const [now, setNow] = useState(new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds()
+  let timeStr
+  if (timeFormat === '24h') {
+    timeStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+  } else {
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const h12  = h % 12 || 12
+    timeStr = `${h12}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${ampm}`
+  }
+
+  const dateStr = now.toLocaleDateString(isAr ? 'ar-SA' : 'en-US', {
+    weekday: 'short', month: 'short', day: 'numeric',
+  })
+
+  return (
+    <div style={{ textAlign: isAr ? 'right' : 'left' }}>
+      <div style={{
+        fontFamily: 'monospace',
+        fontSize: '1rem',
+        fontWeight: 600,
+        color: 'var(--text-primary)',
+        fontVariantNumeric: 'tabular-nums',
+        letterSpacing: '0.02em',
+      }}>
+        {timeStr}
+      </div>
+      <div style={{
+        fontSize: '0.68rem',
+        color: 'var(--text-muted)',
+        marginTop: '0.1rem',
+        fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+      }}>
+        {dateStr}
+      </div>
+    </div>
+  )
+}
+
 export default function Layout() {
   const { user, logout } = useAuth()
-  const { language, theme, changeTheme, t } = useApp()
+  const { language, theme, changeTheme, timeFormat, t } = useApp()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const isAr = language === 'ar'
@@ -172,10 +217,19 @@ export default function Layout() {
           ))}
         </nav>
 
+        {/* Digital clock */}
+        <div style={{
+          padding: '0.875rem 1.5rem',
+          borderTop: '1px solid var(--border)',
+          borderBottom: '1px solid var(--border)',
+        }}>
+          <DigitalClock timeFormat={timeFormat} isAr={isAr} />
+        </div>
+
         {/* Bottom actions */}
         <div style={{
           padding: '0.75rem',
-          borderTop: '1px solid var(--border)',
+          borderTop: 'none',
           display: 'flex',
           flexDirection: 'column',
           gap: '0.25rem',

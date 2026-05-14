@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { startRadarAlarm } from '../utils/alarmSound'
@@ -9,21 +9,13 @@ function fmtTimer(s) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 }
 
-function fmt12h(str) {
+export function fmt12h(str) {
   if (!str) return ''
   const [h, m] = str.split(':').map(Number)
   const ampm = h >= 12 ? 'PM' : 'AM'
   const h12 = h % 12 || 12
   return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
 }
-
-function getTodayStr() {
-  return new Date().toISOString().split('T')[0]
-}
-
-// ── TimePicker12h ─────────────────────────────────────────────────────────────
-const HOURS = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-const MINS  = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
 function to24(h12, min, ampm) {
   let h = h12 % 12
@@ -37,6 +29,10 @@ function parse12(str) {
   return { h12: h % 12 || 12, min: m, ampm: h >= 12 ? 'PM' : 'AM' }
 }
 
+// ── TimePicker12h ─────────────────────────────────────────────────────────────
+const HOURS = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+const MINS  = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+
 function TimePicker12h({ value, onChange, typeColor, isAr }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
@@ -49,39 +45,33 @@ function TimePicker12h({ value, onChange, typeColor, isAr }) {
     return () => document.removeEventListener('mousedown', fn)
   }, [open])
 
-  const setHour = (h) => onChange(to24(h, p.min, p.ampm))
-  const setMin  = (m) => onChange(to24(p.h12, m, p.ampm))
-  const setAmPm = (ap) => { if (value) onChange(to24(p.h12, p.min, ap)) }
-
-  const cellStyle = (sel) => ({
-    padding: '0.28rem 0',
-    borderRadius: 'var(--radius-sm)',
+  const cell = (sel) => ({
+    padding: '0.28rem 0', borderRadius: 'var(--radius-sm)',
     border: sel ? `1px solid ${typeColor}` : '1px solid transparent',
     background: sel ? typeColor + '25' : 'transparent',
     color: sel ? typeColor : 'var(--text-secondary)',
-    fontSize: '0.8rem',
-    cursor: 'pointer',
-    fontVariantNumeric: 'tabular-nums',
-    transition: 'all 0.12s',
+    fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.12s',
   })
+
+  const hover = (e, on, sel) => {
+    if (sel) return
+    e.currentTarget.style.background = on ? typeColor + '15' : 'transparent'
+    e.currentTarget.style.color = on ? typeColor : 'var(--text-secondary)'
+  }
 
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: '0.4rem',
-          padding: '0.3rem 0.65rem',
-          background: value ? typeColor + '18' : 'var(--bg-input)',
-          border: `1px solid ${value ? typeColor + '70' : typeColor + '30'}`,
-          borderRadius: 'var(--radius-md)',
-          color: value ? 'var(--text-primary)' : 'var(--text-muted)',
-          fontSize: '0.82rem', cursor: 'pointer',
-          fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap',
-          transition: 'all var(--transition)',
-        }}
-      >
+      <button type="button" onClick={() => setOpen(o => !o)} style={{
+        display: 'flex', alignItems: 'center', gap: '0.4rem',
+        padding: '0.3rem 0.65rem',
+        background: value ? typeColor + '18' : 'var(--bg-input)',
+        border: `1px solid ${value ? typeColor + '70' : typeColor + '30'}`,
+        borderRadius: 'var(--radius-md)',
+        color: value ? 'var(--text-primary)' : 'var(--text-muted)',
+        fontSize: '0.82rem', cursor: 'pointer',
+        fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap',
+        transition: 'all var(--transition)',
+      }}>
         🕐 {value ? fmt12h(value) : (isAr ? 'ضبط وقت' : 'Set time')}
       </button>
 
@@ -93,60 +83,58 @@ function TimePicker12h({ value, onChange, typeColor, isAr }) {
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.14 }}
             style={{
-              position: 'absolute',
-              top: 'calc(100% + 6px)',
+              position: 'absolute', top: 'calc(100% + 6px)',
               [isAr ? 'right' : 'left']: 0,
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-strong)',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
-              zIndex: 9999,
-              padding: '0.875rem',
-              minWidth: 216,
+              background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
+              borderRadius: 'var(--radius-lg)', boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+              zIndex: 9999, padding: '0.875rem', minWidth: 216,
               direction: isAr ? 'rtl' : 'ltr',
             }}
           >
-            {/* Hours */}
             <div style={{ marginBottom: '0.6rem' }}>
               <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                 {isAr ? 'ساعة' : 'Hour'}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.18rem' }}>
-                {HOURS.map(h => (
-                  <button key={h} type="button" onClick={() => setHour(h)}
-                    style={cellStyle(!!value && p.h12 === h)}
-                    onMouseEnter={e => { if (!(value && p.h12 === h)) { e.currentTarget.style.background = typeColor + '15'; e.currentTarget.style.color = typeColor } }}
-                    onMouseLeave={e => { if (!(value && p.h12 === h)) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
-                  >{h}</button>
-                ))}
+                {HOURS.map(h => {
+                  const sel = !!value && p.h12 === h
+                  return (
+                    <button key={h} type="button" style={cell(sel)}
+                      onClick={() => onChange(to24(h, p.min, p.ampm))}
+                      onMouseEnter={e => hover(e, true, sel)}
+                      onMouseLeave={e => hover(e, false, sel)}
+                    >{h}</button>
+                  )
+                })}
               </div>
             </div>
 
-            {/* Minutes */}
             <div style={{ marginBottom: '0.6rem' }}>
               <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                 {isAr ? 'دقيقة' : 'Minute'}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.18rem' }}>
-                {MINS.map(m => (
-                  <button key={m} type="button" onClick={() => setMin(m)}
-                    style={cellStyle(!!value && p.min === m)}
-                    onMouseEnter={e => { if (!(value && p.min === m)) { e.currentTarget.style.background = typeColor + '15'; e.currentTarget.style.color = typeColor } }}
-                    onMouseLeave={e => { if (!(value && p.min === m)) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
-                  >{String(m).padStart(2, '0')}</button>
-                ))}
+                {MINS.map(m => {
+                  const sel = !!value && p.min === m
+                  return (
+                    <button key={m} type="button" style={cell(sel)}
+                      onClick={() => onChange(to24(p.h12, m, p.ampm))}
+                      onMouseEnter={e => hover(e, true, sel)}
+                      onMouseLeave={e => hover(e, false, sel)}
+                    >{String(m).padStart(2,'0')}</button>
+                  )
+                })}
               </div>
             </div>
 
-            {/* AM / PM */}
             <div style={{ display: 'flex', gap: '0.4rem', marginBottom: value ? '0.5rem' : 0 }}>
               {['AM', 'PM'].map(ap => {
                 const sel = !!value && p.ampm === ap
                 return (
-                  <button key={ap} type="button" onClick={() => setAmPm(ap)}
+                  <button key={ap} type="button"
+                    onClick={() => value && onChange(to24(p.h12, p.min, ap))}
                     style={{
-                      flex: 1, padding: '0.3rem',
-                      borderRadius: 'var(--radius-md)',
+                      flex: 1, padding: '0.3rem', borderRadius: 'var(--radius-md)',
                       border: sel ? `1px solid ${typeColor}` : '1px solid var(--border-strong)',
                       background: sel ? typeColor + '25' : 'transparent',
                       color: sel ? typeColor : 'var(--text-muted)',
@@ -158,18 +146,13 @@ function TimePicker12h({ value, onChange, typeColor, isAr }) {
               })}
             </div>
 
-            {/* Clear */}
             {value && (
-              <button type="button" onClick={() => { onChange(''); setOpen(false) }}
-                style={{
-                  width: '100%', padding: '0.28rem',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border)',
-                  background: 'transparent', color: 'var(--text-muted)',
-                  fontSize: '0.75rem', cursor: 'pointer',
-                  fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                }}
-              >{isAr ? 'مسح الوقت' : 'Clear time'}</button>
+              <button type="button" onClick={() => { onChange(''); setOpen(false) }} style={{
+                width: '100%', padding: '0.28rem', borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border)', background: 'transparent',
+                color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer',
+                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+              }}>{isAr ? 'مسح الوقت' : 'Clear time'}</button>
             )}
           </motion.div>
         )}
@@ -178,51 +161,125 @@ function TimePicker12h({ value, onChange, typeColor, isAr }) {
   )
 }
 
-// ── DayPicker ─────────────────────────────────────────────────────────────────
-const DAY_SHORT = {
-  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-  ar: ['أحد', 'اثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'],
-}
+// ── DurationPicker ────────────────────────────────────────────────────────────
+const DUR_HOURS = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+const DUR_MINS  = [0, 5, 10, 15, 20, 25, 30, 45]
 
-function DayPicker({ value, onChange, isAr }) {
-  const lang = isAr ? 'ar' : 'en'
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() + i)
-    const str = d.toISOString().split('T')[0]
-    const label = i === 0 ? (isAr ? 'اليوم' : 'Today') : DAY_SHORT[lang][d.getDay()]
-    return { str, label, num: d.getDate() }
+function DurationPicker({ value, onChange, typeColor, isAr }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  const h = value ? Math.floor(value / 60) : 0
+  const m = value ? value % 60 : 0
+
+  const display = value
+    ? (h > 0 && m > 0 ? `${h}h ${m}m` : h > 0 ? `${h}h` : `${m}m`)
+    : (isAr ? 'المدة' : 'Set duration')
+
+  useEffect(() => {
+    if (!open) return
+    const fn = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
+  }, [open])
+
+  const upd = (newH, newM) => {
+    const total = newH * 60 + newM
+    onChange(total > 0 ? total : null)
+  }
+
+  const cell = (sel) => ({
+    padding: '0.28rem 0', borderRadius: 'var(--radius-sm)',
+    border: sel ? `1px solid ${typeColor}` : '1px solid transparent',
+    background: sel ? typeColor + '25' : 'transparent',
+    color: sel ? typeColor : 'var(--text-secondary)',
+    fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.12s',
   })
 
-  const selected = value || days[0].str
+  const hover = (e, on, sel) => {
+    if (sel) return
+    e.currentTarget.style.background = on ? typeColor + '15' : 'transparent'
+    e.currentTarget.style.color = on ? typeColor : 'var(--text-secondary)'
+  }
 
   return (
-    <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
-      {days.map(d => {
-        const sel = selected === d.str
-        return (
-          <button key={d.str} type="button" onClick={() => onChange(d.str)}
+    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button type="button" onClick={() => setOpen(o => !o)} style={{
+        display: 'flex', alignItems: 'center', gap: '0.4rem',
+        padding: '0.3rem 0.65rem',
+        background: value ? typeColor + '18' : 'var(--bg-input)',
+        border: `1px solid ${value ? typeColor + '70' : typeColor + '30'}`,
+        borderRadius: 'var(--radius-md)',
+        color: value ? 'var(--text-primary)' : 'var(--text-muted)',
+        fontSize: '0.82rem', cursor: 'pointer',
+        whiteSpace: 'nowrap', transition: 'all var(--transition)',
+      }}>
+        ⏱ {display}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.14 }}
             style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              padding: '0.25rem 0.45rem', minWidth: 36,
-              borderRadius: 'var(--radius-md)',
-              border: sel ? '1px solid var(--sapphire)' : '1px solid var(--border)',
-              background: sel ? 'var(--sapphire-dim)' : 'transparent',
-              color: sel ? 'var(--sapphire)' : 'var(--text-muted)',
-              cursor: 'pointer', transition: 'all 0.15s',
+              position: 'absolute', top: 'calc(100% + 6px)',
+              [isAr ? 'right' : 'left']: 0,
+              background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
+              borderRadius: 'var(--radius-lg)', boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+              zIndex: 9999, padding: '0.875rem', minWidth: 200,
+              direction: isAr ? 'rtl' : 'ltr',
             }}
-            onMouseEnter={e => { if (!sel) { e.currentTarget.style.borderColor = 'var(--sapphire)'; e.currentTarget.style.color = 'var(--sapphire)' } }}
-            onMouseLeave={e => { if (!sel) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
           >
-            <span style={{ fontSize: '0.67rem', fontWeight: sel ? 600 : 400, lineHeight: 1.3, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-              {d.label}
-            </span>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
-              {d.num}
-            </span>
-          </button>
-        )
-      })}
+            <div style={{ marginBottom: '0.6rem' }}>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                {isAr ? 'ساعات' : 'Hours'}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.18rem' }}>
+                {DUR_HOURS.map(hr => {
+                  const sel = !!value && h === hr
+                  return (
+                    <button key={hr} type="button" style={cell(sel)}
+                      onClick={() => upd(hr, m)}
+                      onMouseEnter={e => hover(e, true, sel)}
+                      onMouseLeave={e => hover(e, false, sel)}
+                    >{hr === 0 ? '—' : `${hr}h`}</button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: value ? '0.5rem' : 0 }}>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                {isAr ? 'دقائق' : 'Minutes'}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.18rem' }}>
+                {DUR_MINS.map(mn => {
+                  const sel = !!value && m === mn
+                  return (
+                    <button key={mn} type="button" style={cell(sel)}
+                      onClick={() => upd(h, mn)}
+                      onMouseEnter={e => hover(e, true, sel)}
+                      onMouseLeave={e => hover(e, false, sel)}
+                    >{mn === 0 ? '—' : `${mn}m`}</button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {value && (
+              <button type="button" onClick={() => { onChange(null); setOpen(false) }} style={{
+                width: '100%', padding: '0.28rem', borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border)', background: 'transparent',
+                color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer',
+                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+              }}>{isAr ? 'مسح المدة' : 'Clear duration'}</button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -230,10 +287,9 @@ function DayPicker({ value, onChange, isAr }) {
 // ── TaskSection ───────────────────────────────────────────────────────────────
 export default function TaskSection({ section }) {
   const { tasks, addTask, editTask, deleteTask, toggleTask, reorderTasks, language, t } = useApp()
-  const [newTaskText,     setNewTaskText]     = useState('')
-  const [newTaskDuration, setNewTaskDuration] = useState('')
-  const [newTaskReminder, setNewTaskReminder] = useState('')
-  const [scheduledDate,   setScheduledDate]   = useState(getTodayStr())
+  const [newTaskText,      setNewTaskText]      = useState('')
+  const [newTaskDuration,  setNewTaskDuration]  = useState(null)   // number of minutes
+  const [newTaskReminder,  setNewTaskReminder]  = useState('')
   const [editingId,  setEditingId]  = useState(null)
   const [editText,   setEditText]   = useState('')
   const [isAdding,   setIsAdding]   = useState(false)
@@ -247,7 +303,7 @@ export default function TaskSection({ section }) {
   const alarmTimerRef    = useRef(null)
   const isAr = language === 'ar'
 
-  const sectionTasks = (tasks[section.id] || [])
+  const sectionTasks = tasks[section.id] || []
   const pendingTasks = sectionTasks.filter(t => !t.completed)
   const doneTasks    = sectionTasks.filter(t => t.completed)
   const label = section.label?.[language] || section.label?.en || section.id
@@ -264,16 +320,13 @@ export default function TaskSection({ section }) {
     alarmStopRef.current = startRadarAlarm(8)
     setTimerAlert(taskText)
     alarmTimerRef.current = setTimeout(() => {
-      alarmStopRef.current = null
-      setTimerAlert(null)
+      alarmStopRef.current = null; setTimerAlert(null)
     }, 8000)
   }
 
   const dismissAlarm = () => {
     if (alarmStopRef.current) { alarmStopRef.current(); alarmStopRef.current = null }
-    clearTimeout(alarmTimerRef.current)
-    alarmTimerRef.current = null
-    setTimerAlert(null)
+    clearTimeout(alarmTimerRef.current); alarmTimerRef.current = null; setTimerAlert(null)
   }
 
   const startTimer = (task) => {
@@ -281,17 +334,14 @@ export default function TaskSection({ section }) {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
     const totalSecs = task.duration * 60
     const data = { taskId: task.id, taskText: task.text, totalSeconds: totalSecs, secondsLeft: totalSecs }
-    activeTimerRef.current = data
-    setActiveTimer(data)
+    activeTimerRef.current = data; setActiveTimer(data)
     timerIntervalRef.current = setInterval(() => {
       if (!activeTimerRef.current) return
       const next = activeTimerRef.current.secondsLeft - 1
       if (next <= 0) {
-        clearInterval(timerIntervalRef.current)
-        timerIntervalRef.current = null
+        clearInterval(timerIntervalRef.current); timerIntervalRef.current = null
         const text = activeTimerRef.current.taskText
-        activeTimerRef.current = null
-        setActiveTimer(null)
+        activeTimerRef.current = null; setActiveTimer(null)
         triggerAlarm(text)
       } else {
         activeTimerRef.current = { ...activeTimerRef.current, secondsLeft: next }
@@ -302,29 +352,21 @@ export default function TaskSection({ section }) {
 
   const stopTimer = () => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-    timerIntervalRef.current = null
-    activeTimerRef.current = null
-    setActiveTimer(null)
+    timerIntervalRef.current = null; activeTimerRef.current = null; setActiveTimer(null)
   }
 
-  // Decoupled from form submit — works reliably on all platforms
+  // Tasks added here are always for TODAY — day scheduling belongs in the Schedule view
   const saveTask = async () => {
     if (!newTaskText.trim()) return
-    const dur      = newTaskDuration ? parseInt(newTaskDuration, 10) : null
     const reminder = newTaskReminder || null
-    const date     = scheduledDate || getTodayStr()
-    await addTask(section.id, newTaskText, dur && dur > 0 ? dur : null, reminder, date)
+    await addTask(section.id, newTaskText, newTaskDuration || null, reminder, null)
     if (reminder) requestReminderPermission()
-    setNewTaskText('')
-    setNewTaskDuration('')
-    setNewTaskReminder('')
-    setScheduledDate(getTodayStr())
-    setIsAdding(false)
+    setNewTaskText(''); setNewTaskDuration(null); setNewTaskReminder(''); setIsAdding(false)
   }
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') { e.preventDefault(); saveTask() }
-    if (e.key === 'Escape') { setIsAdding(false) }
+    if (e.key === 'Escape') setIsAdding(false)
   }
 
   const handleStartEdit = (task) => { setEditingId(task.id); setEditText(task.text) }
@@ -339,70 +381,47 @@ export default function TaskSection({ section }) {
     sapphire: ['var(--sapphire)','var(--sapphire-dim)'],
     ruby:     ['var(--ruby)',    'var(--ruby-dim)'],
   }
-
   const [typeColor, typeDim] = section.color
     ? (COLOR_MAP[section.color] || COLOR_MAP.emerald)
-    : section.type === 'prayer'
-      ? COLOR_MAP.gold
-      : section.type === 'worship'
-        ? COLOR_MAP.sapphire
-        : COLOR_MAP.emerald
+    : section.type === 'prayer' ? COLOR_MAP.gold
+    : section.type === 'worship' ? COLOR_MAP.sapphire
+    : COLOR_MAP.emerald
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      style={{
-        background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border)',
-        overflow: 'hidden',
-        marginBottom: '0.75rem',
-      }}
+      style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden', marginBottom: '0.75rem' }}
     >
       {/* Section Header */}
-      <div
-        onClick={() => setExpanded(e => !e)}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0.875rem 1.25rem', cursor: 'pointer', userSelect: 'none',
-          borderBottom: expanded ? '1px solid var(--border)' : 'none',
-          transition: 'background var(--transition)',
-        }}
+      <div onClick={() => setExpanded(e => !e)} style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0.875rem 1.25rem', cursor: 'pointer', userSelect: 'none',
+        borderBottom: expanded ? '1px solid var(--border)' : 'none',
+        transition: 'background var(--transition)',
+      }}
         onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-card-hover)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{
-            width: 32, height: 32, borderRadius: 'var(--radius-md)',
-            background: typeDim, border: `1px solid ${typeColor}22`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1rem', flexShrink: 0,
-          }}>{section.icon}</span>
+          <span style={{ width: 32, height: 32, borderRadius: 'var(--radius-md)', background: typeDim, border: `1px solid ${typeColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
+            {section.icon}
+          </span>
           <div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-              {label}
-            </div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{label}</div>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
               {pendingTasks.length} {isAr ? 'معلقة' : 'pending'} · {doneTasks.length} {isAr ? 'مكتملة' : 'done'}
             </div>
           </div>
         </div>
-
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {sectionTasks.length > 0 && (
             <div style={{ fontSize: '0.7rem', color: typeColor, background: typeDim, padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-full)' }}>
               {Math.round((doneTasks.length / sectionTasks.length) * 100)}%
             </div>
           )}
-          <button
-            onClick={(e) => { e.stopPropagation(); setIsAdding(true); setExpanded(true) }}
-            style={{
-              width: 26, height: 26, borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-strong)', color: 'var(--text-muted)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1rem', lineHeight: 1, transition: 'all var(--transition)', background: 'transparent',
-            }}
+          <button onClick={(e) => { e.stopPropagation(); setIsAdding(true); setExpanded(true) }}
+            style={{ width: 26, height: 26, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-strong)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', lineHeight: 1, transition: 'all var(--transition)', background: 'transparent' }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = typeColor; e.currentTarget.style.color = typeColor }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text-muted)' }}
           >+</button>
@@ -414,26 +433,15 @@ export default function TaskSection({ section }) {
       <AnimatePresence initial={false}>
         {expanded && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             style={{ overflow: 'hidden' }}
           >
-            {/* Timer alert banner */}
+            {/* Timer alert */}
             <AnimatePresence>
               {timerAlert && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  style={{
-                    padding: '0.6rem 1.25rem', background: 'var(--emerald-dim)',
-                    borderBottom: '1px solid rgba(74,222,128,0.2)',
-                    display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    fontSize: '0.82rem', color: 'var(--emerald)',
-                    fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                  }}
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                  style={{ padding: '0.6rem 1.25rem', background: 'var(--emerald-dim)', borderBottom: '1px solid rgba(74,222,128,0.2)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}
                 >
                   <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 0.54 }}>⏰</motion.span>
                   <span style={{ flex: 1 }}>{t('timesUp')}{timerAlert ? ` — "${timerAlert}"` : ''}</span>
@@ -471,8 +479,7 @@ export default function TaskSection({ section }) {
             {doneTasks.length > 0 && (
               <div style={{ borderTop: '1px solid var(--border)', padding: '0.25rem 0' }}>
                 {doneTasks.map(task => (
-                  <TaskItem
-                    key={task.id} task={task} editingId={editingId} editText={editText} setEditText={setEditText}
+                  <TaskItem key={task.id} task={task} editingId={editingId} editText={editText} setEditText={setEditText}
                     onToggle={() => toggleTask(task)} onEdit={() => handleStartEdit(task)}
                     onSaveEdit={() => handleSaveEdit(task.id)} onDelete={() => deleteTask(task.id)}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEdit(task.id); if (e.key === 'Escape') setEditingId(null) }}
@@ -488,91 +495,49 @@ export default function TaskSection({ section }) {
             <AnimatePresence>
               {isAdding && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
+                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                   style={{ borderTop: '1px solid var(--border)', padding: '0.875rem 1.25rem' }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
 
-                    {/* Text + buttons row */}
+                    {/* Text + buttons */}
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <input
-                        ref={inputRef}
-                        autoFocus
-                        value={newTaskText}
-                        onChange={e => setNewTaskText(e.target.value)}
-                        onKeyDown={handleKeyDown}
+                        ref={inputRef} autoFocus
+                        value={newTaskText} onChange={e => setNewTaskText(e.target.value)} onKeyDown={handleKeyDown}
                         placeholder={t('addTask')}
                         style={{
                           flex: 1, background: 'var(--bg-input)',
                           border: `1px solid ${typeColor}40`, borderRadius: 'var(--radius-md)',
                           padding: '0.5rem 0.75rem', fontSize: '0.875rem',
-                          color: 'var(--text-primary)', direction: isAr ? 'rtl' : 'ltr',
-                          outline: 'none',
+                          color: 'var(--text-primary)', direction: isAr ? 'rtl' : 'ltr', outline: 'none',
                         }}
                       />
-                      <button
-                        type="button"
-                        onClick={saveTask}
-                        style={{
-                          padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)',
-                          background: typeDim, border: `1px solid ${typeColor}40`,
-                          color: typeColor, fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer',
-                          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >{t('save')}</button>
-                      <button
-                        type="button"
-                        onClick={() => { setIsAdding(false); setNewTaskText(''); setNewTaskDuration(''); setNewTaskReminder(''); setScheduledDate(getTodayStr()) }}
+                      <button type="button" onClick={saveTask} style={{
+                        padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)',
+                        background: typeDim, border: `1px solid ${typeColor}40`,
+                        color: typeColor, fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer',
+                        fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', whiteSpace: 'nowrap',
+                      }}>{t('save')}</button>
+                      <button type="button"
+                        onClick={() => { setIsAdding(false); setNewTaskText(''); setNewTaskDuration(null); setNewTaskReminder('') }}
                         style={{ padding: '0.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'transparent', cursor: 'pointer' }}
                       >✕</button>
                     </div>
 
-                    {/* Day picker row */}
-                    <div style={{ direction: isAr ? 'rtl' : 'ltr' }}>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.35rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                        📅 {isAr ? 'اليوم:' : 'Schedule for:'}
-                      </div>
-                      <DayPicker value={scheduledDate} onChange={setScheduledDate} isAr={isAr} />
-                    </div>
-
-                    {/* Duration + Reminder row */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', direction: isAr ? 'rtl' : 'ltr' }}>
-                      {/* Duration */}
+                    {/* Duration + Reminder pickers */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', direction: isAr ? 'rtl' : 'ltr' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                          ⏱ {t('durationLabel')}:
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', whiteSpace: 'nowrap' }}>
+                          {isAr ? 'المدة:' : 'Duration:'}
                         </span>
-                        <input
-                          type="number" min="1" max="480"
-                          value={newTaskDuration}
-                          onChange={e => setNewTaskDuration(e.target.value)}
-                          placeholder="—"
-                          style={{
-                            width: 54, background: 'var(--bg-input)',
-                            border: `1px solid ${typeColor}30`, borderRadius: 'var(--radius-md)',
-                            padding: '0.3rem 0.4rem', fontSize: '0.82rem',
-                            color: 'var(--text-primary)', textAlign: 'center',
-                          }}
-                        />
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                          {isAr ? 'دقيقة' : 'min'}
-                        </span>
+                        <DurationPicker value={newTaskDuration} onChange={setNewTaskDuration} typeColor={typeColor} isAr={isAr} />
                       </div>
-
-                      {/* Reminder */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                          🔔 {isAr ? 'تذكير:' : 'Reminder:'}
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', whiteSpace: 'nowrap' }}>
+                          {isAr ? 'تذكير:' : 'Reminder:'}
                         </span>
-                        <TimePicker12h
-                          value={newTaskReminder}
-                          onChange={setNewTaskReminder}
-                          typeColor={typeColor}
-                          isAr={isAr}
-                        />
+                        <TimePicker12h value={newTaskReminder} onChange={setNewTaskReminder} typeColor={typeColor} isAr={isAr} />
                       </div>
                     </div>
 
@@ -600,6 +565,12 @@ function TaskItem({
   const circumference = 2 * Math.PI * 9
   const hasDuration = task.duration && task.duration > 0
 
+  const durLabel = hasDuration
+    ? (task.duration >= 60
+        ? (task.duration % 60 === 0 ? `${task.duration / 60}h` : `${Math.floor(task.duration / 60)}h ${task.duration % 60}m`)
+        : `${task.duration}m`)
+    : ''
+
   return (
     <motion.div
       layout
@@ -608,21 +579,12 @@ function TaskItem({
       exit={{ opacity: 0, x: isAr ? 8 : -8 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: '0.75rem',
-        padding: '0.6rem 1.25rem',
-        background: hovered ? 'var(--bg-card-hover)' : 'transparent',
-        transition: 'background var(--transition)', cursor: 'default',
-      }}
+      style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 1.25rem', background: hovered ? 'var(--bg-card-hover)' : 'transparent', transition: 'background var(--transition)', cursor: 'default' }}
     >
-      {/* Drag handle */}
       {!task.completed && (
-        <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', cursor: 'grab', opacity: hovered ? 0.6 : 0, transition: 'opacity var(--transition)', userSelect: 'none', flexShrink: 0 }}>
-          ⋮⋮
-        </span>
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', cursor: 'grab', opacity: hovered ? 0.6 : 0, transition: 'opacity var(--transition)', userSelect: 'none', flexShrink: 0 }}>⋮⋮</span>
       )}
 
-      {/* Checkbox */}
       <button onClick={onToggle} style={{
         width: 20, height: 20, flexShrink: 0, borderRadius: 'var(--radius-sm)',
         border: task.completed ? `1.5px solid ${typeColor}` : '1.5px solid var(--border-strong)',
@@ -637,58 +599,25 @@ function TaskItem({
         )}
       </button>
 
-      {/* Task text / edit input */}
       {isEditing ? (
-        <input
-          autoFocus value={editText}
-          onChange={e => setEditText(e.target.value)}
-          onBlur={onSaveEdit} onKeyDown={onKeyDown}
-          style={{
-            flex: 1, background: 'var(--bg-input)',
-            border: `1px solid ${typeColor}40`, borderRadius: 'var(--radius-sm)',
-            padding: '0.25rem 0.5rem', fontSize: '0.875rem',
-            color: 'var(--text-primary)', direction: isAr ? 'rtl' : 'ltr',
-          }}
+        <input autoFocus value={editText} onChange={e => setEditText(e.target.value)} onBlur={onSaveEdit} onKeyDown={onKeyDown}
+          style={{ flex: 1, background: 'var(--bg-input)', border: `1px solid ${typeColor}40`, borderRadius: 'var(--radius-sm)', padding: '0.25rem 0.5rem', fontSize: '0.875rem', color: 'var(--text-primary)', direction: isAr ? 'rtl' : 'ltr' }}
         />
       ) : (
-        <span onDoubleClick={onEdit} style={{
-          flex: 1, fontSize: '0.875rem',
-          color: task.completed ? 'var(--text-muted)' : 'var(--text-primary)',
-          textDecoration: task.completed ? 'line-through' : 'none',
-          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-          cursor: 'text', userSelect: 'text',
-        }}>
+        <span onDoubleClick={onEdit} style={{ flex: 1, fontSize: '0.875rem', color: task.completed ? 'var(--text-muted)' : 'var(--text-primary)', textDecoration: task.completed ? 'line-through' : 'none', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', cursor: 'text', userSelect: 'text' }}>
           {task.text}
         </span>
       )}
 
-      {/* Reminder badge */}
       {task.reminderTime && !task.completed && (
-        <span style={{
-          fontSize: '0.68rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)',
-          padding: '0.1rem 0.4rem', borderRadius: 99,
-          border: '1px solid rgba(99,179,237,0.2)',
-          flexShrink: 0, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap',
-        }}>
+        <span style={{ fontSize: '0.68rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.1rem 0.4rem', borderRadius: 99, border: '1px solid rgba(99,179,237,0.2)', flexShrink: 0, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
           🔔 {fmt12h(task.reminderTime)}
         </span>
       )}
 
-      {/* Timer control */}
       {hasDuration && !task.completed && (
-        <button
-          onClick={isTimerActive ? onStopTimer : onStartTimer}
-          title={isTimerActive ? t('stopTask') : t('startTask')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.3rem',
-            padding: '0.2rem 0.55rem', borderRadius: 'var(--radius-full)',
-            border: isTimerActive ? `1px solid ${typeColor}60` : '1px solid var(--border-strong)',
-            background: isTimerActive ? typeColor + '22' : 'transparent',
-            color: isTimerActive ? typeColor : 'var(--text-muted)',
-            fontSize: '0.72rem', fontVariantNumeric: 'tabular-nums',
-            cursor: 'pointer', transition: 'all var(--transition)',
-            flexShrink: 0, whiteSpace: 'nowrap',
-          }}
+        <button onClick={isTimerActive ? onStopTimer : onStartTimer} title={isTimerActive ? t('stopTask') : t('startTask')}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.2rem 0.55rem', borderRadius: 'var(--radius-full)', border: isTimerActive ? `1px solid ${typeColor}60` : '1px solid var(--border-strong)', background: isTimerActive ? typeColor + '22' : 'transparent', color: isTimerActive ? typeColor : 'var(--text-muted)', fontSize: '0.72rem', fontVariantNumeric: 'tabular-nums', cursor: 'pointer', transition: 'all var(--transition)', flexShrink: 0, whiteSpace: 'nowrap' }}
           onMouseEnter={e => { if (!isTimerActive) { e.currentTarget.style.borderColor = typeColor; e.currentTarget.style.color = typeColor } }}
           onMouseLeave={e => { if (!isTimerActive) { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text-muted)' } }}
         >
@@ -704,15 +633,11 @@ function TaskItem({
               <span style={{ fontSize: '0.65rem', opacity: 0.7 }}>■</span>
             </>
           ) : (
-            <>
-              <span>▶</span>
-              <span>{task.duration}{isAr ? 'د' : 'm'}</span>
-            </>
+            <><span>▶</span><span>{durLabel}</span></>
           )}
         </button>
       )}
 
-      {/* Edit / Delete */}
       <div style={{ display: 'flex', gap: '0.25rem', opacity: hovered ? 1 : 0, transition: 'opacity var(--transition)' }}>
         <button onClick={onEdit} title={t('editTask')} style={{ width: 24, height: 24, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>✎</button>
         <button onClick={onDelete} title={t('deleteTask')}
