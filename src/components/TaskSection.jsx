@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { startRadarAlarm } from '../utils/alarmSound'
+import { requestReminderPermission } from './ReminderNotifier'
 
 function fmtTimer(s) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
@@ -14,6 +15,7 @@ export default function TaskSection({ section, isFixed = false }) {
   const [editingId, setEditingId] = useState(null)
   const [editText, setEditText] = useState('')
   const [isAdding, setIsAdding] = useState(false)
+  const [newTaskReminder, setNewTaskReminder] = useState('')
   const [expanded, setExpanded] = useState(true)
   const [activeTimer, setActiveTimer] = useState(null) // { taskId, taskText, totalSeconds, secondsLeft }
   const [timerAlert, setTimerAlert] = useState(null)   // string: task text
@@ -91,9 +93,12 @@ export default function TaskSection({ section, isFixed = false }) {
     e.preventDefault()
     if (!newTaskText.trim()) return
     const dur = newTaskDuration ? parseInt(newTaskDuration, 10) : null
-    await addTask(section.id, newTaskText, dur && dur > 0 ? dur : null)
+    const reminder = newTaskReminder.trim() || null
+    if (reminder) requestReminderPermission()
+    await addTask(section.id, newTaskText, dur && dur > 0 ? dur : null, reminder)
     setNewTaskText('')
     setNewTaskDuration('')
+    setNewTaskReminder('')
     setIsAdding(false)
   }
 
@@ -398,7 +403,7 @@ export default function TaskSection({ section, isFixed = false }) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setIsAdding(false); setNewTaskDuration('') }}
+                        onClick={() => { setIsAdding(false); setNewTaskDuration(''); setNewTaskReminder('') }}
                         style={{
                           padding: '0.5rem',
                           borderRadius: 'var(--radius-md)',
@@ -450,6 +455,56 @@ export default function TaskSection({ section, isFixed = false }) {
                         fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
                       }}>
                         {isAr ? 'دقيقة' : 'minutes'}
+                      </span>
+                    </div>
+
+                    {/* Reminder time row */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      direction: isAr ? 'rtl' : 'ltr',
+                    }}>
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-muted)',
+                        fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                      }}>
+                        🔔 {isAr ? 'تذكير في:' : 'Remind at:'}
+                      </span>
+                      <input
+                        type="time"
+                        value={newTaskReminder}
+                        onChange={e => setNewTaskReminder(e.target.value)}
+                        style={{
+                          background: 'var(--bg-input)',
+                          border: `1px solid ${newTaskReminder ? typeColor + '60' : typeColor + '30'}`,
+                          borderRadius: 'var(--radius-md)',
+                          padding: '0.3rem 0.5rem',
+                          fontSize: '0.82rem',
+                          color: newTaskReminder ? 'var(--text-primary)' : 'var(--text-muted)',
+                          colorScheme: 'dark',
+                          outline: 'none',
+                        }}
+                      />
+                      {newTaskReminder && (
+                        <button
+                          type="button"
+                          onClick={() => setNewTaskReminder('')}
+                          style={{
+                            background: 'none', border: 'none',
+                            color: 'var(--text-muted)', cursor: 'pointer',
+                            fontSize: '0.85rem', lineHeight: 1, padding: 0,
+                          }}
+                        >✕</button>
+                      )}
+                      <span style={{
+                        fontSize: '0.72rem',
+                        color: 'var(--text-muted)',
+                        fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                        opacity: 0.7,
+                      }}>
+                        {isAr ? '(اختياري)' : '(optional)'}
                       </span>
                     </div>
                   </form>
@@ -569,6 +624,23 @@ function TaskItem({
           }}
         >
           {task.text}
+        </span>
+      )}
+
+      {/* Reminder badge */}
+      {task.reminderTime && !task.completed && (
+        <span style={{
+          fontSize: '0.68rem',
+          color: 'var(--sapphire)',
+          background: 'var(--sapphire-dim)',
+          padding: '0.1rem 0.4rem',
+          borderRadius: 99,
+          border: '1px solid rgba(99,179,237,0.2)',
+          flexShrink: 0,
+          fontVariantNumeric: 'tabular-nums',
+          whiteSpace: 'nowrap',
+        }}>
+          🔔 {task.reminderTime}
         </span>
       )}
 

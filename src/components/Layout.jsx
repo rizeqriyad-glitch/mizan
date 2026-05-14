@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
 import AdhanNotifier from './AdhanNotifier'
+import ReminderNotifier from './ReminderNotifier'
 
 export default function Layout() {
   const { user, logout } = useAuth()
@@ -247,6 +248,7 @@ export default function Layout() {
 
       {/* Adhan notification — renders as a fixed overlay, lives outside scroll flow */}
       <AdhanNotifier />
+      <ReminderNotifier />
 
       {/* Main content */}
       <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>

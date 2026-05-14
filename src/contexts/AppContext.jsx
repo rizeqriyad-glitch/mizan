@@ -224,7 +224,7 @@ export const AppProvider = ({ children }) => {
     )
   }
 
-  const addTask = async (sectionId, text, duration = null) => {
+  const addTask = async (sectionId, text, duration = null, reminderTime = null) => {
     if (!user || !text.trim()) return
     const sectionTasks = tasks[sectionId] || []
     const taskData = {
@@ -236,6 +236,7 @@ export const AppProvider = ({ children }) => {
       createdAt: serverTimestamp(),
     }
     if (duration && duration > 0) taskData.duration = duration
+    if (reminderTime) taskData.reminderTime = reminderTime
     await addDoc(collection(db, 'users', user.uid, 'tasks'), taskData)
   }
 
