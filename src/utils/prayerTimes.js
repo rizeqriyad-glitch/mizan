@@ -6,8 +6,9 @@ export async function fetchPrayerTimes(latitude, longitude) {
     const date = new Date()
     const dateStr = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
     
+    // method=4: Umm Al-Qura University, Makkah — standard for Saudi Arabia and widely used across the Arab world
     const response = await fetch(
-      `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${latitude}&longitude=${longitude}&method=2`
+      `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${latitude}&longitude=${longitude}&method=4`
     )
     
     if (!response.ok) throw new Error('API error')

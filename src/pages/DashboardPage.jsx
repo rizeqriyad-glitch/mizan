@@ -18,11 +18,11 @@ export default function DashboardPage() {
   const isAr = language === 'ar'
 
   const todayDay = DAY_KEYS[new Date().getDay()]
-  const activeSections = scheduleType === 'prayer'
-    ? FIXED_SECTIONS
-    : scheduleFrequency === 'weekly'
-      ? scheduleBlocks.filter(b => !b.days || b.days.includes(todayDay))
-      : scheduleBlocks
+  // Always show both prayer sections and custom schedule blocks together
+  const customToday = scheduleFrequency === 'weekly'
+    ? scheduleBlocks.filter(b => !b.days || b.days.includes(todayDay))
+    : scheduleBlocks
+  const activeSections = [...FIXED_SECTIONS, ...customToday]
 
   const greeting = getGreeting(language)
   const firstName = user?.displayName?.split(' ')[0] || ''

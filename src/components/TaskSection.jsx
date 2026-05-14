@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { startRadarAlarm } from '../utils/alarmSound'
@@ -29,20 +30,43 @@ function parse12(str) {
   return { h12: h % 12 || 12, min: m, ampm: h >= 12 ? 'PM' : 'AM' }
 }
 
-// ── TimePicker12h ─────────────────────────────────────────────────────────────
+// ── Shared dropdown positioning hook ─────────────────────────────────────────
 const HOURS = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 const MINS  = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
-function TimePicker12h({ value, onChange, typeColor, isAr }) {
+function useDropPos(btnRef, open) {
+  const [pos, setPos] = useState(null)
+  useLayoutEffect(() => {
+    if (!open || !btnRef.current) { setPos(null); return }
+    const r = btnRef.current.getBoundingClientRect()
+    const flip = window.innerHeight - r.bottom < 270 && r.top > 270
+    setPos({
+      position: 'fixed',
+      left: Math.min(r.left, window.innerWidth - 230),
+      ...(flip ? { bottom: window.innerHeight - r.top + 4 } : { top: r.bottom + 4 }),
+    })
+  }, [open])
+  return pos
+}
+
+// ── TimePicker12h ─────────────────────────────────────────────────────────────
+export function TimePicker12h({ value, onChange, typeColor, isAr }) {
   const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-  const p = parse12(value)
+  const btnRef  = useRef(null)
+  const dropRef = useRef(null)
+  const pos     = useDropPos(btnRef, open)
+  const p       = parse12(value)
 
   useEffect(() => {
     if (!open) return
-    const fn = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', fn)
-    return () => document.removeEventListener('mousedown', fn)
+    const click = e => {
+      if (!btnRef.current?.contains(e.target) && !dropRef.current?.contains(e.target))
+        setOpen(false)
+    }
+    const esc = e => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('mousedown', click)
+    document.addEventListener('keydown', esc)
+    return () => { document.removeEventListener('mousedown', click); document.removeEventListener('keydown', esc) }
   }, [open])
 
   const cell = (sel) => ({
@@ -52,16 +76,89 @@ function TimePicker12h({ value, onChange, typeColor, isAr }) {
     color: sel ? typeColor : 'var(--text-secondary)',
     fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.12s',
   })
-
   const hover = (e, on, sel) => {
     if (sel) return
     e.currentTarget.style.background = on ? typeColor + '15' : 'transparent'
     e.currentTarget.style.color = on ? typeColor : 'var(--text-secondary)'
   }
 
+  const dropdown = (
+    <motion.div
+      ref={dropRef}
+      initial={{ opacity: 0, y: -4, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.13 }}
+      style={{
+        ...pos, zIndex: 9999,
+        background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
+        borderRadius: 'var(--radius-lg)', boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+        padding: '0.875rem', minWidth: 216, direction: isAr ? 'rtl' : 'ltr',
+      }}
+    >
+      <div style={{ marginBottom: '0.6rem' }}>
+        <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+          {isAr ? 'ساعة' : 'Hour'}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.18rem' }}>
+          {HOURS.map(h => {
+            const sel = !!value && p.h12 === h
+            return (
+              <button key={h} type="button" style={cell(sel)}
+                onClick={() => onChange(to24(h, p.min, p.ampm))}
+                onMouseEnter={e => hover(e, true, sel)} onMouseLeave={e => hover(e, false, sel)}
+              >{h}</button>
+            )
+          })}
+        </div>
+      </div>
+      <div style={{ marginBottom: '0.6rem' }}>
+        <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+          {isAr ? 'دقيقة' : 'Minute'}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.18rem' }}>
+          {MINS.map(m => {
+            const sel = !!value && p.min === m
+            return (
+              <button key={m} type="button" style={cell(sel)}
+                onClick={() => onChange(to24(p.h12, m, p.ampm))}
+                onMouseEnter={e => hover(e, true, sel)} onMouseLeave={e => hover(e, false, sel)}
+              >{String(m).padStart(2,'0')}</button>
+            )
+          })}
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: value ? '0.5rem' : 0 }}>
+        {['AM', 'PM'].map(ap => {
+          const sel = !!value && p.ampm === ap
+          return (
+            <button key={ap} type="button"
+              onClick={() => value && onChange(to24(p.h12, p.min, ap))}
+              style={{
+                flex: 1, padding: '0.3rem', borderRadius: 'var(--radius-md)',
+                border: sel ? `1px solid ${typeColor}` : '1px solid var(--border-strong)',
+                background: sel ? typeColor + '25' : 'transparent',
+                color: sel ? typeColor : 'var(--text-muted)',
+                fontSize: '0.82rem', cursor: 'pointer',
+                fontWeight: sel ? 600 : 400, transition: 'all 0.12s',
+              }}
+            >{ap}</button>
+          )
+        })}
+      </div>
+      {value && (
+        <button type="button" onClick={() => { onChange(''); setOpen(false) }} style={{
+          width: '100%', padding: '0.28rem', borderRadius: 'var(--radius-sm)',
+          border: '1px solid var(--border)', background: 'transparent',
+          color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer',
+          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+        }}>{isAr ? 'مسح الوقت' : 'Clear time'}</button>
+      )}
+    </motion.div>
+  )
+
   return (
-    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-      <button type="button" onClick={() => setOpen(o => !o)} style={{
+    <span style={{ display: 'inline-block', position: 'relative' }}>
+      <button ref={btnRef} type="button" onClick={() => setOpen(o => !o)} style={{
         display: 'flex', alignItems: 'center', gap: '0.4rem',
         padding: '0.3rem 0.65rem',
         background: value ? typeColor + '18' : 'var(--bg-input)',
@@ -74,90 +171,8 @@ function TimePicker12h({ value, onChange, typeColor, isAr }) {
       }}>
         🕐 {value ? fmt12h(value) : (isAr ? 'ضبط وقت' : 'Set time')}
       </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -6, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.97 }}
-            transition={{ duration: 0.14 }}
-            style={{
-              position: 'absolute', top: 'calc(100% + 6px)',
-              [isAr ? 'right' : 'left']: 0,
-              background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
-              borderRadius: 'var(--radius-lg)', boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
-              zIndex: 9999, padding: '0.875rem', minWidth: 216,
-              direction: isAr ? 'rtl' : 'ltr',
-            }}
-          >
-            <div style={{ marginBottom: '0.6rem' }}>
-              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                {isAr ? 'ساعة' : 'Hour'}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.18rem' }}>
-                {HOURS.map(h => {
-                  const sel = !!value && p.h12 === h
-                  return (
-                    <button key={h} type="button" style={cell(sel)}
-                      onClick={() => onChange(to24(h, p.min, p.ampm))}
-                      onMouseEnter={e => hover(e, true, sel)}
-                      onMouseLeave={e => hover(e, false, sel)}
-                    >{h}</button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '0.6rem' }}>
-              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                {isAr ? 'دقيقة' : 'Minute'}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.18rem' }}>
-                {MINS.map(m => {
-                  const sel = !!value && p.min === m
-                  return (
-                    <button key={m} type="button" style={cell(sel)}
-                      onClick={() => onChange(to24(p.h12, m, p.ampm))}
-                      onMouseEnter={e => hover(e, true, sel)}
-                      onMouseLeave={e => hover(e, false, sel)}
-                    >{String(m).padStart(2,'0')}</button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: value ? '0.5rem' : 0 }}>
-              {['AM', 'PM'].map(ap => {
-                const sel = !!value && p.ampm === ap
-                return (
-                  <button key={ap} type="button"
-                    onClick={() => value && onChange(to24(p.h12, p.min, ap))}
-                    style={{
-                      flex: 1, padding: '0.3rem', borderRadius: 'var(--radius-md)',
-                      border: sel ? `1px solid ${typeColor}` : '1px solid var(--border-strong)',
-                      background: sel ? typeColor + '25' : 'transparent',
-                      color: sel ? typeColor : 'var(--text-muted)',
-                      fontSize: '0.82rem', cursor: 'pointer',
-                      fontWeight: sel ? 600 : 400, transition: 'all 0.12s',
-                    }}
-                  >{ap}</button>
-                )
-              })}
-            </div>
-
-            {value && (
-              <button type="button" onClick={() => { onChange(''); setOpen(false) }} style={{
-                width: '100%', padding: '0.28rem', borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border)', background: 'transparent',
-                color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer',
-                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-              }}>{isAr ? 'مسح الوقت' : 'Clear time'}</button>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      {open && pos && createPortal(dropdown, document.body)}
+    </span>
   )
 }
 
@@ -165,28 +180,31 @@ function TimePicker12h({ value, onChange, typeColor, isAr }) {
 const DUR_HOURS = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 const DUR_MINS  = [0, 5, 10, 15, 20, 25, 30, 45]
 
-function DurationPicker({ value, onChange, typeColor, isAr }) {
+export function DurationPicker({ value, onChange, typeColor, isAr }) {
   const [open, setOpen] = useState(false)
-  const ref = useRef(null)
+  const btnRef  = useRef(null)
+  const dropRef = useRef(null)
+  const pos     = useDropPos(btnRef, open)
 
   const h = value ? Math.floor(value / 60) : 0
   const m = value ? value % 60 : 0
-
   const display = value
     ? (h > 0 && m > 0 ? `${h}h ${m}m` : h > 0 ? `${h}h` : `${m}m`)
     : (isAr ? 'المدة' : 'Set duration')
 
   useEffect(() => {
     if (!open) return
-    const fn = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', fn)
-    return () => document.removeEventListener('mousedown', fn)
+    const click = e => {
+      if (!btnRef.current?.contains(e.target) && !dropRef.current?.contains(e.target))
+        setOpen(false)
+    }
+    const esc = e => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('mousedown', click)
+    document.addEventListener('keydown', esc)
+    return () => { document.removeEventListener('mousedown', click); document.removeEventListener('keydown', esc) }
   }, [open])
 
-  const upd = (newH, newM) => {
-    const total = newH * 60 + newM
-    onChange(total > 0 ? total : null)
-  }
+  const upd = (newH, newM) => { const t = newH * 60 + newM; onChange(t > 0 ? t : null) }
 
   const cell = (sel) => ({
     padding: '0.28rem 0', borderRadius: 'var(--radius-sm)',
@@ -195,16 +213,71 @@ function DurationPicker({ value, onChange, typeColor, isAr }) {
     color: sel ? typeColor : 'var(--text-secondary)',
     fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.12s',
   })
-
   const hover = (e, on, sel) => {
     if (sel) return
     e.currentTarget.style.background = on ? typeColor + '15' : 'transparent'
     e.currentTarget.style.color = on ? typeColor : 'var(--text-secondary)'
   }
 
+  const dropdown = (
+    <motion.div
+      ref={dropRef}
+      initial={{ opacity: 0, y: -4, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.13 }}
+      style={{
+        ...pos, zIndex: 9999,
+        background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
+        borderRadius: 'var(--radius-lg)', boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+        padding: '0.875rem', minWidth: 200, direction: isAr ? 'rtl' : 'ltr',
+      }}
+    >
+      <div style={{ marginBottom: '0.6rem' }}>
+        <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+          {isAr ? 'ساعات' : 'Hours'}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.18rem' }}>
+          {DUR_HOURS.map(hr => {
+            const sel = !!value && h === hr
+            return (
+              <button key={hr} type="button" style={cell(sel)}
+                onClick={() => upd(hr, m)}
+                onMouseEnter={e => hover(e, true, sel)} onMouseLeave={e => hover(e, false, sel)}
+              >{hr === 0 ? '—' : `${hr}h`}</button>
+            )
+          })}
+        </div>
+      </div>
+      <div style={{ marginBottom: value ? '0.5rem' : 0 }}>
+        <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+          {isAr ? 'دقائق' : 'Minutes'}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.18rem' }}>
+          {DUR_MINS.map(mn => {
+            const sel = !!value && m === mn
+            return (
+              <button key={mn} type="button" style={cell(sel)}
+                onClick={() => upd(h, mn)}
+                onMouseEnter={e => hover(e, true, sel)} onMouseLeave={e => hover(e, false, sel)}
+              >{mn === 0 ? '—' : `${mn}m`}</button>
+            )
+          })}
+        </div>
+      </div>
+      {value && (
+        <button type="button" onClick={() => { onChange(null); setOpen(false) }} style={{
+          width: '100%', padding: '0.28rem', borderRadius: 'var(--radius-sm)',
+          border: '1px solid var(--border)', background: 'transparent',
+          color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer',
+          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+        }}>{isAr ? 'مسح المدة' : 'Clear duration'}</button>
+      )}
+    </motion.div>
+  )
+
   return (
-    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-      <button type="button" onClick={() => setOpen(o => !o)} style={{
+    <span style={{ display: 'inline-block', position: 'relative' }}>
+      <button ref={btnRef} type="button" onClick={() => setOpen(o => !o)} style={{
         display: 'flex', alignItems: 'center', gap: '0.4rem',
         padding: '0.3rem 0.65rem',
         background: value ? typeColor + '18' : 'var(--bg-input)',
@@ -216,71 +289,8 @@ function DurationPicker({ value, onChange, typeColor, isAr }) {
       }}>
         ⏱ {display}
       </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -6, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.97 }}
-            transition={{ duration: 0.14 }}
-            style={{
-              position: 'absolute', top: 'calc(100% + 6px)',
-              [isAr ? 'right' : 'left']: 0,
-              background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
-              borderRadius: 'var(--radius-lg)', boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
-              zIndex: 9999, padding: '0.875rem', minWidth: 200,
-              direction: isAr ? 'rtl' : 'ltr',
-            }}
-          >
-            <div style={{ marginBottom: '0.6rem' }}>
-              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                {isAr ? 'ساعات' : 'Hours'}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.18rem' }}>
-                {DUR_HOURS.map(hr => {
-                  const sel = !!value && h === hr
-                  return (
-                    <button key={hr} type="button" style={cell(sel)}
-                      onClick={() => upd(hr, m)}
-                      onMouseEnter={e => hover(e, true, sel)}
-                      onMouseLeave={e => hover(e, false, sel)}
-                    >{hr === 0 ? '—' : `${hr}h`}</button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: value ? '0.5rem' : 0 }}>
-              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                {isAr ? 'دقائق' : 'Minutes'}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.18rem' }}>
-                {DUR_MINS.map(mn => {
-                  const sel = !!value && m === mn
-                  return (
-                    <button key={mn} type="button" style={cell(sel)}
-                      onClick={() => upd(h, mn)}
-                      onMouseEnter={e => hover(e, true, sel)}
-                      onMouseLeave={e => hover(e, false, sel)}
-                    >{mn === 0 ? '—' : `${mn}m`}</button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {value && (
-              <button type="button" onClick={() => { onChange(null); setOpen(false) }} style={{
-                width: '100%', padding: '0.28rem', borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border)', background: 'transparent',
-                color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer',
-                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-              }}>{isAr ? 'مسح المدة' : 'Clear duration'}</button>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      {open && pos && createPortal(dropdown, document.body)}
+    </span>
   )
 }
 

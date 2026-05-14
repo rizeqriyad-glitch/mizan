@@ -1,9 +1,10 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
+import { TimePicker12h, DurationPicker } from '../components/TaskSection'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const COLORS = ['gold', 'emerald', 'sapphire', 'ruby']
@@ -498,107 +499,30 @@ function fmt12h(str) {
   return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
-// ── ScheduleTimePicker ────────────────────────────────────────────────────────
-function ScheduleTimePicker({ value, onChange, isAr }) {
-  const [open, setOpen] = useState(false)
-  const [h,    setH]    = useState(12)
-  const [m,    setM]    = useState(0)
-  const [ampm, setAmpm] = useState('AM')
-  const ref = useRef(null)
-
-  useEffect(() => {
-    if (!value) return
-    const [hh, mm] = value.split(':').map(Number)
-    setH(hh % 12 || 12); setM(mm); setAmpm(hh >= 12 ? 'PM' : 'AM')
-  }, [value])
-
-  useEffect(() => {
-    if (!open) return
-    const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open])
-
-  const commit = (nh, nm, na) => {
-    let h24 = nh % 12; if (na === 'PM') h24 += 12
-    onChange(`${String(h24).padStart(2,'0')}:${String(nm).padStart(2,'0')}`)
-  }
-  const btnLabel = value ? fmt12h(value) : (isAr ? '🔔 تذكير' : '🔔 Remind')
-
-  return (
-    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-      <button type="button" onClick={() => setOpen(o => !o)} style={{
-        padding: '0.28rem 0.65rem', borderRadius: 'var(--radius-md)',
-        border: `1px solid ${value ? 'rgba(99,179,237,0.4)' : 'var(--border)'}`,
-        background: value ? 'var(--sapphire-dim)' : 'transparent',
-        color: value ? 'var(--sapphire)' : 'var(--text-muted)',
-        fontSize: '0.78rem', cursor: 'pointer',
-      }}>{btnLabel}</button>
-      {open && (
-        <div style={{
-          position: 'absolute', top: '110%', left: 0, zIndex: 300,
-          background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
-          borderRadius: 'var(--radius-lg)', padding: '0.75rem',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.35)', minWidth: 200,
-        }}>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '0.3rem' }}>{isAr ? 'ساعة' : 'Hour'}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.2rem' }}>
-                {[12,1,2,3,4,5,6,7,8,9,10,11].map(hr => (
-                  <button key={hr} type="button" onClick={() => { setH(hr); commit(hr, m, ampm) }}
-                    style={{ padding: '0.25rem', borderRadius: 'var(--radius-sm)', border: 'none', fontSize: '0.78rem', background: h===hr ? 'var(--sapphire-dim)' : 'transparent', color: h===hr ? 'var(--sapphire)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: h===hr ? 600 : 400 }}
-                  >{hr}</button>
-                ))}
-              </div>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '0.3rem' }}>{isAr ? 'دقيقة' : 'Min'}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.2rem' }}>
-                {[0,5,10,15,20,25,30,35,40,45,50,55].map(mn => (
-                  <button key={mn} type="button" onClick={() => { setM(mn); commit(h, mn, ampm) }}
-                    style={{ padding: '0.25rem', borderRadius: 'var(--radius-sm)', border: 'none', fontSize: '0.78rem', background: m===mn ? 'var(--sapphire-dim)' : 'transparent', color: m===mn ? 'var(--sapphire)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: m===mn ? 600 : 400 }}
-                  >{String(mn).padStart(2,'0')}</button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '0.3rem', marginBottom: value ? '0.4rem' : 0 }}>
-            {['AM','PM'].map(ap => (
-              <button key={ap} type="button" onClick={() => { setAmpm(ap); commit(h, m, ap) }}
-                style={{ flex: 1, padding: '0.3rem', borderRadius: 'var(--radius-sm)', border: `1px solid ${ampm===ap ? 'var(--sapphire)' : 'var(--border)'}`, background: ampm===ap ? 'var(--sapphire-dim)' : 'transparent', color: ampm===ap ? 'var(--sapphire)' : 'var(--text-muted)', cursor: 'pointer', fontSize: '0.78rem', fontWeight: ampm===ap ? 600 : 400 }}
-              >{ap}</button>
-            ))}
-          </div>
-          {value && (
-            <button type="button" onClick={() => { onChange(''); setOpen(false) }}
-              style={{ width: '100%', padding: '0.25rem', fontSize: '0.72rem', color: 'var(--ruby)', background: 'transparent', border: 'none', cursor: 'pointer' }}
-            >{isAr ? '× مسح الوقت' : '× Clear time'}</button>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ── DayAddForm ─────────────────────────────────────────────────────────────────
 function DayAddForm({ dayStr, sections, language, isAr, addTask, onClose }) {
   const [text,      setText]      = useState('')
-  const [sectionId, setSectionId] = useState(sections[0]?.id || '')
+  const [sectionId, setSectionId] = useState(sections[0]?.id || 'fajr')
   const [reminder,  setReminder]  = useState('')
+  const [duration,  setDuration]  = useState(null)
+  const [targetDay, setTargetDay] = useState(dayStr)
   const [saving,    setSaving]    = useState(false)
 
   const handleSave = async () => {
     if (!text.trim()) return
+    const sid = sectionId || sections[0]?.id || 'fajr'
     setSaving(true)
-    await addTask(sectionId || sections[0]?.id || 'fajr', text.trim(), null, reminder || null, dayStr)
-    setSaving(false)
+    try {
+      await addTask(sid, text.trim(), duration || null, reminder || null, targetDay)
+    } finally {
+      setSaving(false)
+    }
     onClose()
   }
 
   return (
-    <div style={{ padding: '0.625rem 1.25rem', borderTop: '1px solid var(--border)', background: 'rgba(99,179,237,0.04)' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+    <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--border)', background: 'rgba(99,179,237,0.04)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
         <input
           value={text}
           onChange={e => setText(e.target.value)}
@@ -607,15 +531,16 @@ function DayAddForm({ dayStr, sections, language, isAr, addTask, onClose }) {
           autoFocus
           style={{
             background: 'var(--bg-input)', border: '1px solid var(--border-strong)',
-            borderRadius: 'var(--radius-md)', padding: '0.42rem 0.75rem',
-            color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none',
+            borderRadius: 'var(--radius-md)', padding: '0.45rem 0.75rem',
+            color: 'var(--text-primary)', fontSize: '0.875rem', outline: 'none',
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}
         />
         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          {/* Section */}
           <select value={sectionId} onChange={e => setSectionId(e.target.value)} style={{
             background: 'var(--bg-input)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-md)', padding: '0.28rem 0.5rem',
+            borderRadius: 'var(--radius-md)', padding: '0.3rem 0.5rem',
             color: 'var(--text-secondary)', fontSize: '0.78rem', outline: 'none', cursor: 'pointer',
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}>
@@ -624,19 +549,36 @@ function DayAddForm({ dayStr, sections, language, isAr, addTask, onClose }) {
               return <option key={s.id} value={s.id}>{s.icon ? `${s.icon} ${name}` : name}</option>
             })}
           </select>
-          <ScheduleTimePicker value={reminder} onChange={setReminder} isAr={isAr} />
+          {/* Target date — lets user change the day without navigating weeks */}
+          <input
+            type="date"
+            value={targetDay}
+            onChange={e => setTargetDay(e.target.value)}
+            style={{
+              background: 'var(--bg-input)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)', padding: '0.3rem 0.5rem',
+              color: 'var(--text-secondary)', fontSize: '0.78rem', outline: 'none', cursor: 'pointer',
+              colorScheme: 'dark',
+            }}
+          />
+          {/* Duration — uses portal-based picker from TaskSection */}
+          <DurationPicker value={duration} onChange={setDuration} typeColor="var(--gold)" isAr={isAr} />
+          {/* Reminder — uses portal-based picker from TaskSection */}
+          <TimePicker12h value={reminder} onChange={setReminder} typeColor="var(--sapphire)" isAr={isAr} />
+          {/* Actions */}
           <div style={{ marginInlineStart: 'auto', display: 'flex', gap: '0.3rem' }}>
             <button type="button" onClick={onClose} style={{
-              padding: '0.28rem 0.6rem', borderRadius: 'var(--radius-md)',
+              padding: '0.3rem 0.65rem', borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border)', background: 'transparent',
               color: 'var(--text-muted)', fontSize: '0.78rem', cursor: 'pointer',
             }}>{isAr ? 'إلغاء' : 'Cancel'}</button>
             <button type="button" onClick={handleSave} disabled={!text.trim() || saving} style={{
-              padding: '0.28rem 0.7rem', borderRadius: 'var(--radius-md)', border: 'none',
+              padding: '0.3rem 0.75rem', borderRadius: 'var(--radius-md)', border: 'none',
               background: text.trim() ? 'var(--sapphire)' : 'var(--bg-input)',
               color: text.trim() ? 'white' : 'var(--text-muted)',
               fontSize: '0.78rem', fontWeight: 600,
               cursor: text.trim() ? 'pointer' : 'default', transition: 'all 0.2s',
+              fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
             }}>{saving ? '...' : (isAr ? 'حفظ' : 'Save')}</button>
           </div>
         </div>
