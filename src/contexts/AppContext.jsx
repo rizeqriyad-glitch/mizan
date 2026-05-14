@@ -36,6 +36,8 @@ export const AppProvider = ({ children }) => {
   const [customSections, setCustomSections] = useState([])
   const [completedToday, setCompletedToday] = useState([])
   const [stats, setStats]               = useState({ streak: 0, points: 0 })
+  const [goals, setGoals]               = useState([])
+  const [gamification, setGamification] = useState({ totalXP: 0, badges: [], streak: 0, lastCompletionDate: null })
   const [donePrayers, setDonePrayers]   = useState({})
   const [focusTimer, setFocusTimer]     = useState({ active: false, seconds: 1500, running: false })
   const [loading, setLoading]           = useState(true)
@@ -144,6 +146,19 @@ export const AppProvider = ({ children }) => {
       setDonePrayers(snap.exists() ? snap.data() : {})
     })
 
+    // Load weekly planner goals
+    const goalsRef = collection(db, 'users', user.uid, 'goals')
+    const unsubGoals = onSnapshot(
+      query(goalsRef, orderBy('createdAt', 'desc')),
+      snap => setGoals(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    )
+
+    // Load gamification data
+    const gamRef = doc(db, 'users', user.uid, 'gamification', 'data')
+    const unsubGam = onSnapshot(gamRef, snap => {
+      if (snap.exists()) setGamification(snap.data())
+    })
+
     return () => {
       unsubTasks()
       unsubCompleted()
@@ -151,6 +166,8 @@ export const AppProvider = ({ children }) => {
       unsubSections()
       unsubBlocks()
       unsubPrayers()
+      unsubGoals()
+      unsubGam()
     }
   }, [user])
 
@@ -278,6 +295,118 @@ export const AppProvider = ({ children }) => {
     await Promise.all(updates)
   }
 
+  // ── Weekly Planner ────────────────────────────────────────────────
+  const _uuid = () =>
+    typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+  const addGoal = async ({ title, titleAr, icon, color, weekStart }) => {
+    if (!user) return
+    await addDoc(collection(db, 'users', user.uid, 'goals'), {
+      title, titleAr: titleAr || '', icon: icon || '🎯', color: color || 'gold',
+      weekStart, milestones: [], createdAt: serverTimestamp(),
+    })
+  }
+
+  const deleteGoal = async (goalId) => {
+    if (!user) return
+    await deleteDoc(doc(db, 'users', user.uid, 'goals', goalId))
+  }
+
+  const addMilestone = async (goalId, text) => {
+    if (!user) return
+    const goal = goals.find(g => g.id === goalId)
+    if (!goal) return
+    const ms = { id: _uuid(), text: text.trim(), completed: false }
+    await updateDoc(doc(db, 'users', user.uid, 'goals', goalId), {
+      milestones: [...(goal.milestones || []), ms],
+    })
+  }
+
+  const deleteMilestone = async (goalId, milestoneId) => {
+    if (!user) return
+    const goal = goals.find(g => g.id === goalId)
+    if (!goal) return
+    await updateDoc(doc(db, 'users', user.uid, 'goals', goalId), {
+      milestones: (goal.milestones || []).filter(m => m.id !== milestoneId),
+    })
+  }
+
+  const toggleMilestone = async (goalId, milestoneId) => {
+    if (!user) return null
+    const goal = goals.find(g => g.id === goalId)
+    if (!goal) return null
+    const ms = (goal.milestones || []).find(m => m.id === milestoneId)
+    if (!ms) return null
+
+    const wasCompleted = ms.completed
+    const newMilestones = (goal.milestones || []).map(m =>
+      m.id === milestoneId ? { ...m, completed: !m.completed } : m
+    )
+    await updateDoc(doc(db, 'users', user.uid, 'goals', goalId), { milestones: newMilestones })
+
+    if (!wasCompleted) {
+      const allDone = newMilestones.length > 0 && newMilestones.every(m => m.completed)
+      const xpGain = 10 + (allDone ? 50 : 0)
+
+      const curXP     = gamification.totalXP || 0
+      const curBadges = [...(gamification.badges || [])]
+      const newTotalXP = curXP + xpGain
+      const newBadges  = [...curBadges]
+
+      if (!newBadges.includes('first_step')) newBadges.push('first_step')
+      if (allDone && !newBadges.includes('goal_crusher')) newBadges.push('goal_crusher')
+
+      const weekMs = goals
+        .filter(g => g.weekStart === goal.weekStart)
+        .flatMap(g => g.id === goalId ? newMilestones : (g.milestones || []))
+        .filter(m => m.completed).length
+      if (weekMs >= 7 && !newBadges.includes('week_warrior')) newBadges.push('week_warrior')
+
+      const weekGoalsDone = goals
+        .filter(g => g.weekStart === goal.weekStart)
+        .filter(g => {
+          const ms2 = g.id === goalId ? newMilestones : (g.milestones || [])
+          return ms2.length > 0 && ms2.every(m => m.completed)
+        }).length
+      if (weekGoalsDone >= 3 && !newBadges.includes('overachiever')) newBadges.push('overachiever')
+
+      const todayStr    = new Date().toISOString().split('T')[0]
+      const lastDate    = gamification.lastCompletionDate
+      const curStreak   = gamification.streak || 0
+      const yesterday   = new Date(); yesterday.setDate(yesterday.getDate() - 1)
+      const yesterdayStr = yesterday.toISOString().split('T')[0]
+      const newStreak = lastDate === todayStr ? curStreak
+        : lastDate === yesterdayStr ? curStreak + 1
+        : 1
+
+      await setDoc(
+        doc(db, 'users', user.uid, 'gamification', 'data'),
+        { totalXP: newTotalXP, badges: newBadges, streak: newStreak, lastCompletionDate: todayStr },
+        { merge: true }
+      )
+
+      const levelBefore = Math.floor(curXP / 100) + 1
+      const levelAfter  = Math.floor(newTotalXP / 100) + 1
+      return {
+        xpGain,
+        allDone,
+        newBadges: newBadges.filter(b => !curBadges.includes(b)),
+        leveledUp: levelAfter > levelBefore,
+        newLevel: levelAfter,
+      }
+    } else {
+      const xpLoss = 10
+      await setDoc(
+        doc(db, 'users', user.uid, 'gamification', 'data'),
+        { totalXP: Math.max(0, (gamification.totalXP || 0) - xpLoss) },
+        { merge: true }
+      )
+      return null
+    }
+  }
+
   const t = (key) => translations[language]?.[key] || translations['en'][key] || key
 
   return (
@@ -294,6 +423,8 @@ export const AppProvider = ({ children }) => {
       donePrayers, prayersDone,
       addTask, editTask, deleteTask, toggleTask, togglePrayer, reorderTasks,
       focusTimer, setFocusTimer,
+      goals, gamification,
+      addGoal, deleteGoal, addMilestone, deleteMilestone, toggleMilestone,
       loading, t,
       FIXED_SECTIONS,
     }}>
@@ -415,6 +546,7 @@ const translations = {
     durationLabel: 'Duration (optional)',
     durationMin: 'min',
     editDurations: 'Edit',
+    planner: 'Planner',
   },
   ar: {
     appName: 'ميزان',
@@ -519,5 +651,6 @@ const translations = {
     durationLabel: 'المدة (اختياري)',
     durationMin: 'د',
     editDurations: 'تعديل',
+    planner: 'المخطط',
   }
 }

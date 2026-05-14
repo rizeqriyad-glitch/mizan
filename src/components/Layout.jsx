@@ -14,6 +14,7 @@ export default function Layout() {
 
   const navItems = [
     { to: '/dashboard',            icon: '◈', label: t('dashboard'),  exact: true },
+    { to: '/dashboard/planner',    icon: '◧', label: t('planner') },
     { to: '/dashboard/notes',      icon: '◫', label: t('notes') },
     { to: '/dashboard/analytics',  icon: '◉', label: t('analytics') },
     { to: '/dashboard/settings',   icon: '◎', label: t('settings') },

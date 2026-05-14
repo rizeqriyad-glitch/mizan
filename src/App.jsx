@@ -6,6 +6,7 @@ import AnalyticsPage from './pages/AnalyticsPage'
 import SettingsPage from './pages/SettingsPage'
 import LandingPage from './pages/LandingPage'
 import NotesPage from './pages/NotesPage'
+import PlannerPage from './pages/PlannerPage'
 import Layout from './components/Layout'
 
 function ProtectedRoute({ children }) {
@@ -63,6 +64,7 @@ export default function App() {
       }>
         <Route index element={<DashboardPage />} />
         <Route path="notes" element={<NotesPage />} />
+        <Route path="planner" element={<PlannerPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
