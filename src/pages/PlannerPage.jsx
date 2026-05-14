@@ -1,5 +1,8 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { collection, query, where, onSnapshot } from 'firebase/firestore'
+import { db } from '../firebase'
+import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -486,11 +489,272 @@ function AddGoalModal({ onClose, onAdd, isAr }) {
   )
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmt12h(str) {
+  if (!str) return ''
+  const [h, m] = str.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const h12 = h % 12 || 12
+  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
+}
+
+// ── ScheduleTab ───────────────────────────────────────────────────────────────
+function ScheduleTab({ isAr, language }) {
+  const { user } = useAuth()
+  const { toggleTask, deleteTask } = useApp()
+  const [weekOffset, setWeekOffset] = useState(0)
+  const [weekTasks, setWeekTasks]   = useState({})
+  const [loading, setLoading]       = useState(true)
+
+  const weekDays = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date()
+      d.setDate(d.getDate() + weekOffset * 7 + i)
+      const str = d.toISOString().split('T')[0]
+      const isToday = weekOffset === 0 && i === 0
+      return {
+        str,
+        isToday,
+        dayNum: d.getDate(),
+        dayShort: d.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', { weekday: 'short' }),
+        dayLong:  d.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
+      }
+    })
+  }, [weekOffset, language])
+
+  useEffect(() => {
+    if (!user) return
+    setLoading(true)
+    const start = weekDays[0].str
+    const end   = weekDays[6].str
+
+    const unsub = onSnapshot(
+      query(
+        collection(db, 'users', user.uid, 'tasks'),
+        where('date', '>=', start),
+        where('date', '<=', end)
+      ),
+      (snap) => {
+        const grouped = {}
+        snap.docs.forEach(d => {
+          const t = { id: d.id, ...d.data() }
+          if (!grouped[t.date]) grouped[t.date] = []
+          grouped[t.date].push(t)
+        })
+        Object.keys(grouped).forEach(k => grouped[k].sort((a, b) => (a.order || 0) - (b.order || 0)))
+        setWeekTasks(grouped)
+        setLoading(false)
+      }
+    )
+    return () => unsub()
+  }, [user, weekDays[0].str])
+
+  const weekLabel = useMemo(() => {
+    const s = new Date(weekDays[0].str + 'T00:00:00')
+    const e = new Date(weekDays[6].str + 'T00:00:00')
+    const fmt = { month: 'short', day: 'numeric' }
+    const loc = language === 'ar' ? 'ar-SA' : 'en-US'
+    return `${s.toLocaleDateString(loc, fmt)} – ${e.toLocaleDateString(loc, fmt)}`
+  }, [weekDays, language])
+
+  const totalScheduled = Object.values(weekTasks).flat().length
+
+  const navBtn = (dir) => ({
+    padding: '0.4rem 0.875rem',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--border-strong)',
+    background: 'transparent',
+    color: 'var(--text-secondary)',
+    fontSize: '0.82rem', cursor: 'pointer',
+    transition: 'all var(--transition)',
+  })
+
+  return (
+    <div>
+      {/* Week navigation */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '0.75rem' }}>
+        <button style={navBtn()} onClick={() => setWeekOffset(o => o - 1)}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-card)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          {isAr ? '→' : '←'} {isAr ? 'الأسبوع السابق' : 'Prev'}
+        </button>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+            {weekOffset === 0 ? (isAr ? 'هذا الأسبوع' : 'This Week') : weekOffset === 1 ? (isAr ? 'الأسبوع القادم' : 'Next Week') : weekLabel}
+          </div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{weekLabel}</div>
+        </div>
+        <button style={navBtn()} onClick={() => setWeekOffset(o => o + 1)}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-card)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          {isAr ? 'الأسبوع القادم' : 'Next'} {isAr ? '←' : '→'}
+        </button>
+      </div>
+
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+          ⏳ {isAr ? 'جاري التحميل...' : 'Loading...'}
+        </div>
+      )}
+
+      {!loading && totalScheduled === 0 && (
+        <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📅</div>
+          <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.4rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+            {isAr ? 'لا توجد مهام مجدولة' : 'No tasks scheduled'}
+          </div>
+          <div style={{ fontSize: '0.83rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+            {isAr ? 'أضف مهمة وحدد يوم إنجازها من قسم المهام' : 'Add tasks and pick a day when creating them'}
+          </div>
+        </div>
+      )}
+
+      {/* Day cards */}
+      {!loading && weekDays.map(day => {
+        const dayTasks = weekTasks[day.str] || []
+        if (dayTasks.length === 0 && !day.isToday) return null
+        const done  = dayTasks.filter(t => t.completed).length
+        const total = dayTasks.length
+
+        return (
+          <motion.div
+            key={day.str}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              marginBottom: '0.875rem',
+              background: 'var(--bg-card)',
+              borderRadius: 'var(--radius-lg)',
+              border: day.isToday ? '1px solid rgba(99,179,237,0.35)' : '1px solid var(--border)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Day header */}
+            <div style={{
+              padding: '0.75rem 1.25rem',
+              borderBottom: dayTasks.length > 0 ? '1px solid var(--border)' : 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: day.isToday ? 'rgba(99,179,237,0.06)' : 'transparent',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {/* Date badge */}
+                <div style={{
+                  width: 38, height: 38, borderRadius: 'var(--radius-md)', flexShrink: 0,
+                  background: day.isToday ? 'var(--sapphire-dim)' : 'var(--bg-input)',
+                  border: day.isToday ? '1px solid rgba(99,179,237,0.35)' : '1px solid var(--border)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span style={{ fontSize: '0.55rem', color: day.isToday ? 'var(--sapphire)' : 'var(--text-muted)', lineHeight: 1.2, textTransform: 'uppercase', fontWeight: 600 }}>
+                    {day.dayShort}
+                  </span>
+                  <span style={{ fontSize: '0.95rem', fontWeight: 700, color: day.isToday ? 'var(--sapphire)' : 'var(--text-secondary)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                    {day.dayNum}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 500, color: day.isToday ? 'var(--sapphire)' : 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                    {day.dayLong}
+                  </span>
+                  {day.isToday && (
+                    <span style={{ marginInlineStart: '0.5rem', fontSize: '0.67rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.08rem 0.45rem', borderRadius: 99 }}>
+                      {isAr ? 'اليوم' : 'Today'}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {total > 0 && (
+                <span style={{ fontSize: '0.72rem', color: done === total ? 'var(--emerald)' : 'var(--text-muted)', fontVariantNumeric: 'tabular-nums', fontWeight: done === total ? 600 : 400 }}>
+                  {done}/{total}
+                </span>
+              )}
+            </div>
+
+            {/* Task rows */}
+            {dayTasks.length === 0 ? (
+              <div style={{ padding: '0.75rem 1.25rem', fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                {isAr ? 'لا توجد مهام لهذا اليوم' : 'No tasks for this day'}
+              </div>
+            ) : (
+              <AnimatePresence initial={false}>
+                {dayTasks.map(task => (
+                  <motion.div
+                    key={task.id}
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.75rem',
+                      padding: '0.55rem 1.25rem',
+                      borderTop: '1px solid var(--border)',
+                    }}
+                  >
+                    {/* Checkbox */}
+                    <button
+                      onClick={() => toggleTask(task)}
+                      style={{
+                        width: 18, height: 18, flexShrink: 0, borderRadius: 'var(--radius-sm)',
+                        border: task.completed ? '1.5px solid var(--emerald)' : '1.5px solid var(--border-strong)',
+                        background: task.completed ? 'var(--emerald)' : 'transparent',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', transition: 'all 0.2s', color: 'white', fontSize: '0.6rem',
+                      }}
+                    >{task.completed ? '✓' : ''}</button>
+
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: '0.875rem',
+                        color: task.completed ? 'var(--text-muted)' : 'var(--text-primary)',
+                        textDecoration: task.completed ? 'line-through' : 'none',
+                        fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>{task.text}</div>
+                      <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
+                        {task.sectionId && (
+                          <span style={{ fontSize: '0.63rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
+                            {task.sectionId}
+                          </span>
+                        )}
+                        {task.reminderTime && !task.completed && (
+                          <span style={{ fontSize: '0.63rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
+                            🔔 {fmt12h(task.reminderTime)}
+                          </span>
+                        )}
+                        {task.duration && (
+                          <span style={{ fontSize: '0.63rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
+                            ⏱ {task.duration}{isAr ? 'د' : 'm'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Delete */}
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      style={{ width: 24, height: 24, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all var(--transition)' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ruby)'; e.currentTarget.style.color = 'var(--ruby)' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                    >✕</button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            )}
+          </motion.div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── PlannerPage ───────────────────────────────────────────────────────────────
 export default function PlannerPage() {
   const { language, goals, gamification, addGoal, deleteGoal, addMilestone, deleteMilestone, toggleMilestone } = useApp()
   const isAr = language === 'ar'
 
+  const [activeTab,   setActiveTab]   = useState('goals')
   const [filter,      setFilter]      = useState('all')
   const [toast,       setToast]       = useState(null)
   const [showAddGoal, setShowAddGoal] = useState(false)
@@ -570,9 +834,40 @@ export default function PlannerPage() {
         </div>
       </motion.div>
 
-      {/* XP bar */}
-      <XPBar gamification={gamification} isAr={isAr} />
+      {/* Tab switcher */}
+      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.5rem' }}>
+        {[
+          { id: 'goals',    label: isAr ? 'الأهداف'   : 'Goals',    icon: '🎯' },
+          { id: 'schedule', label: isAr ? 'الجدول'   : 'Schedule', icon: '📅' },
+        ].map(tab => {
+          const active = activeTab === tab.id
+          return (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                padding: '0.55rem 1.25rem', borderRadius: 'var(--radius-full)',
+                border: `1px solid ${active ? 'var(--gold)' : 'var(--border)'}`,
+                background: active ? 'var(--gold-dim)' : 'transparent',
+                color: active ? 'var(--gold)' : 'var(--text-muted)',
+                fontSize: '0.85rem', fontWeight: active ? 600 : 400,
+                cursor: 'pointer', transition: 'all var(--transition)',
+                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+              }}
+            >
+              <span>{tab.icon}</span>{tab.label}
+            </button>
+          )
+        })}
+      </div>
 
+      {/* XP bar — Goals tab only */}
+      {activeTab === 'goals' && <XPBar gamification={gamification} isAr={isAr} />}
+
+      {/* Schedule tab */}
+      {activeTab === 'schedule' && <ScheduleTab isAr={isAr} language={language} />}
+
+      {/* Filter tabs (Goals tab only) */}
+      {activeTab === 'goals' && <>
       {/* Filter tabs */}
       <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
         style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}
@@ -670,6 +965,8 @@ export default function PlannerPage() {
           </div>
         </motion.div>
       )}
+
+      </>}
 
       {/* Add Goal Modal */}
       <AnimatePresence>

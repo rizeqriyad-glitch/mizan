@@ -224,14 +224,14 @@ export const AppProvider = ({ children }) => {
     )
   }
 
-  const addTask = async (sectionId, text, duration = null, reminderTime = null) => {
+  const addTask = async (sectionId, text, duration = null, reminderTime = null, scheduledDate = null) => {
     if (!user || !text.trim()) return
     const sectionTasks = tasks[sectionId] || []
     const taskData = {
       sectionId,
       text: text.trim(),
       completed: false,
-      date: getTodayKey(),
+      date: scheduledDate || getTodayKey(),
       order: sectionTasks.length,
       createdAt: serverTimestamp(),
     }
