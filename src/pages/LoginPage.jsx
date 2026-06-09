@@ -162,7 +162,7 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8 + i * 0.1 }}
               style={{
-                display: 'flex', alignItems: 'center',
+                display: 'flex',
                 alignItems: 'center',
                 gap: '0.75rem',
                 color: 'var(--text-secondary)',

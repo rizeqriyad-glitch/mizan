@@ -364,8 +364,8 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
               />
               <button onClick={handleAdd} style={{ padding: '0.4rem 0.8rem', borderRadius: '10px', border: 'none', background: color.main, color: 'var(--bg-base)', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}>+</button>
               <button onClick={() => { setShowInput(false); setNewMs('') }} style={{ padding: '0.4rem 0.6rem', borderRadius: '10px', border: '1px solid var(--v-glass-border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.83rem', cursor: 'pointer' }}>✕</button>
-            </div> {/* Input field and buttons */}
-          ) : (
+            </div>
+            ) : (
             <button onClick={() => setShowInput(true)}
               style={{
                 width: '100%', padding: '0.42rem', borderRadius: 'var(--radius-md)',
