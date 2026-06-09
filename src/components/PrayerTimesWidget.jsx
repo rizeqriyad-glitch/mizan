@@ -5,12 +5,13 @@ import { formatPrayerTime, getNextPrayer, getCurrentPrayer } from '../utils/pray
 
 const PRAYER_ENTRIES = [
   { id: 'fajr',    label: { en: 'Fajr',    ar: 'الفجر'  }, icon: '🌙', timeKey: 'fajr'    },
-  { id: 'duha',    label: { en: 'Duha',    ar: 'الضحى'  }, icon: '🌄', isVoluntary: true, timeLabel: { en: 'After sunrise', ar: 'بعد الشروق' } },
+  { id: 'shuruq',  label: { en: 'Sunrise', ar: 'الشروق' }, icon: '🌄', timeKey: 'sunrise', isMarker: true },
+  { id: 'duha',    label: { en: 'Duha',    ar: 'الضحى'  }, icon: '🌞', isVoluntary: true, timeLabel: { en: 'After sunrise', ar: 'بعد الشروق' } },
   { id: 'dhuhr',   label: { en: 'Dhuhr',   ar: 'الظهر'  }, icon: '☀️',  timeKey: 'dhuhr'   },
   { id: 'asr',     label: { en: 'Asr',     ar: 'العصر'  }, icon: '🌤',  timeKey: 'asr'     },
   { id: 'maghrib', label: { en: 'Maghrib', ar: 'المغرب' }, icon: '🌅',  timeKey: 'maghrib' },
   { id: 'isha',    label: { en: 'Isha',    ar: 'العشاء' }, icon: '🌌',  timeKey: 'isha'    },
-  { id: 'witr',    label: { en: 'Witr',    ar: 'الوتر'  }, icon: '🌜', isVoluntary: true, timeLabel: { en: 'After Isha', ar: 'بعد العشاء' } },
+  { id: 'witr',    label: { en: 'Witr',    ar: 'الوتر'  }, icon: '🌜', isVoluntary: true, isMarker: true, timeLabel: { en: 'After Isha', ar: 'بعد العشاء' } },
 ]
 
 export default function PrayerTimesWidget() {
@@ -99,8 +100,8 @@ export default function PrayerTimesWidget() {
       <div style={{ padding: '0.5rem 0' }}>
         {PRAYER_ENTRIES.map((prayer, i) => {
           const timeStr   = prayer.timeKey ? prayerTimes[prayer.timeKey] : null
-          const isNext    = !prayer.isVoluntary && nextPrayer?.name === prayer.id
-          const isCurrent = !prayer.isVoluntary && currentPrayer?.name === prayer.id
+          const isNext    = !prayer.isVoluntary && !prayer.isMarker && nextPrayer?.name === prayer.id
+          const isCurrent = currentPrayer?.name === prayer.id
           const isDone    = !!donePrayers[prayer.id]
 
           return (
@@ -133,7 +134,9 @@ export default function PrayerTimesWidget() {
                   </div>
                   {isCurrent && (
                     <div style={{ fontSize: '0.68rem', color: 'var(--gold)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                      {t('currentPrayer')}
+                      {prayer.isMarker
+                        ? (isAr ? 'وقت الشروق الآن' : 'Sunrise now')
+                        : t('currentPrayer')}
                     </div>
                   )}
                   {/* Prayer window end hint */}
@@ -175,8 +178,8 @@ export default function PrayerTimesWidget() {
                   </span>
                 )}
 
-                {/* Toggle button */}
-                <button
+                {/* Toggle button — not shown for time markers like Sunrise */}
+                {!prayer.isMarker && <button
                   onClick={() => handleToggle(prayer.id)}
                   title={isDone
                     ? (isAr ? 'إلغاء التأشير' : 'Unmark')
@@ -209,7 +212,7 @@ export default function PrayerTimesWidget() {
                   }}
                 >
                   {isDone ? '✓' : '○'}
-                </button>
+                </button>}
               </div>
             </motion.div>
           )

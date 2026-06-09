@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m ' *)",
+      "Bash(git commit *)",
+      "WebFetch(domain:www.youtube.com)",
+      "WebFetch(domain:www.zedge.net)",
+      "Bash(git pull *)",
+      "Bash(git ls-tree *)",
+      "Bash(mkdir -p public)",
+      "Bash(git mv *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://mizantask.netlify.app/iphone_alarm.mp3\")",
+      "Bash(curl -sI \"https://mizantask.netlify.app/iphone_alarm.mp3\")",
+      "Bash(cat vite.config.js)",
+      "Bash(cat vite.config.ts)",
+      "Bash(curl -sI \"https://raw.githubusercontent.com/rizeqriyad-glitch/mizan/main/public/iphone_alarm.mp3\")",
+      "Bash(ls public/)",
+      "Bash(dir public *)",
+      "Bash(git checkout *)",
+      "Bash(mkdir \"c:\\\\Users\\\\JCC\\\\Downloads\\\\New folder\\\\public\")",
+      "Bash(npx vite *)",
+      "Bash(node -e ' *)",
+      "Bash(npm run *)",
+      "Bash(npx firebase *)",
+      "Bash(firebase deploy *)",
+      "PowerShell(Get-Command firebase -ErrorAction SilentlyContinue; \\(Get-Command node\\).Source; Get-ChildItem \"C:\\\\Users\\\\JCC\\\\AppData\\\\Roaming\\\\npm\" -ErrorAction SilentlyContinue | Select-Object Name)",
+      "Read(//c/Users/JCC/AppData/Roaming/**)",
+      "PowerShell(npm root -g)",
+      "Bash(grep -E \"\\\\.\\(mp3|wav|ogg|m4a|aac\\)$\")",
+      "Bash(xargs wc -l)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\JCC\\Downloads\\New folder"
+    ]
+  }
+}

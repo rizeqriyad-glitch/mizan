@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { collection, query, where, onSnapshot } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, doc, setDoc, addDoc, deleteDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
@@ -26,6 +26,16 @@ const THRESHOLDS = [0.25, 0.5, 0.75, 1.0]
 const THRESHOLD_ICON = { 0.25: '🌱', 0.5: '🔥', 0.75: '⚡', 1.0: '🏆' }
 
 const FILTERS = ['all', 'active', 'overdue', 'done']
+
+const DAY_LIST = [
+  { key: 'sun', en: 'Sun', ar: 'الأحد'     },
+  { key: 'mon', en: 'Mon', ar: 'الاثنين'   },
+  { key: 'tue', en: 'Tue', ar: 'الثلاثاء'  },
+  { key: 'wed', en: 'Wed', ar: 'الأربعاء'  },
+  { key: 'thu', en: 'Thu', ar: 'الخميس'    },
+  { key: 'fri', en: 'Fri', ar: 'الجمعة'    },
+  { key: 'sat', en: 'Sat', ar: 'السبت'     },
+]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function todayStr() {
@@ -499,358 +509,1218 @@ function fmt12h(str) {
   return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
-// ── DayAddForm ─────────────────────────────────────────────────────────────────
-function DayAddForm({ dayStr, sections, language, isAr, addTask, onClose }) {
-  const [text,      setText]      = useState('')
-  const [sectionId, setSectionId] = useState(sections[0]?.id || 'fajr')
-  const [reminder,  setReminder]  = useState('')
-  const [duration,  setDuration]  = useState(null)
-  const [targetDay, setTargetDay] = useState(dayStr)
-  const [saving,    setSaving]    = useState(false)
+function fmtDur(mins) {
+  if (!mins || mins <= 0) return ''
+  const h = Math.floor(mins / 60), m = mins % 60
+  return h > 0 && m > 0 ? `${h}h ${m}m` : h > 0 ? `${h}h` : `${m}m`
+}
+
+// ── localDateStr ──────────────────────────────────────────────────────────────
+function localDateStr(d = new Date()) {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
+// ── InlineTaskForm ─────────────────────────────────────────────────────────────
+function InlineTaskForm({ sectionId, dayStr, accentColor, isAr, addTask, onClose }) {
+  const [text,     setText]     = useState('')
+  const [reminder, setReminder] = useState('')
+  const [duration, setDuration] = useState(null)
+  const [saving,   setSaving]   = useState(false)
 
   const handleSave = async () => {
     if (!text.trim()) return
-    const sid = sectionId || sections[0]?.id || 'fajr'
     setSaving(true)
     try {
-      await addTask(sid, text.trim(), duration || null, reminder || null, targetDay)
-    } finally {
-      setSaving(false)
-    }
+      await addTask(sectionId, text.trim(), duration || null, reminder || null, dayStr)
+    } finally { setSaving(false) }
     onClose()
   }
 
   return (
-    <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--border)', background: 'rgba(99,179,237,0.04)' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      style={{ overflow: 'hidden' }}
+    >
+      <div style={{
+        background: `linear-gradient(135deg, ${accentColor}08 0%, transparent 100%)`,
+        borderTop: `1px solid ${accentColor}25`,
+        padding: '0.875rem 1.25rem',
+        display: 'flex', flexDirection: 'column', gap: '0.75rem',
+      }}>
         <input
           value={text}
           onChange={e => setText(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') onClose() }}
+          onKeyDown={e => { if (e.key === 'Enter' && text.trim()) handleSave(); if (e.key === 'Escape') onClose() }}
           placeholder={isAr ? 'وصف المهمة...' : 'Task description...'}
           autoFocus
           style={{
-            background: 'var(--bg-input)', border: '1px solid var(--border-strong)',
-            borderRadius: 'var(--radius-md)', padding: '0.45rem 0.75rem',
+            background: 'var(--bg-input)',
+            border: `1.5px solid ${text.trim() ? accentColor + 'aa' : 'var(--border)'}`,
+            borderRadius: 'var(--radius-md)', padding: '0.6rem 0.875rem',
             color: 'var(--text-primary)', fontSize: '0.875rem', outline: 'none',
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+            transition: 'border-color 0.2s', width: '100%', boxSizing: 'border-box',
           }}
         />
-        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          {/* Section */}
-          <select value={sectionId} onChange={e => setSectionId(e.target.value)} style={{
-            background: 'var(--bg-input)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-md)', padding: '0.3rem 0.5rem',
-            color: 'var(--text-secondary)', fontSize: '0.78rem', outline: 'none', cursor: 'pointer',
-            fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-          }}>
-            {sections.map(s => {
-              const name = s.label?.[language] || s.label?.en || s.name || s.id
-              return <option key={s.id} value={s.id}>{s.icon ? `${s.icon} ${name}` : name}</option>
-            })}
-          </select>
-          {/* Target date — lets user change the day without navigating weeks */}
-          <input
-            type="date"
-            value={targetDay}
-            onChange={e => setTargetDay(e.target.value)}
-            style={{
-              background: 'var(--bg-input)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-md)', padding: '0.3rem 0.5rem',
-              color: 'var(--text-secondary)', fontSize: '0.78rem', outline: 'none', cursor: 'pointer',
-              colorScheme: 'dark',
-            }}
-          />
-          {/* Duration — uses portal-based picker from TaskSection */}
-          <DurationPicker value={duration} onChange={setDuration} typeColor="var(--gold)" isAr={isAr} />
-          {/* Reminder — uses portal-based picker from TaskSection */}
-          <TimePicker12h value={reminder} onChange={setReminder} typeColor="var(--sapphire)" isAr={isAr} />
-          {/* Actions */}
-          <div style={{ marginInlineStart: 'auto', display: 'flex', gap: '0.3rem' }}>
-            <button type="button" onClick={onClose} style={{
-              padding: '0.3rem 0.65rem', borderRadius: 'var(--radius-md)',
+        <div style={{ display: 'flex', gap: '0.875rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+              {isAr ? 'التذكير' : 'Reminder'}
+            </div>
+            <TimePicker12h value={reminder} onChange={setReminder} typeColor={accentColor} isAr={isAr} />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.3rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+              {isAr ? 'المدة' : 'Duration'}
+            </div>
+            <DurationPicker value={duration} onChange={setDuration} typeColor={accentColor} isAr={isAr} />
+          </div>
+          <div style={{ marginInlineStart: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+            <button onClick={onClose} style={{
+              padding: '0.42rem 0.875rem', borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border)', background: 'transparent',
-              color: 'var(--text-muted)', fontSize: '0.78rem', cursor: 'pointer',
-            }}>{isAr ? 'إلغاء' : 'Cancel'}</button>
-            <button type="button" onClick={handleSave} disabled={!text.trim() || saving} style={{
-              padding: '0.3rem 0.75rem', borderRadius: 'var(--radius-md)', border: 'none',
-              background: text.trim() ? 'var(--sapphire)' : 'var(--bg-input)',
-              color: text.trim() ? 'white' : 'var(--text-muted)',
-              fontSize: '0.78rem', fontWeight: 600,
-              cursor: text.trim() ? 'pointer' : 'default', transition: 'all 0.2s',
+              color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer',
               fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+            }}>{isAr ? 'إلغاء' : 'Cancel'}</button>
+            <button onClick={handleSave} disabled={!text.trim() || saving} style={{
+              padding: '0.42rem 1.1rem', borderRadius: 'var(--radius-md)', border: 'none',
+              background: text.trim() ? accentColor : 'var(--bg-input)',
+              color: text.trim() ? 'white' : 'var(--text-muted)',
+              fontSize: '0.8rem', fontWeight: 600,
+              cursor: text.trim() ? 'pointer' : 'default',
+              fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+              transition: 'all 0.15s',
             }}>{saving ? '...' : (isAr ? 'حفظ' : 'Save')}</button>
           </div>
         </div>
       </div>
+    </motion.div>
+  )
+}
+
+// ── SectionCard ───────────────────────────────────────────────────────────────
+function SectionCard({ section, tasks, dayStr, isAr, language, accentColor, prayerTime, onToggle, onDelete, addTask }) {
+  const [showForm, setShowForm] = useState(false)
+
+  const name  = section.label?.[language] || section.label?.en || section.name || section.id
+  const done  = tasks.filter(t => t.completed).length
+  const total = tasks.length
+
+  return (
+    <motion.div layout style={{
+      background: 'var(--bg-card)',
+      borderRadius: 'var(--radius-lg)',
+      border: `1px solid ${accentColor}30`,
+      borderTop: `3px solid ${accentColor}`,
+      overflow: 'hidden',
+      marginBottom: '0.75rem',
+      boxShadow: `0 2px 12px ${accentColor}0a`,
+    }}>
+      {/* Clickable header — opens task form */}
+      <div
+        onClick={() => setShowForm(o => !o)}
+        style={{
+          padding: '0.9rem 1.25rem',
+          display: 'flex', alignItems: 'center', gap: '0.75rem',
+          cursor: 'pointer', userSelect: 'none',
+          borderBottom: (tasks.length > 0 || showForm) ? `1px solid ${accentColor}18` : 'none',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = accentColor + '08'}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        {/* Icon */}
+        <div style={{
+          width: 38, height: 38, borderRadius: 'var(--radius-md)', flexShrink: 0,
+          background: accentColor + '18', border: `1px solid ${accentColor}30`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem',
+        }}>
+          {section.icon || (section.type === 'prayer' ? '🕌' : '📋')}
+        </div>
+
+        {/* Name + badges */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+            {name}
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
+            {prayerTime && (
+              <span style={{ fontSize: '0.67rem', color: accentColor, background: accentColor + '18', padding: '0.06rem 0.48rem', borderRadius: 99, border: `1px solid ${accentColor}35`, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
+                {prayerTime}
+              </span>
+            )}
+            {!prayerTime && section.startTime && (
+              <span style={{ fontSize: '0.67rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.06rem 0.48rem', borderRadius: 99, fontVariantNumeric: 'tabular-nums' }}>
+                {fmt12h(section.startTime)}{section.endTime ? ` – ${fmt12h(section.endTime)}` : ''}
+              </span>
+            )}
+            {total > 0 && (
+              <span style={{ fontSize: '0.67rem', color: done === total ? 'var(--emerald)' : 'var(--text-muted)', background: done === total ? 'var(--emerald-dim)' : 'var(--bg-input)', padding: '0.06rem 0.48rem', borderRadius: 99, fontVariantNumeric: 'tabular-nums', fontWeight: done === total ? 600 : 400 }}>
+                {done}/{total} {isAr ? 'مهام' : 'tasks'}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* +/× toggle */}
+        <div style={{
+          width: 32, height: 32, borderRadius: 'var(--radius-md)', flexShrink: 0,
+          border: `1.5px solid ${showForm ? accentColor : accentColor + '50'}`,
+          background: showForm ? accentColor : 'transparent',
+          color: showForm ? 'white' : accentColor,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: showForm ? '1.1rem' : '1.3rem', fontWeight: 300, lineHeight: 1,
+          transition: 'all 0.2s',
+        }}>
+          {showForm ? '×' : '+'}
+        </div>
+      </div>
+
+      {/* Task list — always visible */}
+      <AnimatePresence initial={false}>
+        {tasks.map(task => (
+          <motion.div key={task.id} layout initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.5rem 1.25rem' }}>
+              <button onClick={() => onToggle(task)} style={{
+                width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                border: task.completed ? `2px solid ${accentColor}` : '2px solid var(--border-strong)',
+                background: task.completed ? accentColor : 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', transition: 'all 0.2s', color: 'white', fontSize: '0.6rem', fontWeight: 700,
+              }}>{task.completed ? '✓' : ''}</button>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.875rem', color: task.completed ? 'var(--text-muted)' : 'var(--text-primary)', textDecoration: task.completed ? 'line-through' : 'none', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {task.text}
+                </div>
+                {(task.reminderTime || task.duration > 0) && !task.completed && (
+                  <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
+                    {task.reminderTime && (
+                      <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>🔔 {fmt12h(task.reminderTime)}</span>
+                    )}
+                    {task.duration > 0 && (
+                      <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>⏱ {fmtDur(task.duration)}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button onClick={e => { e.stopPropagation(); onDelete(task.id) }}
+                style={{ width: 24, height: 24, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.68rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all var(--transition)' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ruby)'; e.currentTarget.style.color = 'var(--ruby)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+              >✕</button>
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
+      {/* Inline task form */}
+      <AnimatePresence>
+        {showForm && (
+          <InlineTaskForm
+            key="form"
+            sectionId={section.id}
+            dayStr={dayStr}
+            accentColor={accentColor}
+            isAr={isAr}
+            addTask={addTask}
+            onClose={() => setShowForm(false)}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
+// ── SectionGroupHeader ────────────────────────────────────────────────────────
+function SectionGroupHeader({ icon, label, color, note, onClick, expanded, count }) {
+  const clickable = typeof onClick === 'function'
+  if (clickable) {
+    return (
+      <div
+        onClick={onClick}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '0.875rem',
+          padding: '0.875rem 1.25rem',
+          marginBottom: '1rem',
+          background: 'var(--bg-card)',
+          border: `1px solid ${color}35`,
+          borderTop: `3px solid ${color}`,
+          borderRadius: 'var(--radius-lg)',
+          cursor: 'pointer', userSelect: 'none',
+          boxShadow: `0 2px 10px ${color}0d`,
+          transition: 'all 0.18s',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = color + '0c'
+          e.currentTarget.style.boxShadow = `0 4px 16px ${color}20`
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = 'var(--bg-card)'
+          e.currentTarget.style.boxShadow = `0 2px 10px ${color}0d`
+        }}
+      >
+        {/* Icon badge */}
+        <div style={{
+          width: 40, height: 40, borderRadius: 'var(--radius-md)', flexShrink: 0,
+          background: color + '20', border: `1px solid ${color}35`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem',
+        }}>
+          {icon}
+        </div>
+
+        {/* Label + badges */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 700, fontSize: '0.95rem', color, lineHeight: 1.2 }}>
+            {label}
+          </div>
+          <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.3rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {note && (
+              <span style={{ fontSize: '0.62rem', color: 'var(--ruby)', background: 'var(--ruby-dim)', padding: '0.06rem 0.45rem', borderRadius: 99 }}>
+                {note}
+              </span>
+            )}
+            {count !== undefined && count > 0 && (
+              <span style={{ fontSize: '0.62rem', color, background: color + '18', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 600 }}>
+                {count}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Chevron */}
+        <div style={{
+          width: 32, height: 32, borderRadius: 'var(--radius-md)',
+          border: `1.5px solid ${color}40`,
+          background: expanded ? color + '18' : 'transparent',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0, transition: 'all 0.2s',
+        }}>
+          <span style={{
+            fontSize: '0.8rem', color, lineHeight: 1,
+            transition: 'transform 0.25s', display: 'inline-block',
+            transform: expanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+          }}>▾</span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
+      <div style={{ width: 3, height: 20, background: color, borderRadius: 99, flexShrink: 0 }} />
+      <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color }}>
+        {icon} {label}
+      </span>
+      {note && (
+        <span style={{ fontSize: '0.62rem', color: 'var(--ruby)', background: 'var(--ruby-dim)', padding: '0.08rem 0.45rem', borderRadius: 99 }}>
+          {note}
+        </span>
+      )}
+      <div style={{ flex: 1, height: 1, background: color + '25', marginInlineStart: '0.25rem' }} />
+    </div>
+  )
+}
+
+// ── PRAYER_COLS ───────────────────────────────────────────────────────────────
+const PRAYER_COLS = [
+  { id: 'fajr',    icon: '🌙', en: 'Fajr',    ar: 'الفجر',   color: 'sapphire' },
+  { id: 'shuruq',  icon: '🌄', en: 'Sunrise', ar: 'الشروق',  color: 'gold'     },
+  { id: 'dhuhr',   icon: '☀️',  en: 'Dhuhr',   ar: 'الظهر',   color: 'gold'     },
+  { id: 'asr',     icon: '🌤', en: 'Asr',     ar: 'العصر',   color: 'emerald'  },
+  { id: 'maghrib', icon: '🌅', en: 'Maghrib',  ar: 'المغرب',  color: 'ruby'     },
+  { id: 'isha',    icon: '🌃', en: 'Isha',    ar: 'العشاء',  color: 'sapphire' },
+]
+
+const FULL_DAYS = [
+  { key: 'sun', en: 'Sunday',    ar: 'الأحد'     },
+  { key: 'mon', en: 'Monday',    ar: 'الاثنين'   },
+  { key: 'tue', en: 'Tuesday',   ar: 'الثلاثاء'  },
+  { key: 'wed', en: 'Wednesday', ar: 'الأربعاء'  },
+  { key: 'thu', en: 'Thursday',  ar: 'الخميس'    },
+  { key: 'fri', en: 'Friday',    ar: 'الجمعة'    },
+  { key: 'sat', en: 'Saturday',  ar: 'السبت'     },
+]
+
+// ── AddScheduleTaskModal ──────────────────────────────────────────────────────
+function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes, defaultDay, defaultDate, editItem }) {
+  const isEditMode = !!editItem
+  const [text,         setText]     = useState(editItem?.text || '')
+  const [icon,         setIcon]     = useState(editItem?.icon || '📋')
+  const [color,        setColor]    = useState(editItem?.color || 'sapphire')
+  const [duration,     setDuration] = useState(editItem?.duration || null)
+  const [reminderTime, setReminder] = useState(editItem?.reminderTime || '')
+  const [selectedDays, setDays]     = useState(editItem?.days || (defaultDay ? [defaultDay] : []))
+  const [selectedDate, setDate]     = useState(editItem?.date || defaultDate || localDateStr())
+  const [prayerId,     setPrayerId] = useState(editItem?.prayerId || 'fajr')
+  const [saving,       setSaving]   = useState(false)
+
+  const c = COLOR_CSS[color]
+  const canAdd = text.trim() && (mode === 'weekly' ? selectedDays.length > 0 : true)
+
+  const toggleDay = (key) => setDays(prev => prev.includes(key) ? prev.filter(d => d !== key) : [...prev, key])
+
+  const handleAdd = async () => {
+    if (!canAdd || saving) return
+    setSaving(true)
+    try {
+      const base = { text: text.trim(), icon, color, duration: duration || null, reminderTime: reminderTime || null }
+      if (isEditMode) {
+        if (mode === 'prayer')       await onEdit({ ...base, prayerId })
+        else if (mode === 'weekly')  await onEdit({ ...base, days: selectedDays, type: 'weekly' })
+        else                         await onEdit({ ...base, date: selectedDate, type: 'daily' })
+      } else {
+        if (mode === 'prayer')       await onAdd({ ...base, prayerId })
+        else if (mode === 'weekly')  await onAdd({ ...base, days: selectedDays, type: 'weekly' })
+        else                         await onAdd({ ...base, date: selectedDate, type: 'daily' })
+      }
+      onClose()
+    } finally { setSaving(false) }
+  }
+
+  const ICONS = ['📋','🎯','⭐','🏃','📖','🧘','💪','🍽','🌙','✨','🔔','💡']
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', backdropFilter: 'blur(4px)' }}
+    >
+      <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        onClick={e => e.stopPropagation()}
+        style={{ background: 'var(--bg-card)', borderRadius: 20, border: `1px solid ${c.main}35`, borderTop: `3px solid ${c.main}`, width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', direction: isAr ? 'rtl' : 'ltr', boxShadow: `0 25px 60px rgba(0,0,0,0.4)` }}
+      >
+        {/* Header */}
+        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1rem', background: `linear-gradient(135deg, ${c.main}08 0%, transparent 100%)`, position: 'sticky', top: 0, zIndex: 1, backdropFilter: 'blur(8px)' }}>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: c.main + '20', border: `1px solid ${c.main}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0 }}>✨</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+              {isEditMode ? (isAr ? '✏️ تعديل المهمة' : '✏️ Edit Task') :
+               mode === 'prayer' ? (isAr ? 'إضافة مهمة للصلاة' : 'Add Prayer Task') :
+               mode === 'weekly' ? (isAr ? 'إضافة مهمة أسبوعية' : 'Add Weekly Task') :
+               (isAr ? 'إضافة مهمة يومية' : 'Add Daily Task')}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.15rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+              {isEditMode ? (isAr ? 'عدّل تفاصيل المهمة ثم احفظ' : 'Update the task details then save') :
+               mode === 'prayer' ? (isAr ? 'اختر وقت الصلاة والمهمة' : 'Choose prayer time and task') :
+               mode === 'weekly' ? (isAr ? 'تتكرر كل أسبوع في الأيام المختارة' : 'Repeats weekly on selected days') :
+               (isAr ? 'مهمة ليوم محدد' : 'Task for a specific day')}
+            </div>
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+        </div>
+
+        <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Icon picker */}
+          <div>
+            <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'أيقونة' : 'Icon'}</label>
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+              {ICONS.map(ic => (
+                <button key={ic} type="button" onClick={() => setIcon(ic)}
+                  style={{ width: 40, height: 40, borderRadius: 10, border: `2px solid ${icon === ic ? c.main : 'var(--border)'}`, background: icon === ic ? c.main + '20' : 'var(--bg-input)', fontSize: '1.2rem', cursor: 'pointer', transition: 'all 0.15s', transform: icon === ic ? 'scale(1.12)' : 'scale(1)' }}>
+                  {ic}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color */}
+          <div>
+            <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'اللون' : 'Color'}</label>
+            <div style={{ display: 'flex', gap: '0.6rem' }}>
+              {COLORS.map(col => (
+                <button key={col} type="button" onClick={() => setColor(col)}
+                  style={{ width: 32, height: 32, borderRadius: '50%', background: COLOR_CSS[col].main, border: 'none', cursor: 'pointer', outline: color === col ? `3px solid ${COLOR_CSS[col].main}` : '3px solid transparent', outlineOffset: 3, transition: 'all 0.18s', transform: color === col ? 'scale(1.2)' : 'scale(1)' }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Title */}
+          <div>
+            <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'عنوان المهمة' : 'Task Title'} <span style={{ color: c.main }}>*</span></label>
+            <input value={text} onChange={e => setText(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && canAdd) handleAdd(); if (e.key === 'Escape') onClose() }}
+              placeholder={isAr ? 'مثال: قراءة القرآن الكريم' : 'e.g. Read Quran'} autoFocus
+              style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', border: `1.5px solid ${text ? c.main + '80' : 'var(--border)'}`, borderRadius: 10, padding: '0.7rem 1rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'border-color 0.2s' }}
+            />
+          </div>
+
+          {/* Reminder + Duration */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>🔔 {isAr ? 'تذكير' : 'Reminder'}</label>
+              <TimePicker12h value={reminderTime} onChange={setReminder} typeColor={c.main} isAr={isAr} />
+            </div>
+            <div>
+              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>⏱ {isAr ? 'المدة' : 'Duration'}</label>
+              <DurationPicker value={duration} onChange={setDuration} typeColor={c.main} isAr={isAr} />
+            </div>
+          </div>
+
+          {/* Prayer picker */}
+          {mode === 'prayer' && (
+            <div>
+              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.6rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>🕌 {isAr ? 'وقت الصلاة' : 'Prayer Time'}</label>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {PRAYER_COLS.map(p => {
+                  const pc = COLOR_CSS[p.color]
+                  const sel = prayerId === p.id
+                  return (
+                    <button key={p.id} type="button" onClick={() => setPrayerId(p.id)}
+                      style={{ flex: 1, minWidth: 72, padding: '0.65rem 0.3rem', borderRadius: 12, border: `2px solid ${sel ? pc.main : 'var(--border)'}`, background: sel ? pc.main + '18' : 'var(--bg-input)', cursor: 'pointer', transition: 'all 0.18s', transform: sel ? 'translateY(-2px)' : 'none', boxShadow: sel ? `0 4px 12px ${pc.main}30` : 'none' }}>
+                      <div style={{ fontSize: '1.3rem', marginBottom: '0.2rem' }}>{p.icon}</div>
+                      <div style={{ fontSize: '0.7rem', fontWeight: 700, color: sel ? pc.main : 'var(--text-secondary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? p.ar : p.en}</div>
+                      {prayerTimes?.[p.id] && <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{fmt12h(prayerTimes[p.id])}</div>}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Weekly day picker */}
+          {mode === 'weekly' && (
+            <div>
+              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                📅 {isAr ? 'الأيام' : 'Days'}
+                {selectedDays.length === 0 && <span style={{ fontSize: '0.58rem', color: 'var(--ruby)', background: 'var(--ruby-dim)', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 400 }}>{isAr ? 'اختر يوماً' : 'pick at least 1'}</span>}
+                {selectedDays.length > 0 && <span style={{ fontSize: '0.58rem', color: c.main, background: c.main + '18', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 700 }}>{selectedDays.length}</span>}
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+                {FULL_DAYS.map(day => {
+                  const sel = selectedDays.includes(day.key)
+                  return (
+                    <button key={day.key} type="button" onClick={() => toggleDay(day.key)}
+                      style={{ padding: '0.5rem 0.9rem', borderRadius: 10, border: `2px solid ${sel ? c.main : 'var(--border)'}`, background: sel ? c.main : 'var(--bg-input)', color: sel ? 'white' : 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: sel ? 700 : 400, cursor: 'pointer', transition: 'all 0.18s', transform: sel ? 'scale(1.05)' : 'scale(1)', boxShadow: sel ? `0 3px 10px ${c.main}40` : 'none', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', textAlign: 'center', lineHeight: 1.3 }}>
+                      {isAr ? day.ar : day.en}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Daily date picker */}
+          {mode === 'daily' && (
+            <div>
+              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>📅 {isAr ? 'اليوم' : 'Day'}</label>
+              <input type="date" value={selectedDate} onChange={e => setDate(e.target.value)}
+                style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', border: `1.5px solid ${c.main}55`, borderRadius: 10, padding: '0.65rem 1rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}
+              />
+            </div>
+          )}
+
+          {/* Live preview */}
+          {text.trim() && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              style={{ padding: '1rem 1.1rem', background: `linear-gradient(135deg, ${c.main}10, ${c.main}06)`, border: `1px solid ${c.main}30`, borderRadius: 12, display: 'flex', gap: '0.875rem', alignItems: 'center' }}
+            >
+              <div style={{ width: 46, height: 46, borderRadius: 12, background: c.main + '25', border: `1.5px solid ${c.main}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>{icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', marginBottom: '0.3rem' }}>{text}</div>
+                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                  {reminderTime && <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.06rem 0.45rem', borderRadius: 99 }}>🔔 {fmt12h(reminderTime)}</span>}
+                  {duration > 0 && <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.06rem 0.45rem', borderRadius: 99 }}>⏱ {fmtDur(duration)}</span>}
+                  {mode === 'weekly' && selectedDays.map(dk => { const d = FULL_DAYS.find(x => x.key === dk); return <span key={dk} style={{ fontSize: '0.62rem', color: c.main, background: c.main + '18', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 600, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? d?.ar : d?.en}</span> })}
+                  {mode === 'prayer' && (() => { const p = PRAYER_COLS.find(x => x.id === prayerId); const pc = COLOR_CSS[p?.color]; return <span style={{ fontSize: '0.62rem', color: pc?.main, background: pc?.main + '18', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 600 }}>{p?.icon} {isAr ? p?.ar : p?.en}</span> })()}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '0.75rem', justifyContent: isAr ? 'flex-start' : 'flex-end', background: 'var(--bg-card)', position: 'sticky', bottom: 0 }}>
+          <button onClick={onClose} style={{ padding: '0.65rem 1.25rem', borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.875rem', cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'إلغاء' : 'Cancel'}</button>
+          <button onClick={handleAdd} disabled={!canAdd || saving}
+            style={{ padding: '0.65rem 1.75rem', borderRadius: 10, border: 'none', background: canAdd ? `linear-gradient(135deg, ${c.main}, ${c.main}cc)` : 'var(--bg-input)', color: canAdd ? 'white' : 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 700, cursor: canAdd ? 'pointer' : 'default', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', opacity: saving ? 0.7 : 1, transition: 'all 0.15s', boxShadow: canAdd ? `0 4px 14px ${c.main}40` : 'none' }}>
+            {saving ? (isAr ? 'جارٍ...' : 'Saving...') : isEditMode ? (isAr ? '✦ حفظ التغييرات' : '✦ Save Changes') : (isAr ? '✦ إضافة المهمة' : '✦ Add Task')}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+// ── TaskChip ──────────────────────────────────────────────────────────────────
+function TaskChip({ item, isAr, onDelete, onEdit }) {
+  const accent = COLOR_CSS[item.color]?.main || 'var(--sapphire)'
+  return (
+    <motion.div layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}
+      style={{ background: accent + '10', border: `1px solid ${accent}28`, borderLeft: `3px solid ${accent}`, borderRadius: 10, padding: '0.5rem 0.6rem', marginBottom: '0.45rem' }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.35rem' }}>
+        <span style={{ fontSize: '1rem', flexShrink: 0, lineHeight: 1.2 }}>{item.icon || '📋'}</span>
+        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', flex: 1, lineHeight: 1.4, wordBreak: 'break-word' }}>{item.text}</span>
+        {onEdit && <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.7rem', padding: '0 0.1rem', flexShrink: 0, lineHeight: 1 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--sapphire)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'} title={isAr ? 'تعديل' : 'Edit'}>✏️</button>}
+        <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.65rem', padding: '0 0.1rem', flexShrink: 0, lineHeight: 1 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--ruby)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'} title={isAr ? 'حذف' : 'Delete'}>✕</button>
+      </div>
+      {(item.reminderTime || item.duration > 0) && (
+        <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.3rem', paddingInlineStart: '1.4rem', flexWrap: 'wrap' }}>
+          {item.reminderTime && <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.07rem 0.4rem', borderRadius: 99 }}>🔔 {fmt12h(item.reminderTime)}</span>}
+          {item.duration > 0 && <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.07rem 0.4rem', borderRadius: 99 }}>⏱ {fmtDur(item.duration)}</span>}
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
+// ── SavedSchedulePreview ──────────────────────────────────────────────────────
+function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }) {
+  const { user } = useAuth()
+  if (!items || items.length === 0) return null
+  const todayKey = ['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()]
+
+  const toggleItem = async (item) => {
+    if (!user) return
+    const colName = type === 'prayer' ? 'prayerScheduleItems' : 'customScheduleItems'
+    await updateDoc(doc(db, 'users', user.uid, colName, item.id), { completed: !item.completed })
+  }
+
+  const ItemRow = ({ item, accent, compact = false }) => {
+    const done = !!item.completed
+    const c = done ? 'var(--emerald)' : accent
+    return (
+      <div onClick={() => toggleItem(item)}
+        style={{ display: 'flex', alignItems: 'center', gap: compact ? '0.25rem' : '0.35rem', padding: compact ? '0.25rem 0.35rem' : '0.3rem 0.4rem', background: done ? 'rgba(74,222,128,0.1)' : c + '10', borderLeft: `2px solid ${c}`, borderRadius: compact ? 6 : 7, marginBottom: compact ? '0.25rem' : '0.3rem', cursor: 'pointer', transition: 'all 0.18s', userSelect: 'none' }}
+        onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+      >
+        <div style={{ width: compact ? 13 : 15, height: compact ? 13 : 15, borderRadius: 4, flexShrink: 0, background: done ? 'var(--emerald)' : 'transparent', border: `1.5px solid ${done ? 'var(--emerald)' : c}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.18s' }}>
+          {done && <span style={{ fontSize: '0.5rem', color: 'white', fontWeight: 700 }}>✓</span>}
+        </div>
+        {!compact && <span style={{ fontSize: '0.85rem', flexShrink: 0 }}>{item.icon}</span>}
+        <span style={{ fontSize: compact ? '0.63rem' : '0.72rem', fontWeight: 600, color: done ? 'var(--emerald)' : 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: done ? 'line-through' : 'none', opacity: done ? 0.75 : 1, flex: 1 }}>{item.text}</span>
+        {!compact && !done && item.reminderTime && <span style={{ fontSize: '0.57rem', color: 'var(--sapphire)', flexShrink: 0 }}>🔔 {fmt12h(item.reminderTime)}</span>}
+      </div>
+    )
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+      style={{ marginTop: '2rem' }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 1rem', borderRadius: 99, background: 'var(--emerald-dim)', border: '1px solid rgba(74,222,128,0.3)' }}>
+          <span style={{ fontSize: '0.7rem' }}>✅</span>
+          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'الجدول المحفوظ' : 'Saved Schedule'}</span>
+          <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>· {isAr ? 'انقر على المهمة لإتمامها' : 'click a task to complete it'}</span>
+        </div>
+        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+      </div>
+
+      {type === 'prayer' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.75rem' }} className="prayer-cols-grid">
+          {PRAYER_COLS.map(prayer => {
+            const pc = COLOR_CSS[prayer.color]
+            const colItems = items.filter(i => i.prayerId === prayer.id)
+            if (colItems.length === 0) return <div key={prayer.id} style={{ borderRadius: 12, border: '1px dashed var(--border)', padding: '1rem 0.5rem', textAlign: 'center', opacity: 0.35 }}><div style={{ fontSize: '1.1rem' }}>{prayer.icon}</div><div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? prayer.ar : prayer.en}</div></div>
+            const doneCount = colItems.filter(i => i.completed).length
+            return (
+              <div key={prayer.id} style={{ background: 'var(--bg-card)', borderRadius: 14, border: `1px solid ${pc.main}20`, borderTop: `2px solid ${doneCount === colItems.length ? 'var(--emerald)' : pc.main}`, padding: '0.75rem', transition: 'border-top-color 0.3s' }}>
+                <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
+                  <div style={{ fontSize: '1.2rem' }}>{prayer.icon}</div>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: doneCount === colItems.length ? 'var(--emerald)' : pc.main, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? prayer.ar : prayer.en}</div>
+                  {(() => { const pt = prayerTimes?.[prayer.id === 'shuruq' ? 'sunrise' : prayer.id]; return pt ? <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)' }}>{fmt12h(pt)}</div> : null })()}
+                  {colItems.length > 0 && <div style={{ fontSize: '0.58rem', color: doneCount === colItems.length ? 'var(--emerald)' : 'var(--text-muted)', marginTop: '0.2rem', fontWeight: 600 }}>{doneCount}/{colItems.length}</div>}
+                </div>
+                {colItems.map(item => <ItemRow key={item.id} item={item} accent={pc.main} />)}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {type === 'custom-weekly' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.6rem' }} className="week-cols-grid">
+          {FULL_DAYS.map(day => {
+            const colItems = items.filter(i => (i.days || []).includes(day.key))
+            const isToday = day.key === todayKey
+            if (colItems.length === 0) return <div key={day.key} style={{ borderRadius: 10, border: '1px dashed var(--border)', padding: '0.6rem 0.4rem', opacity: 0.35, textAlign: 'center' }}><div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', wordBreak: 'break-word' }}>{isAr ? day.ar : day.en}</div></div>
+            const doneCount = colItems.filter(i => i.completed).length
+            const allDone = doneCount === colItems.length
+            return (
+              <div key={day.key} style={{ background: isToday ? 'rgba(99,179,237,0.06)' : 'var(--bg-card)', borderRadius: 10, border: isToday ? '1px solid rgba(99,179,237,0.3)' : '1px solid var(--border)', padding: '0.6rem 0.5rem' }}>
+                <div style={{ fontSize: '0.6rem', fontWeight: 700, color: allDone ? 'var(--emerald)' : isToday ? 'var(--sapphire)' : 'var(--text-primary)', textAlign: 'center', marginBottom: '0.15rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', wordBreak: 'break-word' }}>{isAr ? day.ar : day.en}</div>
+                <div style={{ fontSize: '0.55rem', color: allDone ? 'var(--emerald)' : 'var(--text-muted)', textAlign: 'center', marginBottom: '0.35rem', fontWeight: 600 }}>{doneCount}/{colItems.length}</div>
+                {colItems.map(item => {
+                  const accent = COLOR_CSS[item.color]?.main || 'var(--sapphire)'
+                  return <ItemRow key={item.id} item={item} accent={accent} compact />
+                })}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {type === 'custom-daily' && (
+        <div style={{ maxWidth: 560, margin: '0 auto', background: 'var(--bg-card)', borderRadius: 14, border: '1px solid rgba(74,222,128,0.25)', overflow: 'hidden' }}>
+          <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(74,222,128,0.12)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem' }}>🗓</span>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', flex: 1 }}>
+              {date && new Date(date + 'T00:00:00').toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+            </span>
+            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>{items.filter(i => i.completed).length}/{items.length}</span>
+          </div>
+          {items.map(item => {
+            const done = !!item.completed
+            const accent = COLOR_CSS[item.color]?.main || 'var(--emerald)'
+            const c = done ? 'var(--emerald)' : accent
+            return (
+              <div key={item.id} onClick={() => toggleItem(item)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.6rem 1rem', borderBottom: '1px solid var(--border)', background: done ? 'rgba(74,222,128,0.06)' : 'transparent', cursor: 'pointer', transition: 'all 0.18s', userSelect: 'none' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                <div style={{ width: 18, height: 18, borderRadius: 5, flexShrink: 0, background: done ? 'var(--emerald)' : 'transparent', border: `2px solid ${done ? 'var(--emerald)' : c}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                  {done && <span style={{ fontSize: '0.6rem', color: 'white', fontWeight: 700 }}>✓</span>}
+                </div>
+                <span style={{ fontSize: '1rem', flexShrink: 0 }}>{item.icon}</span>
+                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: done ? 'var(--emerald)' : 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', flex: 1, textDecoration: done ? 'line-through' : 'none', opacity: done ? 0.75 : 1 }}>{item.text}</span>
+                {!done && item.reminderTime && <span style={{ fontSize: '0.6rem', color: 'var(--sapphire)', flexShrink: 0 }}>🔔 {fmt12h(item.reminderTime)}</span>}
+                {!done && item.duration > 0 && <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', flexShrink: 0 }}>⏱ {fmtDur(item.duration)}</span>}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
+// ── PrayerScheduleView ────────────────────────────────────────────────────────
+function PrayerScheduleView({ isAr, language, prayerTimes, onBack }) {
+  const { user } = useAuth()
+  const [items,    setItems]    = useState([])
+  const [saved,    setSaved]    = useState(false)
+  const [modal,    setModal]    = useState(null)
+  const [editItem, setEditItem] = useState(null)
+  const [saving,   setSaving]   = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    const unsub1 = onSnapshot(collection(db, 'users', user.uid, 'prayerScheduleItems'),
+      snap => setItems(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.order || 0) - (b.order || 0))))
+    const unsub2 = onSnapshot(doc(db, 'users', user.uid, 'savedSchedules', 'prayer'),
+      snap => setSaved(snap.exists() ? !!snap.data()?.saved : false))
+    return () => { unsub1(); unsub2() }
+  }, [user])
+
+  const addItem = async (data) => {
+    if (!user) return
+    await addDoc(collection(db, 'users', user.uid, 'prayerScheduleItems'), { ...data, order: Date.now(), createdAt: new Date().toISOString() })
+  }
+
+  const deleteItem = async (id) => {
+    if (!user) return
+    await deleteDoc(doc(db, 'users', user.uid, 'prayerScheduleItems', id))
+  }
+
+  const updateItem = async (id, data) => {
+    if (!user) return
+    await updateDoc(doc(db, 'users', user.uid, 'prayerScheduleItems', id), data)
+  }
+
+  const saveSchedule = async () => {
+    if (!user) return
+    setSaving(true)
+    try {
+      await setDoc(doc(db, 'users', user.uid, 'savedSchedules', 'prayer'), { saved: true, savedAt: new Date().toISOString(), type: 'prayer' })
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div>
+      {/* Header row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
+        <button onClick={onBack}
+          style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.color = 'var(--gold)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
+          {isAr ? '›' : '‹'}
+        </button>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--gold)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>🕌 {isAr ? 'الجدول الديني' : 'Prayer Schedule'}</h2>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'أضف مهامك لكل وقت صلاة' : 'Add tasks to each prayer time'}</p>
+        </div>
+        {items.length > 0 && (
+          <button onClick={saveSchedule} disabled={saving}
+            style={{ padding: '0.65rem 1.4rem', borderRadius: 12, border: 'none', background: saved ? 'var(--emerald-dim)' : 'linear-gradient(135deg, var(--gold), #b8860b)', color: saved ? 'var(--emerald)' : 'var(--bg-base)', fontSize: '0.85rem', fontWeight: 700, cursor: saving ? 'default' : 'pointer', transition: 'all 0.2s', opacity: saving ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '0.45rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', boxShadow: saved ? 'none' : '0 4px 14px rgba(212,175,106,0.4)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            {saving ? '...' : saved ? (isAr ? '✓ محفوظ' : '✓ Saved') : (isAr ? '💾 حفظ الجدول' : '💾 Save Schedule')}
+          </button>
+        )}
+      </div>
+
+      {/* 5-column grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.875rem', marginBottom: '2rem' }} className="prayer-cols-grid">
+        {PRAYER_COLS.map(prayer => {
+          const pc = COLOR_CSS[prayer.color]
+          const colItems = items.filter(i => i.prayerId === prayer.id)
+          const pt = prayerTimes?.[prayer.id === 'shuruq' ? 'sunrise' : prayer.id]
+          return (
+            <div key={prayer.id}
+              style={{ background: 'var(--bg-card)', borderRadius: 16, border: `1px solid ${pc.main}25`, borderTop: `3px solid ${pc.main}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 260, boxShadow: `0 4px 16px ${pc.main}0a` }}>
+              {/* Column header */}
+              <div style={{ padding: '0.875rem 0.75rem', borderBottom: `1px solid ${pc.main}18`, background: `linear-gradient(180deg, ${pc.main}10 0%, transparent 100%)` }}>
+                <div style={{ fontSize: '1.6rem', textAlign: 'center', marginBottom: '0.25rem' }}>{prayer.icon}</div>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: pc.main, textAlign: 'center', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? prayer.ar : prayer.en}</div>
+                {pt && <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '0.18rem' }}>{fmt12h(pt)}</div>}
+                {colItems.length > 0 && <div style={{ fontSize: '0.58rem', color: pc.main, background: pc.main + '18', borderRadius: 99, padding: '0.04rem 0.4rem', textAlign: 'center', marginTop: '0.3rem', fontWeight: 600, display: 'inline-block', width: '100%' }}>{colItems.length}</div>}
+              </div>
+              {/* Tasks */}
+              <div style={{ flex: 1, padding: '0.6rem', overflowY: 'auto' }}>
+                <AnimatePresence>
+                  {colItems.map(item => <TaskChip key={item.id} item={item} isAr={isAr} onDelete={deleteItem} onEdit={setEditItem} />)}
+                </AnimatePresence>
+                {colItems.length === 0 && (
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', textAlign: 'center', padding: '1rem 0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', opacity: 0.5 }}>{isAr ? 'لا توجد مهام' : 'No tasks yet'}</div>
+                )}
+              </div>
+              {/* Add button */}
+              <div style={{ padding: '0.5rem 0.6rem', borderTop: `1px solid ${pc.main}12` }}>
+                <button onClick={() => setModal(prayer.id)}
+                  style={{ width: '100%', padding: '0.45rem', borderRadius: 8, border: `1.5px dashed ${pc.main}50`, background: pc.main + '08', color: pc.main, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = pc.main + '1a'; e.currentTarget.style.borderStyle = 'solid' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = pc.main + '08'; e.currentTarget.style.borderStyle = 'dashed' }}>
+                  + {isAr ? 'إضافة' : 'Add'}
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Saved preview */}
+      <AnimatePresence>
+        {saved && <SavedSchedulePreview type="prayer" items={items} isAr={isAr} language={language} prayerTimes={prayerTimes} />}
+      </AnimatePresence>
+
+      {/* Add Modal */}
+      <AnimatePresence>
+        {modal && (
+          <AddScheduleTaskModal
+            mode="prayer"
+            onAdd={async (data) => { await addItem({ ...data, prayerId: modal }) }}
+            onClose={() => setModal(null)}
+            isAr={isAr}
+            prayerTimes={prayerTimes}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editItem && (
+          <AddScheduleTaskModal
+            mode="prayer"
+            editItem={editItem}
+            onEdit={async (data) => { await updateItem(editItem.id, data) }}
+            onClose={() => setEditItem(null)}
+            isAr={isAr}
+            prayerTimes={prayerTimes}
+          />
+        )}
+      </AnimatePresence>
+
+      <style>{`
+        @media (max-width: 900px) { .prayer-cols-grid { grid-template-columns: repeat(3, 1fr) !important; } }
+        @media (max-width: 520px) { .prayer-cols-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+        @media (max-width: 340px) { .prayer-cols-grid { grid-template-columns: 1fr !important; } }
+      `}</style>
+    </div>
+  )
+}
+
+// ── WeeklyCustomView ──────────────────────────────────────────────────────────
+function WeeklyCustomView({ isAr, language, onBack }) {
+  const { user } = useAuth()
+  const [items,    setItems]    = useState([])
+  const [saved,    setSaved]    = useState(false)
+  const [modal,    setModal]    = useState(null)
+  const [editItem, setEditItem] = useState(null)
+  const [saving,   setSaving]   = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    const unsub1 = onSnapshot(collection(db, 'users', user.uid, 'customScheduleItems'),
+      snap => setItems(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(i => i.type === 'weekly').sort((a, b) => (a.order || 0) - (b.order || 0))))
+    const unsub2 = onSnapshot(doc(db, 'users', user.uid, 'savedSchedules', 'custom'),
+      snap => setSaved(snap.exists() && snap.data()?.saved && snap.data()?.type === 'weekly'))
+    return () => { unsub1(); unsub2() }
+  }, [user])
+
+  const addItem = async (data) => {
+    if (!user) return
+    await addDoc(collection(db, 'users', user.uid, 'customScheduleItems'), { ...data, order: Date.now(), createdAt: new Date().toISOString() })
+  }
+
+  const deleteItem = async (id) => {
+    if (!user) return
+    await deleteDoc(doc(db, 'users', user.uid, 'customScheduleItems', id))
+  }
+
+  const updateItem = async (id, data) => {
+    if (!user) return
+    await updateDoc(doc(db, 'users', user.uid, 'customScheduleItems', id), data)
+  }
+
+  const saveSchedule = async () => {
+    if (!user) return
+    setSaving(true)
+    try {
+      await setDoc(doc(db, 'users', user.uid, 'savedSchedules', 'custom'), { saved: true, type: 'weekly', savedAt: new Date().toISOString() })
+    } finally { setSaving(false) }
+  }
+
+  const todayKey = ['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()]
+
+  return (
+    <div>
+      {/* Header row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
+        <button onClick={onBack}
+          style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sapphire)'; e.currentTarget.style.color = 'var(--sapphire)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
+          {isAr ? '›' : '‹'}
+        </button>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--sapphire)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>📅 {isAr ? 'الجدول الأسبوعي' : 'Weekly Schedule'}</h2>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'نظّم مهامك عبر أيام الأسبوع' : 'Organize tasks across the week'}</p>
+        </div>
+        {items.length > 0 && (
+          <button onClick={saveSchedule} disabled={saving}
+            style={{ padding: '0.65rem 1.4rem', borderRadius: 12, border: 'none', background: saved ? 'var(--emerald-dim)' : 'linear-gradient(135deg, var(--sapphire), #2563eb)', color: saved ? 'var(--emerald)' : 'white', fontSize: '0.85rem', fontWeight: 700, cursor: saving ? 'default' : 'pointer', transition: 'all 0.2s', opacity: saving ? 0.7 : 1, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', boxShadow: saved ? 'none' : '0 4px 14px rgba(99,179,237,0.4)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            {saving ? '...' : saved ? (isAr ? '✓ محفوظ' : '✓ Saved') : (isAr ? '💾 حفظ الجدول' : '💾 Save Schedule')}
+          </button>
+        )}
+      </div>
+
+      {/* 7-column grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.75rem', marginBottom: '2rem' }} className="week-cols-grid">
+        {FULL_DAYS.map(day => {
+          const isToday = day.key === todayKey
+          const colItems = items.filter(i => (i.days || []).includes(day.key))
+          return (
+            <div key={day.key}
+              style={{ background: isToday ? 'linear-gradient(180deg, rgba(99,179,237,0.08) 0%, var(--bg-card) 100%)' : 'var(--bg-card)', borderRadius: 16, border: isToday ? '1px solid rgba(99,179,237,0.35)' : '1px solid var(--border)', borderTop: isToday ? '3px solid var(--sapphire)' : '3px solid var(--border)', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 220 }}>
+              {/* Day header */}
+              <div style={{ padding: '0.75rem 0.6rem', borderBottom: '1px solid var(--border)', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: isToday ? 'var(--sapphire)' : 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', lineHeight: 1.2, marginBottom: '0.15rem' }}>{isAr ? day.ar : day.en}</div>
+                {isToday && <div style={{ fontSize: '0.56rem', color: 'var(--sapphire)', background: 'rgba(99,179,237,0.15)', borderRadius: 99, padding: '0.04rem 0.35rem', display: 'inline-block', fontWeight: 600 }}>{isAr ? 'اليوم' : 'Today'}</div>}
+                {colItems.length > 0 && <div style={{ fontSize: '0.58rem', color: isToday ? 'var(--sapphire)' : 'var(--text-muted)', marginTop: '0.1rem', fontWeight: 600 }}>{colItems.length}</div>}
+              </div>
+              {/* Tasks */}
+              <div style={{ flex: 1, padding: '0.5rem', overflowY: 'auto' }}>
+                <AnimatePresence>
+                  {colItems.map(item => <TaskChip key={item.id + day.key} item={item} isAr={isAr} onDelete={deleteItem} onEdit={setEditItem} />)}
+                </AnimatePresence>
+              </div>
+              {/* Add button */}
+              <div style={{ padding: '0.4rem 0.5rem', borderTop: '1px solid var(--border)' }}>
+                <button onClick={() => setModal(day.key)}
+                  style={{ width: '100%', padding: '0.4rem', borderRadius: 8, border: '1.5px dashed var(--border-strong)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.72rem', cursor: 'pointer', transition: 'all 0.15s', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sapphire)'; e.currentTarget.style.color = 'var(--sapphire)'; e.currentTarget.style.background = 'rgba(99,179,237,0.06)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent' }}>
+                  + {isAr ? 'إضافة' : 'Add'}
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <AnimatePresence>
+        {saved && <SavedSchedulePreview type="custom-weekly" items={items} isAr={isAr} language={language} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {modal && (
+          <AddScheduleTaskModal mode="weekly" defaultDay={modal} onAdd={addItem} onClose={() => setModal(null)} isAr={isAr} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {editItem && (
+          <AddScheduleTaskModal
+            mode="weekly"
+            editItem={editItem}
+            onEdit={async (data) => { await updateItem(editItem.id, data) }}
+            onClose={() => setEditItem(null)}
+            isAr={isAr}
+          />
+        )}
+      </AnimatePresence>
+
+      <style>{`
+        @media (max-width: 900px) { .week-cols-grid { grid-template-columns: repeat(4, 1fr) !important; } }
+        @media (max-width: 600px) { .week-cols-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+      `}</style>
+    </div>
+  )
+}
+
+// ── DailyCustomView ───────────────────────────────────────────────────────────
+function DailyCustomView({ isAr, language, onBack }) {
+  const { user } = useAuth()
+  const [items,    setItems]    = useState([])
+  const [saved,    setSaved]    = useState(false)
+  const [modal,    setModal]    = useState(false)
+  const [editItem, setEditItem] = useState(null)
+  const [saving,   setSaving]   = useState(false)
+  const [selDate,  setSelDate]  = useState(localDateStr())
+
+  useEffect(() => {
+    if (!user) return
+    const unsub1 = onSnapshot(collection(db, 'users', user.uid, 'customScheduleItems'),
+      snap => setItems(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(i => i.type === 'daily').sort((a, b) => (a.order || 0) - (b.order || 0))))
+    const unsub2 = onSnapshot(doc(db, 'users', user.uid, 'savedSchedules', 'custom'),
+      snap => setSaved(snap.exists() && snap.data()?.saved && snap.data()?.type === 'daily'))
+    return () => { unsub1(); unsub2() }
+  }, [user])
+
+  const dayItems = items.filter(i => i.date === selDate)
+
+  const addItem = async (data) => {
+    if (!user) return
+    await addDoc(collection(db, 'users', user.uid, 'customScheduleItems'), { ...data, order: Date.now(), createdAt: new Date().toISOString() })
+  }
+
+  const deleteItem = async (id) => {
+    if (!user) return
+    await deleteDoc(doc(db, 'users', user.uid, 'customScheduleItems', id))
+  }
+
+  const updateItem = async (id, data) => {
+    if (!user) return
+    await updateDoc(doc(db, 'users', user.uid, 'customScheduleItems', id), data)
+  }
+
+  const saveSchedule = async () => {
+    if (!user) return
+    setSaving(true)
+    try {
+      await setDoc(doc(db, 'users', user.uid, 'savedSchedules', 'custom'), { saved: true, type: 'daily', date: selDate, savedAt: new Date().toISOString() })
+    } finally { setSaving(false) }
+  }
+
+  const dateLabel = new Date(selDate + 'T00:00:00').toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+
+  return (
+    <div>
+      {/* Header row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
+        <button onClick={onBack}
+          style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--emerald)'; e.currentTarget.style.color = 'var(--emerald)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
+          {isAr ? '›' : '‹'}
+        </button>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>🗓 {isAr ? 'الجدول اليومي' : 'Daily Schedule'}</h2>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{dateLabel}</p>
+        </div>
+        <input type="date" value={selDate} onChange={e => setSelDate(e.target.value)}
+          style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 10, padding: '0.45rem 0.75rem', color: 'var(--text-primary)', fontSize: '0.82rem', outline: 'none', cursor: 'pointer' }}
+        />
+        {dayItems.length > 0 && (
+          <button onClick={saveSchedule} disabled={saving}
+            style={{ padding: '0.65rem 1.4rem', borderRadius: 12, border: 'none', background: saved ? 'var(--emerald-dim)' : 'linear-gradient(135deg, var(--emerald), #059669)', color: saved ? 'var(--emerald)' : 'white', fontSize: '0.85rem', fontWeight: 700, cursor: saving ? 'default' : 'pointer', transition: 'all 0.2s', opacity: saving ? 0.7 : 1, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', boxShadow: saved ? 'none' : '0 4px 14px rgba(74,222,128,0.35)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            {saving ? '...' : saved ? (isAr ? '✓ محفوظ' : '✓ Saved') : (isAr ? '💾 حفظ الجدول' : '💾 Save Schedule')}
+          </button>
+        )}
+      </div>
+
+      {/* Single column */}
+      <div style={{ maxWidth: 560, margin: '0 auto' }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 18, border: '1px solid rgba(74,222,128,0.25)', borderTop: '3px solid var(--emerald)', overflow: 'hidden', boxShadow: '0 6px 24px rgba(74,222,128,0.08)' }}>
+          <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(74,222,128,0.12)', background: 'linear-gradient(135deg, rgba(74,222,128,0.08) 0%, transparent 100%)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>🗓</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{dateLabel}</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.08rem' }}>{dayItems.length} {isAr ? 'مهام' : dayItems.length === 1 ? 'task' : 'tasks'}</div>
+            </div>
+            <button onClick={() => setModal(true)}
+              style={{ padding: '0.5rem 1.1rem', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, var(--emerald), #059669)', color: 'white', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', boxShadow: '0 3px 10px rgba(74,222,128,0.35)', flexShrink: 0 }}>
+              + {isAr ? 'إضافة مهمة' : 'Add Task'}
+            </button>
+          </div>
+          <div style={{ padding: '0.875rem 1rem', minHeight: 120 }}>
+            <AnimatePresence>
+              {dayItems.map(item => <TaskChip key={item.id} item={item} isAr={isAr} onDelete={deleteItem} onEdit={setEditItem} />)}
+            </AnimatePresence>
+            {dayItems.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📋</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{isAr ? 'لا توجد مهام لهذا اليوم' : 'No tasks for this day'}</div>
+                <div style={{ fontSize: '0.72rem', marginTop: '0.35rem', opacity: 0.7 }}>{isAr ? 'اضغط + إضافة مهمة للبدء' : 'Click + Add Task to get started'}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {saved && <SavedSchedulePreview type="custom-daily" items={dayItems} isAr={isAr} language={language} date={selDate} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {modal && (
+          <AddScheduleTaskModal mode="daily" defaultDate={selDate} onAdd={addItem} onClose={() => setModal(false)} isAr={isAr} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {editItem && (
+          <AddScheduleTaskModal
+            mode="daily"
+            editItem={editItem}
+            onEdit={async (data) => { await updateItem(editItem.id, data) }}
+            onClose={() => setEditItem(null)}
+            isAr={isAr}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
 
 // ── ScheduleTab ───────────────────────────────────────────────────────────────
+const DAY_KEYS_SCHED = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+
 function ScheduleTab({ isAr, language }) {
-  const { user } = useAuth()
-  const { toggleTask, deleteTask, addTask, customSections, FIXED_SECTIONS: FS } = useApp()
-  const [weekOffset,  setWeekOffset]  = useState(0)
-  const [weekTasks,   setWeekTasks]   = useState({})
-  const [loading,     setLoading]     = useState(true)
-  const [addingToDay, setAddingToDay] = useState(null)
+  const { prayerTimes } = useApp()
+  const [view,       setView]       = useState(null) // null | 'custom' | 'prayer'
+  const [customMode, setCustomMode] = useState(null) // null | 'weekly' | 'daily'
 
-  const allSections = useMemo(() => [...FS, ...customSections], [FS, customSections])
+  if (view === 'prayer') return (
+    <AnimatePresence mode="wait">
+      <motion.div key="prayer-view" initial={{ opacity: 0, x: isAr ? -30 : 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+        <PrayerScheduleView isAr={isAr} language={language} prayerTimes={prayerTimes} onBack={() => setView(null)} />
+      </motion.div>
+    </AnimatePresence>
+  )
 
-  const weekDays = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date()
-      d.setDate(d.getDate() + weekOffset * 7 + i)
-      const str = d.toISOString().split('T')[0]
-      const isToday = weekOffset === 0 && i === 0
-      return {
-        str,
-        isToday,
-        dayNum: d.getDate(),
-        dayShort: d.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', { weekday: 'short' }),
-        dayLong:  d.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
-      }
-    })
-  }, [weekOffset, language])
+  if (view === 'custom' && customMode === 'weekly') return (
+    <AnimatePresence mode="wait">
+      <motion.div key="weekly-view" initial={{ opacity: 0, x: isAr ? -30 : 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+        <WeeklyCustomView isAr={isAr} language={language} onBack={() => setCustomMode(null)} />
+      </motion.div>
+    </AnimatePresence>
+  )
 
-  useEffect(() => {
-    if (!user) return
-    setLoading(true)
-    const start = weekDays[0].str
-    const end   = weekDays[6].str
+  if (view === 'custom' && customMode === 'daily') return (
+    <AnimatePresence mode="wait">
+      <motion.div key="daily-view" initial={{ opacity: 0, x: isAr ? -30 : 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+        <DailyCustomView isAr={isAr} language={language} onBack={() => setCustomMode(null)} />
+      </motion.div>
+    </AnimatePresence>
+  )
 
-    const unsub = onSnapshot(
-      query(
-        collection(db, 'users', user.uid, 'tasks'),
-        where('date', '>=', start),
-        where('date', '<=', end)
-      ),
-      (snap) => {
-        const grouped = {}
-        snap.docs.forEach(d => {
-          const t = { id: d.id, ...d.data() }
-          if (!grouped[t.date]) grouped[t.date] = []
-          grouped[t.date].push(t)
-        })
-        Object.keys(grouped).forEach(k => grouped[k].sort((a, b) => (a.order || 0) - (b.order || 0)))
-        setWeekTasks(grouped)
-        setLoading(false)
-      }
-    )
-    return () => unsub()
-  }, [user, weekDays[0].str])
+  if (view === 'custom') return (
+    <AnimatePresence mode="wait">
+      <motion.div key="custom-type" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
+          <button onClick={() => setView(null)}
+            style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sapphire)'; e.currentTarget.style.color = 'var(--sapphire)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
+            {isAr ? '›' : '‹'}
+          </button>
+          <div>
+            <h2 style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--sapphire)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>📅 {isAr ? 'الجدول المخصص' : 'Custom Schedule'}</h2>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'اختر نوع الجدول' : 'Choose schedule type'}</p>
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', maxWidth: 620, margin: '0 auto' }}>
+          {[
+            { mode: 'weekly', icon: '📅', title: isAr ? 'أسبوعي' : 'Weekly', desc: isAr ? 'جدول يتكرر كل أسبوع عبر الأيام السبعة' : 'Recurring across all 7 days of the week', color: 'var(--sapphire)', dim: 'var(--sapphire-dim)', glow: 'rgba(99,179,237,0.35)' },
+            { mode: 'daily',  icon: '🗓', title: isAr ? 'يومي'   : 'Daily',  desc: isAr ? 'جدول مخصص لتنظيم يوم محدد فقط'       : 'Focused plan for a single specific day',    color: 'var(--emerald)',  dim: 'var(--emerald-dim)',  glow: 'rgba(74,222,128,0.35)' },
+          ].map(opt => (
+            <motion.button key={opt.mode} whileHover={{ scale: 1.02, y: -4 }} whileTap={{ scale: 0.98 }}
+              onClick={() => setCustomMode(opt.mode)}
+              style={{ padding: '2rem 1.5rem', borderRadius: 18, border: `1.5px solid ${opt.color}35`, background: `linear-gradient(135deg, ${opt.dim} 0%, var(--bg-card) 100%)`, cursor: 'pointer', textAlign: isAr ? 'right' : 'left', boxShadow: `0 4px 20px ${opt.color}10`, direction: isAr ? 'rtl' : 'ltr', transition: 'box-shadow 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = `0 8px 30px ${opt.glow}`}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = `0 4px 20px ${opt.color}10`}
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{opt.icon}</div>
+              <div style={{ fontWeight: 700, fontSize: '1.15rem', color: opt.color, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', marginBottom: '0.4rem' }}>{opt.title}</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', lineHeight: 1.6 }}>{opt.desc}</div>
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  )
 
-  const weekLabel = useMemo(() => {
-    const s = new Date(weekDays[0].str + 'T00:00:00')
-    const e = new Date(weekDays[6].str + 'T00:00:00')
-    const fmt = { month: 'short', day: 'numeric' }
-    const loc = language === 'ar' ? 'ar-SA' : 'en-US'
-    return `${s.toLocaleDateString(loc, fmt)} – ${e.toLocaleDateString(loc, fmt)}`
-  }, [weekDays, language])
-
-  const totalScheduled = Object.values(weekTasks).flat().length
-
-  const navBtn = (dir) => ({
-    padding: '0.4rem 0.875rem',
-    borderRadius: 'var(--radius-md)',
-    border: '1px solid var(--border-strong)',
-    background: 'transparent',
-    color: 'var(--text-secondary)',
-    fontSize: '0.82rem', cursor: 'pointer',
-    transition: 'all var(--transition)',
-  })
-
+  // ── Main entry: two big buttons ────────────────────────────────────────────
   return (
-    <div>
-      {/* Week navigation */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '0.75rem' }}>
-        <button style={navBtn()} onClick={() => setWeekOffset(o => o - 1)}
-          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-card)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-        >
-          {isAr ? '→' : '←'} {isAr ? 'الأسبوع السابق' : 'Prev'}
-        </button>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-            {weekOffset === 0 ? (isAr ? 'هذا الأسبوع' : 'This Week') : weekOffset === 1 ? (isAr ? 'الأسبوع القادم' : 'Next Week') : weekLabel}
-          </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{weekLabel}</div>
+    <AnimatePresence mode="wait">
+      <motion.div key="selector" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{ fontSize: '2.2rem', marginBottom: '0.75rem' }}>🗂</div>
+          <h2 style={{ fontWeight: 700, fontSize: '1.4rem', color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: '0 0 0.5rem' }}>
+            {isAr ? 'إنشاء جدول' : 'Create a Schedule'}
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', maxWidth: 420, margin: '0 auto' }}>
+            {isAr ? 'اختر نوع الجدول الذي تريد إنشاءه' : "Choose the kind of schedule you'd like to build"}
+          </p>
         </div>
-        <button style={navBtn()} onClick={() => setWeekOffset(o => o + 1)}
-          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-card)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-        >
-          {isAr ? 'الأسبوع القادم' : 'Next'} {isAr ? '←' : '→'}
-        </button>
-      </div>
 
-      {loading && (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-          ⏳ {isAr ? 'جاري التحميل...' : 'Loading...'}
-        </div>
-      )}
-
-      {!loading && totalScheduled === 0 && (
-        <div style={{ textAlign: 'center', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border)', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-          <div style={{ fontSize: '0.83rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-            {isAr ? 'لا توجد مهام — أضف مهمة لأي يوم أدناه' : 'No tasks yet — add one to any day below'}
-          </div>
-        </div>
-      )}
-
-      {/* Day cards */}
-      {!loading && weekDays.map(day => {
-        const dayTasks  = weekTasks[day.str] || []
-        const done      = dayTasks.filter(t => t.completed).length
-        const total     = dayTasks.length
-        const isAdding  = addingToDay === day.str
-
-        return (
-          <motion.div
-            key={day.str}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{
-              marginBottom: '0.875rem',
-              background: 'var(--bg-card)',
-              borderRadius: 'var(--radius-lg)',
-              border: day.isToday ? '1px solid rgba(99,179,237,0.35)' : '1px solid var(--border)',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Day header */}
-            <div style={{
-              padding: '0.75rem 1.25rem',
-              borderBottom: (dayTasks.length > 0 || isAdding) ? '1px solid var(--border)' : 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: day.isToday ? 'rgba(99,179,237,0.06)' : 'transparent',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <div style={{
-                  width: 38, height: 38, borderRadius: 'var(--radius-md)', flexShrink: 0,
-                  background: day.isToday ? 'var(--sapphire-dim)' : 'var(--bg-input)',
-                  border: day.isToday ? '1px solid rgba(99,179,237,0.35)' : '1px solid var(--border)',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span style={{ fontSize: '0.55rem', color: day.isToday ? 'var(--sapphire)' : 'var(--text-muted)', lineHeight: 1.2, textTransform: 'uppercase', fontWeight: 600 }}>
-                    {day.dayShort}
-                  </span>
-                  <span style={{ fontSize: '0.95rem', fontWeight: 700, color: day.isToday ? 'var(--sapphire)' : 'var(--text-secondary)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-                    {day.dayNum}
-                  </span>
-                </div>
-                <div>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 500, color: day.isToday ? 'var(--sapphire)' : 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                    {day.dayLong}
-                  </span>
-                  {day.isToday && (
-                    <span style={{ marginInlineStart: '0.5rem', fontSize: '0.67rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.08rem 0.45rem', borderRadius: 99 }}>
-                      {isAr ? 'اليوم' : 'Today'}
-                    </span>
-                  )}
-                </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', maxWidth: 760, margin: '0 auto' }} className="schedule-type-grid">
+          {[
+            {
+              id: 'custom', icon: '📅', badge: '✦',
+              title: isAr ? 'جدول مخصص' : 'Custom Schedule',
+              desc: isAr ? 'أنشئ جدولاً يومياً أو أسبوعياً يناسب حياتك اليومية وأهدافك الشخصية' : 'Build a personalized daily or weekly plan tailored to your goals and routines',
+              color: 'var(--sapphire)', dim: 'rgba(99,179,237,0.1)', border: 'rgba(99,179,237,0.28)', glow: 'rgba(99,179,237,0.35)',
+              tags: isAr ? ['أسبوعي', 'يومي', 'مهام', 'تذكيرات'] : ['Weekly', 'Daily', 'Tasks', 'Reminders'],
+            },
+            {
+              id: 'prayer', icon: '🕌', badge: '☪️',
+              title: isAr ? 'جدول الصلوات' : 'Prayer Schedule',
+              desc: isAr ? 'خطط مهامك حول أوقات الصلوات الخمس لحياة منظمة وروحانية متوازنة' : 'Organize tasks around the five daily prayers for a balanced, mindful life',
+              color: 'var(--gold)', dim: 'rgba(212,175,106,0.1)', border: 'rgba(212,175,106,0.28)', glow: 'rgba(212,175,106,0.4)',
+              tags: isAr ? ['الفجر', 'الظهر', 'العصر', 'المغرب', 'العشاء'] : ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'],
+            },
+          ].map(opt => (
+            <motion.button key={opt.id}
+              whileHover={{ scale: 1.02, y: -4 }}
+              whileTap={{ scale: 0.975 }}
+              onClick={() => setView(opt.id)}
+              style={{ padding: '2.25rem 2rem', borderRadius: 22, border: `1.5px solid ${opt.border}`, background: `linear-gradient(145deg, ${opt.dim} 0%, var(--bg-card) 60%)`, cursor: 'pointer', textAlign: isAr ? 'right' : 'left', transition: 'box-shadow 0.25s', boxShadow: `0 6px 24px ${opt.color}10`, direction: isAr ? 'rtl' : 'ltr', position: 'relative', overflow: 'hidden' }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = `0 14px 44px ${opt.glow}`}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = `0 6px 24px ${opt.color}10`}
+            >
+              <div style={{ position: 'absolute', top: 12, [isAr ? 'left' : 'right']: 18, fontSize: '3.5rem', opacity: 0.06, pointerEvents: 'none', userSelect: 'none' }}>{opt.badge}</div>
+              <div style={{ fontSize: '2.8rem', marginBottom: '1rem', lineHeight: 1 }}>{opt.icon}</div>
+              <div style={{ fontWeight: 800, fontSize: '1.22rem', color: opt.color, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', marginBottom: '0.6rem', lineHeight: 1.2 }}>{opt.title}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', lineHeight: 1.7, marginBottom: '1.25rem' }}>{opt.desc}</div>
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                {opt.tags.map(tag => (
+                  <span key={tag} style={{ fontSize: '0.63rem', fontWeight: 600, color: opt.color, background: opt.color + '18', padding: '0.15rem 0.55rem', borderRadius: 99, border: `1px solid ${opt.color}22`, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{tag}</span>
+                ))}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                {total > 0 && (
-                  <span style={{ fontSize: '0.72rem', color: done === total ? 'var(--emerald)' : 'var(--text-muted)', fontVariantNumeric: 'tabular-nums', fontWeight: done === total ? 600 : 400 }}>
-                    {done}/{total}
-                  </span>
-                )}
-                {!isAdding && (
-                  <button
-                    onClick={() => setAddingToDay(day.str)}
-                    style={{
-                      padding: '0.22rem 0.6rem', borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border)', background: 'transparent',
-                      color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer',
-                      transition: 'all var(--transition)',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sapphire)'; e.currentTarget.style.color = 'var(--sapphire)'; e.currentTarget.style.background = 'var(--sapphire-dim)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent' }}
-                  >+ {isAr ? 'مهمة' : 'Task'}</button>
-                )}
+              <div style={{ position: 'absolute', bottom: 18, [isAr ? 'left' : 'right']: 18, width: 30, height: 30, borderRadius: 8, background: opt.color + '20', border: `1px solid ${opt.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', color: opt.color }}>
+                {isAr ? '‹' : '›'}
               </div>
-            </div>
+            </motion.button>
+          ))}
+        </div>
 
-            {/* Task rows */}
-            <AnimatePresence initial={false}>
-              {dayTasks.map(task => (
-                <motion.div
-                  key={task.id}
-                  layout
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '0.75rem',
-                    padding: '0.55rem 1.25rem',
-                    borderTop: '1px solid var(--border)',
-                  }}
-                >
-                  <button
-                    onClick={() => toggleTask(task)}
-                    style={{
-                      width: 18, height: 18, flexShrink: 0, borderRadius: 'var(--radius-sm)',
-                      border: task.completed ? '1.5px solid var(--emerald)' : '1.5px solid var(--border-strong)',
-                      background: task.completed ? 'var(--emerald)' : 'transparent',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', transition: 'all 0.2s', color: 'white', fontSize: '0.6rem',
-                    }}
-                  >{task.completed ? '✓' : ''}</button>
-
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: '0.875rem',
-                      color: task.completed ? 'var(--text-muted)' : 'var(--text-primary)',
-                      textDecoration: task.completed ? 'line-through' : 'none',
-                      fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>{task.text}</div>
-                    <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
-                      {task.sectionId && (
-                        <span style={{ fontSize: '0.63rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
-                          {task.sectionId}
-                        </span>
-                      )}
-                      {task.reminderTime && !task.completed && (
-                        <span style={{ fontSize: '0.63rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
-                          🔔 {fmt12h(task.reminderTime)}
-                        </span>
-                      )}
-                      {task.duration && (
-                        <span style={{ fontSize: '0.63rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>
-                          ⏱ {task.duration}{isAr ? 'د' : 'm'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    style={{ width: 24, height: 24, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all var(--transition)' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ruby)'; e.currentTarget.style.color = 'var(--ruby)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-                  >✕</button>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {/* Inline add form */}
-            {isAdding && (
-              <DayAddForm
-                dayStr={day.str}
-                sections={allSections}
-                language={language}
-                isAr={isAr}
-                addTask={addTask}
-                onClose={() => setAddingToDay(null)}
-              />
-            )}
-          </motion.div>
-        )
-      })}
-    </div>
+        <style>{`@media (max-width: 600px) { .schedule-type-grid { grid-template-columns: 1fr !important; } }`}</style>
+      </motion.div>
+    </AnimatePresence>
   )
 }
 

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { collection, onSnapshot } from 'firebase/firestore'
+import { db } from '../firebase'
 import { useApp } from '../contexts/AppContext'
+import { useAuth } from '../contexts/AuthContext'
 import { startRadarAlarm } from '../utils/alarmSound'
 import { getTodayKey } from '../utils/dateUtils'
 
@@ -45,10 +48,27 @@ function pushBrowserNotif(title, body) {
 
 export default function ReminderNotifier() {
   const { tasks, goals, language } = useApp()
+  const { user } = useAuth()
   const isAr = language === 'ar'
-  const [toasts, setToasts] = useState([])          // array so stacking works
-  const firedRef    = useRef(loadFired())
+  const [toasts, setToasts] = useState([])
+  const [prayerItems, setPrayerItems] = useState([])
+  const [customItems, setCustomItems] = useState([])
+  const firedRef     = useRef(loadFired())
   const alarmStopRef = useRef(null)
+
+  // Subscribe to schedule items for reminder checking
+  useEffect(() => {
+    if (!user) return
+    const u1 = onSnapshot(
+      collection(db, 'users', user.uid, 'prayerScheduleItems'),
+      snap => setPrayerItems(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    )
+    const u2 = onSnapshot(
+      collection(db, 'users', user.uid, 'customScheduleItems'),
+      snap => setCustomItems(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    )
+    return () => { u1(); u2() }
+  }, [user])
 
   const addToast = (id, icon, title, body) => {
     setToasts(prev => [...prev.filter(t => t.id !== id), { id, icon, title, body }])
@@ -64,7 +84,6 @@ export default function ReminderNotifier() {
     firedRef.current.add(uid)
     saveFired(firedRef.current)
 
-    // Stop any previous alarm, start new one for 8 s
     if (alarmStopRef.current) { alarmStopRef.current(); alarmStopRef.current = null }
     alarmStopRef.current = startRadarAlarm(8)
     setTimeout(() => { alarmStopRef.current = null }, 8000)
@@ -80,7 +99,7 @@ export default function ReminderNotifier() {
       const timeStr  = currentHHMM()
       const todayStr = getTodayKey()
 
-      // ── Task reminders ────────────────────────────────────────────
+      // ── Regular task reminders ────────────────────────────────────
       Object.values(tasks).flat().forEach(task => {
         if (task.completed || !task.reminderTime) return
         if (task.reminderTime.substring(0, 5) !== timeStr) return
@@ -90,12 +109,34 @@ export default function ReminderNotifier() {
         fireReminder(uid, '🔔', title, body)
       })
 
+      // ── Prayer schedule item reminders ────────────────────────────
+      prayerItems.forEach(item => {
+        if (item.completed || !item.reminderTime) return
+        if (item.reminderTime.substring(0, 5) !== timeStr) return
+        const uid   = `psched-${item.id}-${timeStr}`
+        const title = isAr ? '🕌 تذكير الجدول الديني' : '🕌 Prayer Schedule Reminder'
+        const body  = isAr ? `${item.icon || '📋'} ${item.text}` : `${item.icon || '📋'} ${item.text}`
+        fireReminder(uid, item.icon || '🕌', title, body)
+      })
+
+      // ── Custom schedule item reminders ────────────────────────────
+      customItems.forEach(item => {
+        if (item.completed || !item.reminderTime) return
+        if (item.reminderTime.substring(0, 5) !== timeStr) return
+        // For daily items, only fire on the matching date
+        if (item.type === 'daily' && item.date && item.date !== todayStr) return
+        const uid   = `csched-${item.id}-${timeStr}`
+        const title = isAr ? '📅 تذكير الجدول' : '📅 Schedule Reminder'
+        const body  = isAr ? `${item.icon || '📋'} ${item.text}` : `${item.icon || '📋'} ${item.text}`
+        fireReminder(uid, item.icon || '📅', title, body)
+      })
+
       // ── Goal deadline day reminder (fires at 09:00) ───────────────
       if (timeStr === '09:00') {
         goals.forEach(goal => {
           if (!goal.deadline || goal.deadline !== todayStr) return
-          const ms   = goal.milestones || []
-          if (ms.length > 0 && ms.every(m => m.completed)) return   // already done
+          const ms = goal.milestones || []
+          if (ms.length > 0 && ms.every(m => m.completed)) return
           const name  = isAr && goal.titleAr ? goal.titleAr : goal.title
           const uid   = `goal-dl-${goal.id}-${todayStr}`
           const title = isAr ? '🎯 موعد الهدف اليوم!' : '🎯 Goal Deadline Today!'
@@ -109,7 +150,7 @@ export default function ReminderNotifier() {
     const interval = setInterval(check, 30_000)
     return () => clearInterval(interval)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tasks, goals, isAr])
+  }, [tasks, goals, prayerItems, customItems, isAr])
 
   useEffect(() => () => { if (alarmStopRef.current) alarmStopRef.current() }, [])
 
@@ -124,7 +165,6 @@ export default function ReminderNotifier() {
           transition={{ type: 'spring', stiffness: 340, damping: 28 }}
           style={{
             position: 'fixed',
-            // Stack below the adhan notifier (which sits at 1.25rem)
             top: `${1.25 + i * 6}rem`,
             left: '50%',
             transform: 'translateX(-50%)',

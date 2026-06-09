@@ -5,7 +5,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from './AuthContext'
-import { fetchPrayerTimes } from '../utils/prayerTimes'
+import { fetchPrayerTimes, getMethodForTimezone, getMethodForCountry } from '../utils/prayerTimes'
 import { getTodayKey } from '../utils/dateUtils'
 
 const AppContext = createContext(null)
@@ -42,6 +42,10 @@ export const AppProvider = ({ children }) => {
   const [donePrayers, setDonePrayers]   = useState({})
   const [focusTimer, setFocusTimer]     = useState({ active: false, seconds: 1500, running: false })
   const [loading, setLoading]           = useState(true)
+  const [prayerMethod, setPrayerMethod] = useState(null)
+
+  const prayerMethodRef = useRef(null)
+  const locationRef     = useRef(null)
 
   // Only count the 5 obligatory prayers (Duha / Witr are sunnah, excluded from counter)
   const prayersDone = Object.entries(donePrayers)
@@ -57,6 +61,9 @@ export const AppProvider = ({ children }) => {
       setPrayerNotifications(userProfile.prayerNotifications !== false) // default true
       setScheduleTypeState(userProfile.scheduleType || 'prayer')
       setScheduleFrequencyState(userProfile.scheduleFrequency || 'daily')
+      const savedMethod = userProfile.prayerMethod ?? null
+      setPrayerMethod(savedMethod)
+      prayerMethodRef.current = savedMethod
     }
   }, [userProfile])
 
@@ -71,26 +78,69 @@ export const AppProvider = ({ children }) => {
     document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr')
   }, [language])
 
+  // Resolve the best calculation method for a location.
+  // 1. If user already has a saved method, use it.
+  // 2. Try browser timezone (instant, no network).
+  // 3. Fall back to reverse-geocoding the coordinates.
+  const resolveMethod = useCallback(async (latitude, longitude) => {
+    if (prayerMethodRef.current !== null) return prayerMethodRef.current
+
+    // Timezone-based detection (instant, no network call)
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    const tzMethod = getMethodForTimezone(tz)
+    if (tzMethod !== null) {
+      setPrayerMethod(tzMethod)
+      prayerMethodRef.current = tzMethod
+      updateProfile({ prayerMethod: tzMethod }).catch(() => {})
+      return tzMethod
+    }
+
+    // Reverse geocoding fallback for ambiguous/unknown timezones
+    try {
+      const controller = new AbortController()
+      const tid = setTimeout(() => controller.abort(), 5000)
+      const res = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
+        { signal: controller.signal }
+      )
+      clearTimeout(tid)
+      const geo = await res.json()
+      const cc = geo.countryCode?.toUpperCase()
+      const method = getMethodForCountry(cc)
+      setPrayerMethod(method)
+      prayerMethodRef.current = method
+      updateProfile({ prayerMethod: method }).catch(() => {})
+      return method
+    } catch {
+      return 3 // Muslim World League — safe international default
+    }
+  }, [updateProfile])
+
   // Fetch prayer times for current location
   const fetchLocationPrayerTimes = useCallback(async () => {
+    const MAKKAH = { latitude: 21.3891, longitude: 39.8579 }
+
     if (!navigator.geolocation) {
-      const times = await fetchPrayerTimes(21.3891, 39.8579)
-      setPrayerTimes(times)
+      const method = await resolveMethod(MAKKAH.latitude, MAKKAH.longitude)
+      setPrayerTimes(await fetchPrayerTimes(MAKKAH.latitude, MAKKAH.longitude, method))
       return
     }
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords
+        locationRef.current = { latitude, longitude }
         setLocation({ latitude, longitude })
-        const times = await fetchPrayerTimes(latitude, longitude)
-        setPrayerTimes(times)
+        const method = await resolveMethod(latitude, longitude)
+        setPrayerTimes(await fetchPrayerTimes(latitude, longitude, method))
       },
       async () => {
-        const times = await fetchPrayerTimes(21.3891, 39.8579)
-        setPrayerTimes(times)
-      }
+        const method = prayerMethodRef.current ?? 3
+        setPrayerTimes(await fetchPrayerTimes(MAKKAH.latitude, MAKKAH.longitude, method))
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
     )
-  }, [])
+  }, [resolveMethod])
 
   useEffect(() => { fetchLocationPrayerTimes() }, [fetchLocationPrayerTimes])
 
@@ -204,6 +254,14 @@ export const AppProvider = ({ children }) => {
   const changePrayerNotifications = async (val) => {
     setPrayerNotifications(val)
     await updateProfile({ prayerNotifications: val })
+  }
+
+  const changePrayerMethod = async (method) => {
+    setPrayerMethod(method)
+    prayerMethodRef.current = method
+    await updateProfile({ prayerMethod: method })
+    const { latitude, longitude } = locationRef.current || { latitude: 21.3891, longitude: 39.8579 }
+    setPrayerTimes(await fetchPrayerTimes(latitude, longitude, method))
   }
 
   const changeScheduleType = async (type) => {
@@ -436,6 +494,7 @@ export const AppProvider = ({ children }) => {
       theme, changeTheme,
       timeFormat, changeTimeFormat,
       prayerNotifications, changePrayerNotifications,
+      prayerMethod, changePrayerMethod,
       scheduleType, scheduleFrequency, scheduleBlocks,
       changeScheduleType, changeScheduleFrequency,
       addScheduleBlock, editScheduleBlock, deleteScheduleBlock, reorderScheduleBlocks,

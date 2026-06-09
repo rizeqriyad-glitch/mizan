@@ -1,18 +1,31 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
+import { startRadarAlarm } from '../utils/alarmSound'
 
 const ADHAN_URL = 'https://cdn.islamic.network/adhan/audio/adhan-makkah.mp3'
 
 const PRAYER_LABELS = {
   fajr:    { en: 'Fajr',    ar: 'الفجر'  },
+  shuruq:  { en: 'Sunrise', ar: 'الشروق' },
   dhuhr:   { en: 'Dhuhr',   ar: 'الظهر'  },
   asr:     { en: 'Asr',     ar: 'العصر'  },
   maghrib: { en: 'Maghrib', ar: 'المغرب' },
   isha:    { en: 'Isha',    ar: 'العشاء' },
 }
 
-const OBLIGATORY = Object.keys(PRAYER_LABELS)
+// Maps prayer id → key in prayerTimes object
+const PRAYER_TIME_KEY = {
+  fajr:    'fajr',
+  shuruq:  'sunrise',
+  dhuhr:   'dhuhr',
+  asr:     'asr',
+  maghrib: 'maghrib',
+  isha:    'isha',
+}
+
+const ALL_TIMED = Object.keys(PRAYER_TIME_KEY)
+const OBLIGATORY = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10)
@@ -74,17 +87,25 @@ export default function AdhanNotifier() {
     savePlayed(playedRef.current)
     setAudioBlocked(false)
     setToast({ id, label: PRAYER_LABELS[id] })
-    playAdhan()
+
+    if (id === 'shuruq') {
+      // Sunrise is a time marker, not a prayer — play a short tone instead of adhan
+      startRadarAlarm(4)
+    } else {
+      playAdhan()
+    }
 
     // Browser notification
     if (Notification.permission === 'granted') {
       const label = PRAYER_LABELS[id]
       try {
-        new Notification(isAr ? `حان وقت صلاة ${label.ar}` : `${label.en} Prayer Time`, {
-          body: isAr ? 'حَيَّ عَلَى الصَّلَاةِ' : 'Come to prayer',
-          icon: '/favicon.ico',
-          silent: true,
-        })
+        const title = id === 'shuruq'
+          ? (isAr ? '🌄 حان وقت الشروق' : '🌄 Sunrise')
+          : (isAr ? `حان وقت صلاة ${label.ar}` : `${label.en} Prayer Time`)
+        const body = id === 'shuruq'
+          ? (isAr ? 'طلعت الشمس — وقت صلاة الضحى' : 'Sun has risen — time for Duha prayer')
+          : (isAr ? 'حَيَّ عَلَى الصَّلَاةِ' : 'Come to prayer')
+        new Notification(title, { body, icon: '/favicon.ico', silent: true })
       } catch {}
     }
   }
@@ -96,18 +117,20 @@ export default function AdhanNotifier() {
     const timeouts = []
     const now = new Date()
 
-    // Immediate check — fires if we're within the current prayer minute and it hasn't played yet
+    // Immediate check — fires if we're within the current prayer/shuruq minute and it hasn't played yet
     const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
-    for (const id of OBLIGATORY) {
-      if (prayerTimes[id]?.substring(0, 5) === hhmm && !playedRef.current.has(id)) {
+    for (const id of ALL_TIMED) {
+      const key = PRAYER_TIME_KEY[id]
+      if (prayerTimes[key]?.substring(0, 5) === hhmm && !playedRef.current.has(id)) {
         fire(id)
         break
       }
     }
 
-    // Schedule a precise setTimeout for every remaining prayer today
-    for (const id of OBLIGATORY) {
-      const t = prayerTimes[id]?.substring(0, 5)
+    // Schedule a precise setTimeout for every remaining prayer + shuruq today
+    for (const id of ALL_TIMED) {
+      const key = PRAYER_TIME_KEY[id]
+      const t = prayerTimes[key]?.substring(0, 5)
       if (!t) continue
       const [ph, pm] = t.split(':').map(Number)
       const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), ph, pm, 0, 0)
@@ -166,10 +189,12 @@ export default function AdhanNotifier() {
 
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: 'var(--font-arabic)', fontSize: '1rem', color: 'var(--gold)', direction: 'rtl', marginBottom: '0.2rem' }}>
-              حَيَّ عَلَى الصَّلَاةِ
+              {toast.id === 'shuruq' ? 'طَلَعَتِ الشَّمْسُ' : 'حَيَّ عَلَى الصَّلَاةِ'}
             </div>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-              {isAr ? `حان وقت صلاة ${toast.label.ar}` : `It's time for ${toast.label.en} prayer`}
+              {toast.id === 'shuruq'
+                ? (isAr ? 'وقت الشروق — يمكنك صلاة الضحى' : 'Sunrise — Duha prayer time begins')
+                : (isAr ? `حان وقت صلاة ${toast.label.ar}` : `It's time for ${toast.label.en} prayer`)}
             </div>
             {audioBlocked && (
               <button onClick={playAdhan} style={{

@@ -345,6 +345,7 @@ export default function SettingsPage() {
             colorDim="var(--emerald-dim)"
           />
         </SettingRow>
+
       </motion.div>
 
       {/* Alarm Sound */}
@@ -374,8 +375,8 @@ export default function SettingsPage() {
         </div>
 
         <SettingRow
-          label={isAr ? 'نغمة التنبيه' : 'Alert tone'}
-          description={isAr ? 'ارفع ملف صوتي ليُستخدم كتنبيه للمؤقت' : 'Upload an audio file to use as the timer alert'}
+          label={isAr ? 'نغمة التنبيهات' : 'Notification tone'}
+          description={isAr ? 'تُستخدم لجميع التذكيرات والمهام والجدول — ارفع ملفاً مخصصاً أو استخدم النغمة الافتراضية' : 'Used for all reminders, tasks & schedule alerts — upload a custom file or use the default tone'}
           isAr={isAr}
         >
           <AlarmUploader isAr={isAr} />
