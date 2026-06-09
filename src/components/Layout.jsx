@@ -125,9 +125,9 @@ export default function Layout() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
               width: 36, height: 36,
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--gold-dim)',
-              border: '1px solid rgba(212,175,106,0.3)',
+              borderRadius: '14px', // Mizan token for icons
+              background: 'rgba(108,71,255,0.1)', // Mizan purple background
+              border: '1px solid rgba(108,71,255,0.3)', // Mizan purple border
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '1.2rem',
             }}>
@@ -137,8 +137,8 @@ export default function Layout() {
               <div style={{
                 fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
                 fontSize: '1.25rem',
-                fontWeight: 600,
-                color: 'var(--gold)',
+                fontWeight: 800, // Mizan token for display font
+                color: 'var(--mizan-purple)', // Mizan purple color
                 letterSpacing: '0.04em',
               }}>
                 {isAr ? 'ميزان' : 'Mizan'}
@@ -162,10 +162,10 @@ export default function Layout() {
             ) : (
               <div style={{
                 width: 34, height: 34, borderRadius: '50%',
-                background: 'var(--gold-dim)', display: 'flex',
+                background: 'rgba(108,71,255,0.1)', display: 'flex', // Mizan purple background
                 alignItems: 'center', justifyContent: 'center',
-                color: 'var(--gold)', fontWeight: 600, fontSize: '0.85rem',
-              }}>
+                color: 'var(--mizan-purple)', fontWeight: 600, fontSize: '0.85rem', // Mizan purple color
+              }}> {/* User initial icon */}
                 {user?.displayName?.[0] || user?.email?.[0] || '?'}
               </div>
             )}
@@ -206,9 +206,9 @@ export default function Layout() {
                 fontWeight: 500,
                 color: isActive ? 'var(--gold)' : 'var(--text-secondary)',
                 background: isActive ? 'var(--gold-dim)' : 'transparent',
-                border: isActive ? '1px solid rgba(212,175,106,0.15)' : '1px solid transparent',
+                border: isActive ? '1px solid rgba(108,71,255,0.15)' : '1px solid transparent', // Mizan purple border
                 transition: 'all var(--transition)',
-                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', // Keep font family
               })}
             >
               <span style={{ fontSize: '1rem', opacity: 0.8 }}>{item.icon}</span>
@@ -326,7 +326,7 @@ export default function Layout() {
           </button>
           <span style={{ fontFamily: 'var(--font-display)', color: 'var(--gold)', fontSize: '1.25rem', fontWeight: 600 }}>
             {isAr ? 'ميزان' : 'Mizan'}
-          </span>
+          </span> {/* App name in mobile header */}
           <div style={{ width: 28 }} />
         </div>
 

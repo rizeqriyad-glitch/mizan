@@ -72,7 +72,7 @@ export function TimePicker12h({ value, onChange, typeColor, isAr }) {
   const pickerCell = (sel) => ({
     height: 34, borderRadius: 'var(--radius-sm)', border: 'none',
     background: sel ? typeColor : 'var(--bg-input)',
-    color: sel ? '#fff' : 'var(--text-secondary)',
+    color: sel ? '#fff' : 'var(--text-primary)', // Use text-primary for non-selected
     fontSize: '0.8rem', fontWeight: sel ? 600 : 400,
     cursor: 'pointer', transition: 'all 0.12s',
   })
@@ -90,7 +90,7 @@ export function TimePicker12h({ value, onChange, typeColor, isAr }) {
       transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
       style={{
         ...pos, zIndex: 9999,
-        background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
+        background: 'var(--v-glass-bg)', border: '1px solid var(--v-glass-border)', // Use glass background and border
         borderRadius: 'var(--radius-lg)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
         overflow: 'hidden', minWidth: 248, direction: isAr ? 'rtl' : 'ltr',
       }}
@@ -99,7 +99,7 @@ export function TimePicker12h({ value, onChange, typeColor, isAr }) {
       <div style={{
         padding: '0.875rem 1.125rem 0.75rem',
         background: 'var(--bg-card-hover)',
-        borderBottom: `2px solid ${typeColor}`,
+        borderBottom: `2px solid ${typeColor}`, // Keep dynamic color for border
       }}>
         <div style={{ fontSize: '0.6rem', color: typeColor, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem', fontWeight: 600, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
           {isAr ? 'اختر الوقت' : 'Select time'}
@@ -173,7 +173,7 @@ export function TimePicker12h({ value, onChange, typeColor, isAr }) {
           <button type="button" onClick={() => { onChange(''); setOpen(false) }} style={{
             width: '100%', height: 30, borderRadius: 'var(--radius-md)',
             border: '1px dashed var(--border-strong)', background: 'transparent',
-            color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer',
+            color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', // Keep transparent for clear button
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all 0.12s',
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ruby)'; e.currentTarget.style.color = 'var(--ruby)' }}
@@ -190,7 +190,7 @@ export function TimePicker12h({ value, onChange, typeColor, isAr }) {
         display: 'flex', alignItems: 'center', gap: '0.4rem',
         padding: '0.375rem 0.875rem',
         background: value ? typeColor : 'var(--bg-input)',
-        border: value ? 'none' : '1px solid var(--border-strong)',
+        border: value ? 'none' : '1px solid var(--v-glass-border)', // Use glass border
         borderRadius: 'var(--radius-full)',
         color: value ? '#fff' : 'var(--text-muted)',
         fontSize: '0.82rem', cursor: 'pointer',
@@ -238,7 +238,7 @@ export function DurationPicker({ value, onChange, typeColor, isAr }) {
   const pickerCell = (sel) => ({
     height: 34, borderRadius: 'var(--radius-sm)', border: 'none',
     background: sel ? typeColor : 'var(--bg-input)',
-    color: sel ? '#fff' : 'var(--text-secondary)',
+    color: sel ? '#fff' : 'var(--text-primary)', // Use text-primary for non-selected
     fontSize: '0.8rem', fontWeight: sel ? 600 : 400,
     cursor: 'pointer', transition: 'all 0.12s',
   })
@@ -256,7 +256,7 @@ export function DurationPicker({ value, onChange, typeColor, isAr }) {
       transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
       style={{
         ...pos, zIndex: 9999,
-        background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
+        background: 'var(--v-glass-bg)', border: '1px solid var(--v-glass-border)', // Use glass background and border
         borderRadius: 'var(--radius-lg)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
         overflow: 'hidden', minWidth: 228, direction: isAr ? 'rtl' : 'ltr',
       }}
@@ -265,7 +265,7 @@ export function DurationPicker({ value, onChange, typeColor, isAr }) {
       <div style={{
         padding: '0.875rem 1.125rem 0.75rem',
         background: 'var(--bg-card-hover)',
-        borderBottom: `2px solid ${typeColor}`,
+        borderBottom: `2px solid ${typeColor}`, // Keep dynamic color for border
       }}>
         <div style={{ fontSize: '0.6rem', color: typeColor, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem', fontWeight: 600, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
           {isAr ? 'اختر المدة' : 'Select duration'}
@@ -317,7 +317,7 @@ export function DurationPicker({ value, onChange, typeColor, isAr }) {
           <button type="button" onClick={() => { onChange(null); setOpen(false) }} style={{
             width: '100%', height: 30, borderRadius: 'var(--radius-md)',
             border: '1px dashed var(--border-strong)', background: 'transparent',
-            color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer',
+            color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', // Keep transparent for clear button
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all 0.12s',
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ruby)'; e.currentTarget.style.color = 'var(--ruby)' }}
@@ -334,7 +334,7 @@ export function DurationPicker({ value, onChange, typeColor, isAr }) {
         display: 'flex', alignItems: 'center', gap: '0.4rem',
         padding: '0.375rem 0.875rem',
         background: value ? typeColor : 'var(--bg-input)',
-        border: value ? 'none' : '1px solid var(--border-strong)',
+        border: value ? 'none' : '1px solid var(--v-glass-border)', // Use glass border
         borderRadius: 'var(--radius-full)',
         color: value ? '#fff' : 'var(--text-muted)',
         fontSize: '0.82rem', cursor: 'pointer',

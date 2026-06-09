@@ -70,7 +70,7 @@ function TodayProgram() {
   const renderSection = (sections, accentColor, icon, title, usePrayerTimes) => {
     const populated = sections.filter(s => (tasksBySec[s.id] || []).length > 0)
     if (populated.length === 0) return null
-    return (
+    return ( /* This is a card-like element, apply glass-card. The existing inline style for background, border, border-radius will be overridden by glass-card. */
       <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: `1px solid ${accentColor}28`, borderTop: `3px solid ${accentColor}`, overflow: 'hidden', marginBottom: '1rem' }}>
         <div style={{ padding: '0.75rem 1.25rem', borderBottom: `1px solid ${accentColor}14`, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           <span>{icon}</span>
@@ -211,7 +211,7 @@ function SavedScheduleSection() {
       </div>
 
       {/* Card */}
-      <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: `1px solid ${accentDim}0.2)`, borderTop: `3px solid ${accent}`, overflow: 'hidden', boxShadow: `0 4px 20px ${accentDim}0.08)` }}>
+      <div className="glass-card" style={{ borderRadius: '16px', borderTop: `3px solid ${accent}`, overflow: 'hidden', boxShadow: `0 4px 20px ${accentDim}0.08)` }}> {/* Apply glass-card */}
 
         {/* Tab bar */}
         {tabs.length > 1 && (
@@ -252,7 +252,7 @@ function SavedScheduleSection() {
                         {colItems.length > 0 && <div style={{ fontSize: '0.58rem', color: prayer.color, background: prayer.color + '18', borderRadius: 99, padding: '0.05rem 0.4rem', marginTop: '0.25rem', display: 'inline-block', fontWeight: 600 }}>{colItems.length}</div>}
                       </div>
                       <div style={{ padding: '0.5rem 0.55rem', minHeight: 60 }}>
-                        {colItems.length === 0
+                        {colItems.length === 0 /* This is a card-like element, apply glass-card */
                           ? <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', textAlign: 'center', padding: '0.75rem 0', opacity: 0.45, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>—</div>
                           : colItems.map(item => {
                               const done = !!item.completed
@@ -296,14 +296,14 @@ function SavedScheduleSection() {
                 {FULL_DAYS_DB.map(day => {
                   const isToday = day.key === todayKey
                   const colItems = weeklyItems.filter(i => (i.days || []).includes(day.key))
-                  return (
+                  return ( /* This is a card-like element, apply glass-card */
                     <div key={day.key} style={{ borderRadius: 12, border: isToday ? '1px solid rgba(99,179,237,0.35)' : '1px solid var(--border)', borderTop: isToday ? '2px solid var(--sapphire)' : '2px solid var(--border)', background: isToday ? 'rgba(99,179,237,0.05)' : 'var(--bg-card)', overflow: 'hidden' }}>
                       <div style={{ padding: '0.6rem 0.45rem', borderBottom: '1px solid var(--border)', textAlign: 'center' }}>
                         <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isToday ? 'var(--sapphire)' : 'var(--text-secondary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', lineHeight: 1.2, wordBreak: 'break-word' }}>{isAr ? day.ar : day.en}</div>
                         {isToday && <div style={{ fontSize: '0.52rem', color: 'var(--sapphire)', background: 'rgba(99,179,237,0.15)', borderRadius: 99, padding: '0.02rem 0.3rem', marginTop: '0.15rem', display: 'inline-block', fontWeight: 600 }}>{isAr ? 'اليوم' : 'Today'}</div>}
                       </div>
                       <div style={{ padding: '0.4rem 0.4rem', minHeight: 50 }}>
-                        {colItems.length === 0
+                        {colItems.length === 0 /* This is a card-like element, apply glass-card */ // This is a placeholder, not a card itself.
                           ? <div style={{ color: 'var(--text-muted)', fontSize: '0.6rem', textAlign: 'center', padding: '0.5rem 0', opacity: 0.35 }}>—</div>
                           : colItems.map(item => {
                               const done = !!item.completed
@@ -334,7 +334,7 @@ function SavedScheduleSection() {
             <motion.div key="custom-daily" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ padding: '1.25rem' }}
             >
-              <div style={{ maxWidth: 600, margin: '0 auto' }}>
+              <div style={{ maxWidth: 600, margin: '0 auto' }}> {/* This is a card-like element, apply glass-card */} {/* This is a container, not a card itself. */}
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.75rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                   🗓 {customSaved.date && new Date(customSaved.date + 'T00:00:00').toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </div>
@@ -419,7 +419,7 @@ export default function DashboardPage() {
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
+        animate={{ opacity: 1, y: 0 }} data-reveal
         style={{ marginBottom: '2rem' }}
       >
         <div style={{
@@ -453,10 +453,10 @@ export default function DashboardPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
+              className="glass-card"
               style={{
                 padding: '0.5rem 1rem',
-                borderRadius: 'var(--radius-full)',
-                background: 'var(--emerald-dim)',
+                borderRadius: '9999px',
                 border: '1px solid rgba(74,222,128,0.2)',
                 color: 'var(--emerald)',
                 fontSize: '0.8rem',
@@ -477,10 +477,10 @@ export default function DashboardPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
+        className="glass-card"
         style={{
-          padding: '1rem 1.5rem',
-          borderRadius: 'var(--radius-lg)',
-          background: 'var(--gold-glow)',
+          padding: '1.25rem 1.5rem',
+          borderRadius: '16px',
           border: '1px solid var(--border)',
           marginBottom: '1.5rem',
           display: 'flex',
@@ -526,10 +526,9 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
+          className="glass-card"
           style={{
-            background: 'var(--bg-card)',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--border)',
+            borderRadius: '16px',
             overflow: 'hidden',
             marginBottom: '1.5rem',
           }}

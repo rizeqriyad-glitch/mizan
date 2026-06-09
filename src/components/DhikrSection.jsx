@@ -139,11 +139,10 @@ export default function DhikrSection() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15 }}
-      style={{
-        background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border)',
-        overflow: 'hidden',
+      className="glass-card"
+      style={{ // className="glass-card" already handles background, border, border-radius
+        borderRadius: '16px', // Mizan token for large cards
+        overflow: 'hidden', // Keep overflow hidden
         marginTop: '1.5rem',
       }}
     >
@@ -153,8 +152,9 @@ export default function DhikrSection() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '1rem 1.25rem',
-        borderBottom: expanded ? '1px solid var(--border)' : 'none',
+        borderBottom: expanded ? '1px solid var(--v-glass-border)' : 'none', // Use glass border
         cursor: 'pointer',
+        background: 'var(--v-glass-bg)', // Apply glass background to header
       }}
         onClick={() => setExpanded(v => !v)}
       >
@@ -170,9 +170,9 @@ export default function DhikrSection() {
           </span>
           <span style={{
             fontSize: '0.7rem',
-            background: totalDone === DHIKR_LIST.length ? 'var(--emerald-dim)' : 'var(--gold-dim)',
-            color: totalDone === DHIKR_LIST.length ? 'var(--emerald)' : 'var(--gold)',
-            border: `1px solid ${totalDone === DHIKR_LIST.length ? 'rgba(74,222,128,0.2)' : 'rgba(212,175,106,0.2)'}`,
+            background: totalDone === DHIKR_LIST.length ? 'rgba(0,201,255,0.1)' : 'rgba(108,71,255,0.1)',
+            color: totalDone === DHIKR_LIST.length ? 'var(--mizan-cyan)' : 'var(--mizan-purple)',
+            border: `1px solid ${totalDone === DHIKR_LIST.length ? 'rgba(0,201,255,0.2)' : 'rgba(108,71,255,0.2)'}`,
             borderRadius: 'var(--radius-full)',
             padding: '0.1rem 0.5rem',
           }}>
@@ -230,8 +230,8 @@ export default function DhikrSection() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.04 }}
                     style={{
-                      background: done ? `color-mix(in srgb, ${dhikr.dim} 60%, var(--bg-card))` : 'var(--bg-card)',
-                      padding: '1.1rem 1.25rem 0.9rem',
+                      background: done ? `color-mix(in srgb, ${dhikr.dim} 60%, var(--v-glass-bg))` : 'var(--v-glass-bg)',
+                      padding: '1.5rem 1.25rem 1.2rem', // Increased padding for better visual
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '0.4rem',
@@ -243,7 +243,7 @@ export default function DhikrSection() {
                     {/* Progress bar */}
                     <div style={{
                       position: 'absolute', bottom: 0, left: 0,
-                      height: 2, width: `${pct}%`,
+                      height: 4, width: `${pct}%`, // Slightly thicker progress bar
                       background: dhikr.color,
                       borderRadius: '0 2px 0 0',
                       transition: 'width 0.3s ease',
@@ -253,7 +253,7 @@ export default function DhikrSection() {
                     <div style={{
                       fontFamily: 'var(--font-arabic)',
                       fontSize: '1.2rem',
-                      color: done ? dhikr.color : 'var(--text-primary)',
+                      color: done ? dhikr.color : 'var(--text-primary)', // Keep dynamic color
                       lineHeight: 1.7,
                       direction: 'rtl',
                       textAlign: 'right',
@@ -294,7 +294,7 @@ export default function DhikrSection() {
                         <button
                           onClick={() => changeCount(dhikr.id, -1, dhikr.target)}
                           style={{
-                            width: 26, height: 26,
+                            width: 34, height: 34, // Slightly larger buttons
                             borderRadius: '50%',
                             border: '1px solid var(--border)',
                             background: 'transparent',
@@ -302,7 +302,7 @@ export default function DhikrSection() {
                             fontSize: '1rem',
                             cursor: 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            lineHeight: 1,
+                            lineHeight: 1, // Keep line height
                           }}
                           onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-strong)'}
                           onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
@@ -314,8 +314,8 @@ export default function DhikrSection() {
                         <button
                           onClick={() => changeCount(dhikr.id, 1, dhikr.target)}
                           style={{
-                            padding: '0.3rem 0.85rem',
-                            borderRadius: 'var(--radius-md)',
+                            padding: '0.4rem 1rem', // Increased padding
+                            borderRadius: '10px',
                             border: `1.5px solid ${done ? dhikr.color : 'var(--border-strong)'}`,
                             background: done ? dhikr.dim : 'transparent',
                             color: done ? dhikr.color : 'var(--text-primary)',
@@ -336,7 +336,7 @@ export default function DhikrSection() {
                         <button
                           onClick={() => changeCount(dhikr.id, 1, dhikr.target)}
                           style={{
-                            width: 26, height: 26,
+                            width: 34, height: 34, // Slightly larger buttons
                             borderRadius: '50%',
                             border: `1px solid ${done ? dhikr.color : 'var(--border)'}`,
                             background: done ? dhikr.dim : 'transparent',

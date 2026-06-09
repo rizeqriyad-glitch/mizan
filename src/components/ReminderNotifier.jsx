@@ -170,10 +170,10 @@ export default function ReminderNotifier() {
             transform: 'translateX(-50%)',
             zIndex: 9997,
             background: 'var(--bg-card)',
-            border: '1px solid rgba(99,179,237,0.45)',
-            borderRadius: 'var(--radius-lg)',
+            border: '1px solid rgba(108,71,255,0.45)', // Mizan purple border
+            borderRadius: '16px', // Mizan token for large cards
             padding: '1rem 1.25rem',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(99,179,237,0.1)',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(108,71,255,0.1)', // Mizan purple shadow
             display: 'flex', alignItems: 'center', gap: '0.875rem',
             minWidth: 300, maxWidth: '90vw',
             direction: isAr ? 'rtl' : 'ltr',
@@ -182,10 +182,10 @@ export default function ReminderNotifier() {
           {/* Icon */}
           <div style={{
             width: 44, height: 44, borderRadius: 'var(--radius-md)',
-            background: toast.icon === '🎯' ? 'var(--gold-dim)' : 'var(--sapphire-dim)',
-            border: `1px solid ${toast.icon === '🎯' ? 'rgba(212,175,106,0.3)' : 'rgba(99,179,237,0.3)'}`,
+            background: toast.icon === '🎯' ? 'rgba(108,71,255,0.1)' : 'rgba(0,201,255,0.1)', // Mizan colors
+            border: `1px solid ${toast.icon === '🎯' ? 'rgba(108,71,255,0.3)' : 'rgba(0,201,255,0.3)'}`, // Mizan colors
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.4rem', flexShrink: 0,
+            fontSize: '1.4rem', flexShrink: 0, // Mizan token for icons
           }}>
             {toast.icon}
           </div>
@@ -194,7 +194,7 @@ export default function ReminderNotifier() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontSize: '0.82rem', fontWeight: 600,
-              color: toast.icon === '🎯' ? 'var(--gold)' : 'var(--sapphire)',
+              color: toast.icon === '🎯' ? 'var(--mizan-purple)' : 'var(--mizan-cyan)', // Mizan colors
               fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
               marginBottom: '0.2rem',
             }}>

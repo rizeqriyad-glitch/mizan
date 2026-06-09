@@ -95,9 +95,9 @@ export default function NotesSection() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
       style={{
-        background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border)',
+        // background: 'var(--bg-card)', // Handled by glass-card
+        borderRadius: '16px', // Mizan token for large cards
+        // border: '1px solid var(--border)', // Handled by glass-card
         overflow: 'hidden',
         marginTop: '1.5rem',
       }}
@@ -128,7 +128,7 @@ export default function NotesSection() {
             <span style={{
               fontSize: '0.7rem',
               background: 'var(--gold-dim)', color: 'var(--gold)',
-              border: '1px solid rgba(212,175,106,0.2)',
+            border: '1px solid rgba(108,71,255,0.2)', // Mizan purple border
               borderRadius: 'var(--radius-full)',
               padding: '0.1rem 0.5rem',
             }}>
@@ -208,9 +208,9 @@ export default function NotesSection() {
                   disabled={!text.trim() || saving}
                   style={{
                     padding: '0.4rem 1.1rem',
-                    borderRadius: 'var(--radius-md)',
-                    background: text.trim() ? 'var(--gold-dim)' : 'transparent',
-                    border: `1px solid ${text.trim() ? 'rgba(212,175,106,0.3)' : 'var(--border)'}`,
+                    borderRadius: '10px', // Mizan token for buttons
+                    background: text.trim() ? 'rgba(108,71,255,0.1)' : 'transparent', // Mizan purple background
+                    border: `1px solid ${text.trim() ? 'rgba(108,71,255,0.3)' : 'var(--v-glass-border)'}`, // Mizan purple border
                     color: text.trim() ? 'var(--gold)' : 'var(--text-muted)',
                     fontSize: '0.82rem', fontWeight: 500,
                     cursor: text.trim() && !saving ? 'pointer' : 'not-allowed',

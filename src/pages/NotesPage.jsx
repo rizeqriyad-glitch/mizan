@@ -147,10 +147,9 @@ export default function NotesPage() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
+        className="glass-card"
         style={{
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
+          borderRadius: '16px',
           padding: '1.25rem',
           marginBottom: '1.5rem',
         }}
@@ -159,9 +158,9 @@ export default function NotesPage() {
           value={text}
           onChange={e => setText(e.target.value)}
           placeholder={t('addNote')}
-          rows={3}
+          rows={4}
           style={{
-            width: '100%', resize: 'vertical',
+            width: '100%', resize: 'vertical', minHeight: '100px',
             background: 'var(--bg-input)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-md)',
@@ -174,8 +173,8 @@ export default function NotesPage() {
             marginBottom: '0.75rem',
             outline: 'none',
             transition: 'border-color var(--transition)',
-          }}
-          onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+          }} /* Update focus color */
+          onFocus={e => e.target.style.borderColor = 'var(--mizan-purple)'}
           onBlur={e => e.target.style.borderColor = 'var(--border)'}
           onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSave() }}
         />
@@ -193,7 +192,7 @@ export default function NotesPage() {
                   style={{
                     fontSize: '0.72rem', padding: '0.25rem 0.65rem',
                     borderRadius: 'var(--radius-full)',
-                    border: `1px solid ${sel ? c.color : 'var(--border)'}`,
+                    border: `1px solid ${sel ? c.color : 'var(--v-glass-border)'}`,
                     background: sel ? c.bg : 'transparent',
                     color: sel ? c.color : 'var(--text-muted)',
                     cursor: 'pointer', transition: 'all var(--transition)',
@@ -212,10 +211,10 @@ export default function NotesPage() {
             disabled={!text.trim() || saving}
             style={{
               padding: '0.45rem 1.25rem',
-              borderRadius: 'var(--radius-md)',
-              background: text.trim() ? 'var(--gold)' : 'var(--bg-input)',
-              border: `1px solid ${text.trim() ? 'var(--gold)' : 'var(--border)'}`,
-              color: text.trim() ? 'var(--text-inverse)' : 'var(--text-muted)',
+              borderRadius: '10px',
+              background: text.trim() ? 'var(--mizan-purple)' : 'var(--bg-input)',
+              border: `1px solid ${text.trim() ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`,
+              color: text.trim() ? 'white' : 'var(--text-muted)',
               fontSize: '0.85rem', fontWeight: 600,
               cursor: text.trim() && !saving ? 'pointer' : 'not-allowed',
               transition: 'all var(--transition)',
@@ -268,9 +267,9 @@ export default function NotesPage() {
               placeholder={t('notesSearch')}
               style={{
                 width: '100%',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-md)',
+                background: 'var(--v-glass-bg)',
+                border: '1px solid var(--v-glass-border)',
+                borderRadius: '10px',
                 color: 'var(--text-primary)',
                 padding: isAr ? '0.5rem 0.75rem 0.5rem 2rem' : '0.5rem 2rem 0.5rem 0.75rem',
                 fontSize: '0.83rem',
@@ -295,8 +294,8 @@ export default function NotesPage() {
               style={{
                 fontSize: '0.72rem', padding: '0.25rem 0.65rem',
                 borderRadius: 'var(--radius-full)',
-                border: `1px solid ${filterCat === 'all' ? 'var(--text-secondary)' : 'var(--border)'}`,
-                background: filterCat === 'all' ? 'var(--bg-surface)' : 'transparent',
+                border: `1px solid ${filterCat === 'all' ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`,
+                background: filterCat === 'all' ? 'rgba(108,71,255,0.1)' : 'transparent',
                 color: filterCat === 'all' ? 'var(--text-primary)' : 'var(--text-muted)',
                 cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
               }}
@@ -379,16 +378,15 @@ export default function NotesPage() {
                   const c = CAT_COLORS[note.category] || CAT_COLORS.catGeneral
                   return (
                     <motion.div
-                      key={note.id}
+                      key={note.id} // Keep key
                       layout
                       initial={{ opacity: 0, scale: 0.97 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: i * 0.03 }}
+                      className="glass-card"
                       style={{
-                        background: 'var(--bg-card)',
-                        borderRadius: 'var(--radius-lg)',
-                        border: '1px solid var(--border)',
+                        borderRadius: '16px', // Mizan token for large cards
                         overflow: 'hidden',
                         position: 'relative',
                         transition: 'border-color var(--transition)',
@@ -396,7 +394,7 @@ export default function NotesPage() {
                       onMouseEnter={e => e.currentTarget.style.borderColor = `${c.color}55`}
                       onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
                     >
-                      {/* Colour top bar */}
+                      {/* Color top bar */}
                       <div style={{
                         height: 3,
                         background: `linear-gradient(90deg, ${c.color}, transparent)`,

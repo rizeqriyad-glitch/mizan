@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
+import { useEffect } from 'react'
 
 const FEATURES = [
   { icon: '🕌', en: 'Prayer Tracker', ar: 'تتبع الصلوات',  desc: { en: 'Log all 5 daily prayers with one tap and track your consistency over time.', ar: 'سجّل صلواتك الخمس اليومية بنقرة واحدة وتابع انتظامك.' } },
@@ -25,6 +26,20 @@ export default function LandingPage() {
   const navigate = useNavigate()
   const isAr = language === 'ar'
 
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+
+    document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -32,22 +47,28 @@ export default function LandingPage() {
       color: 'var(--text-primary)',
       direction: isAr ? 'rtl' : 'ltr',
       overflowX: 'hidden',
+      position: 'relative',
     }}>
+      {/* ── Volumetric Background Elements ─────────────────────── */}
+      <div style={{ position: 'fixed', top: '-10%', left: '-5%', width: '60vw', height: '60vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(108, 71, 255, 0.12) 0%, transparent 70%)', filter: 'blur(100px)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'fixed', bottom: '0', right: '-5%', width: '50vw', height: '50vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0, 201, 255, 0.08) 0%, transparent 70%)', filter: 'blur(100px)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'fixed', top: '20%', right: '10%', width: '30vw', height: '30vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(108, 71, 255, 0.05) 0%, transparent 70%)', filter: 'blur(80px)', pointerEvents: 'none', zIndex: 0 }} />
+
       {/* ── Nav ───────────────────────────────────────────────── */}
       <nav style={{
-        position: 'sticky', top: 0, zIndex: 50,
-        borderBottom: '1px solid var(--border)',
-        background: 'var(--bg-base)',
-        backdropFilter: 'blur(12px)',
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        borderBottom: '1px solid var(--v-glass-border)',
+        background: 'rgba(15, 23, 42, 0.4)',
+        backdropFilter: 'blur(30px)',
         padding: '0 2rem',
-        height: 60,
+        height: 72,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{ fontSize: '1.4rem' }}>⚖️</span>
+          <span style={{ fontSize: '1.6rem', filter: 'drop-shadow(0 0 8px rgba(238, 193, 109, 0.4))' }}>⚖️</span>
           <span style={{
             fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
-            fontSize: '1.3rem', fontWeight: 600, color: 'var(--gold)',
+            fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)',
             letterSpacing: '0.04em',
           }}>
             {isAr ? 'ميزان' : 'Mizan'}
@@ -60,10 +81,11 @@ export default function LandingPage() {
             style={{
               padding: '0.35rem 0.85rem',
               borderRadius: 'var(--radius-full)',
-              border: '1px solid var(--border-strong)',
-              background: 'var(--bg-card)',
-              color: 'var(--text-secondary)',
-              fontSize: '0.8rem', cursor: 'pointer',
+              border: '1px solid var(--v-glass-border)',
+              background: 'rgba(255,255,255,0.05)',
+              color: 'var(--text-primary)',
+              fontSize: '0.75rem', cursor: 'pointer',
+              fontWeight: 500,
             }}
           >
             {isAr ? 'English' : 'العربية'}
@@ -71,14 +93,15 @@ export default function LandingPage() {
           <button
             onClick={() => navigate(user ? '/dashboard' : '/login')}
             style={{
-              padding: '0.4rem 1.1rem',
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--gold-dim)',
-              border: '1px solid rgba(212,175,106,0.3)',
-              color: 'var(--gold)', fontSize: '0.82rem', cursor: 'pointer',
+              padding: '0.6rem 1.4rem',
+              borderRadius: '12px',
+              background: 'var(--mizan-gradient)',
+              border: 'none',
+              color: '#ffffff', fontSize: '0.85rem', cursor: 'pointer',
+              fontWeight: 700,
               fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-            }}
-          >
+              boxShadow: '0 10px 20px rgba(108, 71, 255, 0.3)',
+            }}>
             {user ? (isAr ? 'لوحة التحكم' : 'Dashboard') : t('landingStart')}
           </button>
         </div>
@@ -86,69 +109,54 @@ export default function LandingPage() {
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section style={{
-        position: 'relative',
-        padding: '6rem 2rem 5rem',
+        position: 'relative', zIndex: 1,
+        padding: '10rem 2rem 6rem',
         textAlign: 'center',
-        overflow: 'hidden',
       }}>
-        {/* Background orb */}
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 700, height: 700,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(212,175,106,0.07) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Islamic pattern */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.025, pointerEvents: 'none' }} viewBox="0 0 400 400">
-          <defs>
-            <pattern id="lp-pat" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-              <polygon points="40,0 80,20 80,60 40,80 0,60 0,20" fill="none" stroke="var(--gold)" strokeWidth="1"/>
-              <polygon points="40,10 70,25 70,55 40,70 10,55 10,25" fill="none" stroke="var(--gold)" strokeWidth="0.5"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#lp-pat)"/>
-        </svg>
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          style={{ position: 'relative' }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         >
           {/* Bismillah */}
-          <p style={{
+          <p 
+            data-reveal
+            style={{
             fontFamily: 'var(--font-arabic)',
-            fontSize: '1.4rem',
-            color: 'var(--gold)',
+            fontSize: '1.8rem',
+            color: 'var(--mizan-purple)',
             marginBottom: '2rem',
-            letterSpacing: '0.05em',
-            opacity: 0.85,
+            letterSpacing: '0.1em',
+            opacity: 0.9,
+            filter: 'drop-shadow(0 0 10px rgba(108, 71, 255, 0.3))',
           }}>
             بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيمِ
           </p>
 
           {/* App name */}
-          <h1 style={{
+          <h1 
+            data-reveal
+            style={{
             fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
-            fontSize: 'clamp(3rem, 8vw, 6rem)',
-            fontWeight: 600,
+            fontSize: 'clamp(4rem, 12vw, 8rem)',
+            fontWeight: 900,
             color: 'var(--text-primary)',
-            letterSpacing: '-0.01em',
+            letterSpacing: '-0.04em',
             marginBottom: '0.5rem',
             lineHeight: 1.1,
           }}>
-            {isAr ? 'ميزان' : 'Mizan'}
+            {isAr ? <span className="gradient-text">ميزان</span> : <span className="gradient-text">Mizan</span>}
           </h1>
 
           {/* Tagline */}
-          <p style={{
+          <p 
+            data-reveal
+            style={{
             fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
-            fontSize: 'clamp(1.1rem, 3vw, 1.6rem)',
-            color: 'var(--gold)',
-            marginBottom: '1.25rem',
+            fontSize: 'clamp(1.2rem, 3.5vw, 1.8rem)',
+            color: 'var(--mizan-cyan)',
+            marginBottom: '1.5rem',
+            fontWeight: 700,
           }}>
             {t('landingHero')}
           </p>
@@ -156,8 +164,8 @@ export default function LandingPage() {
           {/* Description */}
           <p style={{
             color: 'var(--text-secondary)',
-            fontSize: 'clamp(0.9rem, 2vw, 1.05rem)',
-            maxWidth: 560, margin: '0 auto 2.5rem',
+            fontSize: 'clamp(1rem, 2vw, 1.15rem)',
+            maxWidth: 620, margin: '0 auto 3rem',
             lineHeight: 1.75,
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}>
@@ -165,20 +173,20 @@ export default function LandingPage() {
           </p>
 
           {/* CTA */}
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div data-reveal style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <button
+                className="btn-magnetic"
                 onClick={() => navigate(user ? '/dashboard' : '/login')}
                 style={{
-                  display: 'inline-block',
-                  padding: '0.75rem 2rem',
-                  borderRadius: 'var(--radius-lg)',
-                  background: 'var(--gold)',
-                  color: 'var(--text-inverse)',
-                  fontWeight: 600, fontSize: '0.95rem',
+                  padding: '1rem 2.5rem',
+                  borderRadius: '16px',
+                  background: 'var(--mizan-gradient)',
+                  color: '#ffffff',
+                  fontWeight: 700, fontSize: '1rem',
                   border: 'none', cursor: 'pointer',
-                  transition: 'opacity var(--transition)',
                   fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+                  boxShadow: '0 20px 40px rgba(108, 71, 255, 0.4)',
                 }}>
                 {t('landingStart')} →
               </button>
@@ -188,18 +196,15 @@ export default function LandingPage() {
       </section>
 
       {/* ── Stats bar ─────────────────────────────────────────── */}
-      <section style={{
-        borderTop: '1px solid var(--border)',
-        borderBottom: '1px solid var(--border)',
-        padding: '2rem',
+      <section data-reveal className="glass-card" style={{
+        margin: '0 2rem',
+        padding: '2.5rem 2rem',
+        borderRadius: '24px',
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '1rem',
+        gap: '2rem',
         textAlign: 'center',
-        background: 'var(--bg-surface)',
-      }}
-        className="landing-stats"
-      >
+      }}>
         {STATS.map((s, i) => (
           <motion.div
             key={i}
@@ -209,9 +214,10 @@ export default function LandingPage() {
           >
             <div style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '2.5rem', fontWeight: 600,
-              color: 'var(--gold)', lineHeight: 1,
+              fontSize: '3rem', fontWeight: 800,
+              color: 'var(--mizan-purple)', lineHeight: 1,
               marginBottom: '0.3rem',
+              filter: 'drop-shadow(0 0 12px rgba(108, 71, 255, 0.2))',
             }}>
               {s.value}
             </div>
@@ -226,65 +232,45 @@ export default function LandingPage() {
       </section>
 
       {/* ── Features grid ─────────────────────────────────────── */}
-      <section style={{ padding: '5rem 2rem', maxWidth: 1100, margin: '0 auto' }}>
+      <section style={{ padding: '8rem 2rem', maxWidth: 1200, margin: '0 auto' }}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
           style={{ textAlign: 'center', marginBottom: '3rem' }}
         >
-          <h2 style={{
+          <h2 data-reveal style={{
             fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
             fontSize: 'clamp(1.6rem, 4vw, 2.5rem)',
-            fontWeight: 500,
+            fontWeight: 700,
             color: 'var(--text-primary)',
             marginBottom: '0.5rem',
           }}>
             {t('landingFeatures')}
           </h2>
-          <div style={{ width: 40, height: 2, background: 'var(--gold)', margin: '0 auto', borderRadius: 2, opacity: 0.6 }} />
+          <div style={{ width: 60, height: 3, background: 'var(--mizan-purple)', margin: '0 auto', borderRadius: 99, opacity: 0.8 }} />
         </motion.div>
-
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
           gap: '1.25rem',
         }}>
           {FEATURES.map((f, i) => (
             <motion.div
+              data-reveal
               key={i}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.07 }}
               style={{
-                background: 'var(--bg-card)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border)',
-                padding: '1.5rem',
-                transition: 'border-color var(--transition), transform var(--transition)',
+                padding: '2rem',
+                borderRadius: '24px',
               }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = 'rgba(212,175,106,0.3)'
-                e.currentTarget.style.transform = 'translateY(-2px)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'var(--border)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
+              className="glass-card"
             >
-              <div style={{
-                width: 44, height: 44,
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--gold-dim)',
-                border: '1px solid rgba(212,175,106,0.2)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1.4rem',
-                marginBottom: '1rem',
-              }}>
+              <div 
+                className="glass-icon-mizan"
+                style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', marginBottom: '1.25rem' }}>
                 {f.icon}
               </div>
               <h3 style={{
-                fontSize: '1rem', fontWeight: 600,
+                fontSize: '1.1rem', fontWeight: 700,
                 color: 'var(--text-primary)',
                 marginBottom: '0.4rem',
                 fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
@@ -292,8 +278,8 @@ export default function LandingPage() {
                 {isAr ? f.ar : f.en}
               </h3>
               <p style={{
-                fontSize: '0.83rem', color: 'var(--text-secondary)',
-                lineHeight: 1.7, margin: 0,
+                fontSize: '0.9rem', color: 'var(--text-secondary)',
+                lineHeight: 1.8, margin: 0,
                 fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
               }}>
                 {f.desc[language] || f.desc.en}
@@ -304,63 +290,64 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA Banner ────────────────────────────────────────── */}
-      <section style={{
-        padding: '4rem 2rem',
+      <section data-reveal className="glass-card" style={{
+        margin: '0 2rem 4rem',
+        padding: '6rem 2rem',
         textAlign: 'center',
-        borderTop: '1px solid var(--border)',
-        background: 'var(--bg-surface)',
+        borderRadius: '40px',
+        background: 'rgba(108, 71, 255, 0.03)',
       }}>
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+        <div>
           <p style={{
             fontFamily: 'var(--font-arabic)',
-            fontSize: '1.5rem',
-            color: 'var(--gold)',
+            fontSize: '1.8rem',
+            color: 'var(--mizan-purple)',
             marginBottom: '0.5rem',
             direction: 'rtl',
             opacity: 0.9,
           }}>
             وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ
           </p>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '2rem' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '2.5rem' }}>
             الذاريات: ٥٦
           </p>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} style={{ display: 'inline-block' }}>
             <button
               onClick={() => navigate(user ? '/dashboard' : '/login')}
               style={{
-                padding: '0.8rem 2.5rem',
-                borderRadius: 'var(--radius-lg)',
-                background: 'var(--gold)',
-                color: 'var(--text-inverse)',
-                fontWeight: 600, fontSize: '1rem',
+                padding: '1.2rem 3.5rem',
+                borderRadius: '18px',
+                background: 'var(--mizan-gradient)',
+                color: '#ffffff',
+                fontWeight: 700, fontSize: '1.1rem',
                 border: 'none', cursor: 'pointer',
                 fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
               }}>
               {t('landingStart')}
             </button>
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
       {/* ── Footer ────────────────────────────────────────────── */}
       <footer style={{
-        padding: '1.5rem 2rem',
-        borderTop: '1px solid var(--border)',
+        padding: '3rem 2rem',
+        borderTop: '1px solid var(--v-glass-border)',
         display: 'grid',
         gridTemplateColumns: '1fr auto 1fr',
-        alignItems: 'center',
+        alignItems: 'center', zIndex: 1, position: 'relative',
         gap: '0.5rem',
       }}>
         <span style={{
           fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
-          color: 'var(--gold)', fontSize: '1.1rem',
+          color: 'var(--mizan-purple)', fontSize: '1.2rem', fontWeight: 800,
           textAlign: isAr ? 'right' : 'left',
         }}>
           {isAr ? 'ميزان' : 'Mizan'}
         </span>
         <span style={{
           fontSize: '0.72rem', color: 'var(--text-muted)',
-          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', fontWeight: 600,
           textAlign: 'center',
         }}>
           {isAr
@@ -370,7 +357,7 @@ export default function LandingPage() {
         <span style={{
           fontSize: '0.75rem', color: 'var(--text-muted)',
           fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-          textAlign: isAr ? 'left' : 'right',
+          textAlign: isAr ? 'left' : 'right', fontWeight: 500,
         }}>
           {isAr ? 'التوازن في كل شيء' : 'Balance in All Things'}
         </span>
@@ -378,7 +365,28 @@ export default function LandingPage() {
 
       <style>{`
         @media (max-width: 600px) {
-          .landing-stats { grid-template-columns: repeat(2, 1fr) !important; }
+          div[style*="gridTemplateColumns: repeat(4, 1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+          div[style*="gridTemplateColumns: repeat(auto-fill, minmax(340px, 1fr))"] { grid-template-columns: 1fr !important; }
+        }
+        .glass-card:hover {
+          border-color: rgba(108, 71, 255, 0.4) !important;
+          transform: translateY(-5px);
+          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+        .btn-magnetic {
+          transition: transform 0.2s var(--ease-spring);
+        }
+        .btn-magnetic:hover {
+          transform: scale(1.05);
+        }
+        .gradient-text {
+          background: var(--mizan-gradient);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          filter: drop-shadow(0 10px 20px rgba(108, 71, 255, 0.2));
+        }
+        * {
+          -webkit-font-smoothing: antialiased;
         }
       `}</style>
     </div>

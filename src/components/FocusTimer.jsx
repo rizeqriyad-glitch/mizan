@@ -124,9 +124,9 @@ export default function FocusTimer() {
 
   return (
     <div style={{
-      background: 'var(--bg-card)',
-      borderRadius: 'var(--radius-lg)',
-      border: '1px solid var(--border)',
+      // background: 'var(--bg-card)', // Handled by glass-card
+      borderRadius: '16px', // Mizan token for large cards
+      // border: '1px solid var(--border)', // Handled by glass-card
       padding: '1.5rem',
       direction: isAr ? 'rtl' : 'ltr',
     }}>
@@ -194,9 +194,9 @@ export default function FocusTimer() {
               flex: 1,
               padding: '0.4rem',
               borderRadius: 'calc(var(--radius-md) - 2px)',
-              border: 'none',
-              background: mode === key ? 'var(--bg-card)' : 'transparent',
-              color: mode === key ? val.color : 'var(--text-muted)',
+              border: 'none', // No border for toggle group items
+              background: mode === key ? 'var(--mizan-purple)' : 'transparent', // Mizan purple for active
+              color: mode === key ? 'white' : 'var(--text-muted)', // White text for active
               fontSize: '0.75rem',
               fontWeight: mode === key ? 500 : 400,
               cursor: 'pointer',
@@ -265,7 +265,7 @@ export default function FocusTimer() {
                     value={editValues[key]}
                     onChange={e => setEditValues(prev => ({ ...prev, [key]: e.target.value }))}
                     style={{
-                      width: 58,
+                      width: 64, // Slightly wider input
                       background: 'var(--bg-card)',
                       border: `1px solid ${val.color}40`,
                       borderRadius: 'var(--radius-sm)',
@@ -416,7 +416,7 @@ export default function FocusTimer() {
             padding: '0.7rem 1rem',
             borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border)',
-            background: 'transparent',
+            background: 'transparent', // Keep transparent for reset button
             color: 'var(--text-muted)',
             fontSize: '0.85rem',
             cursor: 'pointer',

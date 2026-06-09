@@ -22,7 +22,7 @@ export default function TodaySchedule() {
       <GroupHeading
         color="var(--gold)"
         label={isAr ? '🕌 الجدول الديني' : '🕌 Prayer Timetable'}
-        badge={prayerTimes?.fallback ? (isAr ? 'تقريبية' : 'approx') : null}
+        badge={prayerTimes?.fallback ? (isAr ? 'تقريبية' : 'approx') : null} // Keep badge
         badgeColor="var(--ruby)"
       />
       {FIXED_SECTIONS.map(section => (
@@ -47,8 +47,8 @@ export default function TodaySchedule() {
         {scheduleBlocks.length > 0 && todayBlocks.length === 0 && (
           <div style={{
             padding: '1.25rem', textAlign: 'center',
-            background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)',
-            border: '1px dashed var(--border)', fontSize: '0.8rem',
+            background: 'var(--v-glass-bg)', borderRadius: '16px', // Glass card
+            border: '1px dashed var(--v-glass-border)', fontSize: '0.8rem', // Glass border
             color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}>
             {isAr ? 'لا توجد أقسام مجدولة لهذا اليوم' : 'No blocks scheduled for today'}
@@ -74,8 +74,8 @@ function GroupHeading({ color, label, sub, badge, badgeColor }) {
       </span>
       {sub && (
         <span style={{
-          fontSize: '0.62rem', color: 'var(--text-muted)',
-          background: 'var(--bg-input)', padding: '0.08rem 0.4rem',
+          fontSize: '0.62rem', color: 'var(--text-muted)', // Keep font size and color
+          background: 'var(--v-glass-bg)', padding: '0.08rem 0.4rem', // Glass background
           borderRadius: 99,
         }}>
           {sub}

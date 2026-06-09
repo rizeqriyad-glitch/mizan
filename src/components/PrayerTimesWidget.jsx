@@ -41,9 +41,9 @@ export default function PrayerTimesWidget() {
   if (!prayerTimes) {
     return (
       <div style={{
-        background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border)',
+        // background: 'var(--bg-card)', // Handled by glass-card
+        borderRadius: '16px', // Mizan token for large cards
+        border: '1px solid var(--v-glass-border)', // Use glass border for loading state
         padding: '1.5rem',
         textAlign: 'center',
         color: 'var(--text-muted)',
@@ -67,6 +67,8 @@ export default function PrayerTimesWidget() {
         padding: '1rem 1.25rem',
         borderBottom: '1px solid var(--border)',
         display: 'flex',
+        background: 'var(--v-glass-bg)', // Apply glass background to header
+        borderBottom: '1px solid var(--v-glass-border)',
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
@@ -84,11 +86,11 @@ export default function PrayerTimesWidget() {
         {nextPrayer && (
           <div style={{
             fontSize: '0.75rem',
-            color: 'var(--gold)',
-            background: 'var(--gold-dim)',
+            color: 'var(--mizan-purple)',
+            background: 'rgba(108,71,255,0.1)',
             padding: '0.2rem 0.6rem',
-            borderRadius: 'var(--radius-full)',
-            border: '1px solid rgba(212,175,106,0.2)',
+            borderRadius: '9999px', // Mizan token for full-pill
+            border: '1px solid rgba(108,71,255,0.2)',
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}>
             {isAr ? 'القادمة' : 'Next'}: {nextPrayer.minutesUntil}m
@@ -115,25 +117,25 @@ export default function PrayerTimesWidget() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '0.6rem 1.25rem',
-                background: isNext ? 'var(--prayer-active)' : 'transparent',
-                borderLeft: (!isAr && isCurrent) ? '2px solid var(--gold)' : (!isAr ? '2px solid transparent' : 'none'),
-                borderRight: (isAr && isCurrent) ? '2px solid var(--gold)' : (isAr ? '2px solid transparent' : 'none'),
+                background: isNext ? 'rgba(108,71,255,0.08)' : 'transparent',
+                borderLeft: (!isAr && isCurrent) ? '2px solid var(--mizan-purple)' : (!isAr ? '2px solid transparent' : 'none'),
+                borderRight: (isAr && isCurrent) ? '2px solid var(--mizan-purple)' : (isAr ? '2px solid transparent' : 'none'),
                 transition: 'background var(--transition)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ fontSize: '1.05rem' }}>{prayer.icon}</span>
+                <span style={{ fontSize: '1.05rem' }}>{prayer.icon}</span> {/* Icon is fine */}
                 <div>
                   <div style={{
                     fontSize: '0.88rem',
-                    fontWeight: isNext ? 600 : 400,
-                    color: isNext ? 'var(--gold)' : 'var(--text-primary)',
+                    fontWeight: isNext ? 700 : 400, // Mizan token for bold text
+                    color: isNext ? 'var(--mizan-purple)' : 'var(--text-primary)',
                     fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
                   }}>
                     {prayer.label[language]}
                   </div>
                   {isCurrent && (
-                    <div style={{ fontSize: '0.68rem', color: 'var(--gold)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--mizan-purple)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                       {prayer.isMarker
                         ? (isAr ? 'وقت الشروق الآن' : 'Sunrise now')
                         : t('currentPrayer')}
@@ -151,7 +153,7 @@ export default function PrayerTimesWidget() {
                     </div>
                   )}
                   {prayer.isVoluntary && (
-                    <div style={{ fontSize: '0.68rem', color: 'var(--amber)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--mizan-cyan)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                       {t('sunnah')}
                     </div>
                   )}
@@ -185,30 +187,30 @@ export default function PrayerTimesWidget() {
                     ? (isAr ? 'إلغاء التأشير' : 'Unmark')
                     : (isAr ? 'تأشير كمنجز' : 'Mark as done')}
                   style={{
-                    width: 28, height: 28,
-                    borderRadius: '50%',
-                    border: isDone ? '1.5px solid var(--emerald)' : '1.5px solid var(--border-strong)',
-                    background: isDone ? 'var(--emerald-dim)' : 'transparent',
+                    width: 30, height: 30,
+                    borderRadius: '50%', // Mizan token for icons
+                    border: isDone ? '1.5px solid var(--mizan-cyan)' : '1.5px solid var(--v-glass-border)',
+                    background: isDone ? 'rgba(0,201,255,0.1)' : 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer',
-                    color: isDone ? 'var(--emerald)' : 'var(--text-muted)',
+                    color: isDone ? 'var(--mizan-cyan)' : 'var(--text-muted)',
                     fontSize: '0.75rem',
                     transition: 'all var(--transition)',
                     flexShrink: 0,
                   }}
                   onMouseEnter={e => {
                     if (isDone) {
-                      e.currentTarget.style.borderColor = 'var(--ruby)'
-                      e.currentTarget.style.color = 'var(--ruby)'
-                      e.currentTarget.style.background = 'var(--ruby-dim)'
+                      e.currentTarget.style.borderColor = 'var(--mizan-purple)'
+                      e.currentTarget.style.color = 'var(--mizan-purple)'
+                      e.currentTarget.style.background = 'rgba(108,71,255,0.1)'
                     } else {
-                      e.currentTarget.style.borderColor = 'var(--emerald)'
+                      e.currentTarget.style.borderColor = 'var(--mizan-cyan)'
                     }
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = isDone ? 'var(--emerald)' : 'var(--border-strong)'
-                    e.currentTarget.style.color = isDone ? 'var(--emerald)' : 'var(--text-muted)'
-                    e.currentTarget.style.background = isDone ? 'var(--emerald-dim)' : 'transparent'
+                    e.currentTarget.style.borderColor = isDone ? 'var(--mizan-cyan)' : 'var(--v-glass-border)'
+                    e.currentTarget.style.color = isDone ? 'var(--mizan-cyan)' : 'var(--text-muted)'
+                    e.currentTarget.style.background = isDone ? 'rgba(0,201,255,0.1)' : 'transparent'
                   }}
                 >
                   {isDone ? '✓' : '○'}

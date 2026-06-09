@@ -16,29 +16,29 @@ export default function StatsBar() {
       icon: '🔥',
       value: stats.streak || 0,
       label: t('streak'),
-      color: 'var(--amber)',
-      dim: 'var(--amber-dim)',
+      color: 'var(--mizan-purple)',
+      dim: 'rgba(108,71,255,0.1)',
     },
     {
       icon: '⭐',
       value: stats.points || 0,
       label: t('points'),
-      color: 'var(--gold)',
-      dim: 'var(--gold-dim)',
+      color: 'var(--mizan-purple)',
+      dim: 'rgba(108,71,255,0.1)',
     },
     {
       icon: '🕌',
       value: `${prayersDone}/5`,
       label: t('prayersDone'),
-      color: 'var(--sapphire)',
-      dim: 'var(--sapphire-dim)',
+      color: 'var(--mizan-cyan)',
+      dim: 'rgba(0,201,255,0.1)',
     },
     {
       icon: '📊',
       value: `${score}%`,
       label: t('productivity'),
-      color: score >= 70 ? 'var(--emerald)' : score >= 40 ? 'var(--amber)' : 'var(--ruby)',
-      dim: score >= 70 ? 'var(--emerald-dim)' : score >= 40 ? 'var(--amber-dim)' : 'var(--ruby-dim)',
+      color: score >= 70 ? 'var(--mizan-cyan)' : score >= 40 ? 'var(--mizan-purple)' : 'var(--ruby)', // Ruby is still used for low score, which is fine.
+      dim: score >= 70 ? 'rgba(0,201,255,0.1)' : score >= 40 ? 'rgba(108,71,255,0.1)' : 'var(--ruby-dim)', // Ruby dim is fine.
       progress: score,
     },
   ]
@@ -60,9 +60,9 @@ export default function StatsBar() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.07 }}
           style={{
-            background: 'var(--bg-card)',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--border)',
+            // background: 'var(--bg-card)', // Handled by glass-card
+            borderRadius: '16px', // Mizan token for large cards
+            // border: '1px solid var(--border)', // Handled by glass-card
             padding: '1rem',
             position: 'relative',
             overflow: 'hidden',
@@ -90,7 +90,7 @@ export default function StatsBar() {
             <div style={{
               width: 32, height: 32,
               borderRadius: 'var(--radius-md)',
-              background: card.dim,
+              background: card.dim, // This dim color is already rgba, so it will blend with glass-icon-mizan's gradient
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '1rem',
             }}>

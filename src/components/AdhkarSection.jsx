@@ -505,9 +505,8 @@ export default function AdhkarSection() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       style={{
-        background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border)',
+        borderRadius: '16px',
+        border: '1px solid var(--v-glass-border)',
         overflow: 'hidden',
         marginTop: '1.5rem',
       }}
@@ -519,6 +518,7 @@ export default function AdhkarSection() {
           padding: '1rem 1.25rem',
           borderBottom: expanded ? '1px solid var(--border)' : 'none',
           cursor: 'pointer',
+          background: 'var(--v-glass-bg)', // Apply glass background to header
         }}
         onClick={() => setExpanded(v => !v)}
       >
@@ -533,9 +533,9 @@ export default function AdhkarSection() {
           </span>
           <span style={{
             fontSize: '0.7rem',
-            background: doneCount === list.length ? 'var(--emerald-dim)' : 'var(--gold-dim)',
-            color:      doneCount === list.length ? 'var(--emerald)' : 'var(--gold)',
-            border:     `1px solid ${doneCount === list.length ? 'rgba(74,222,128,0.2)' : 'rgba(212,175,106,0.2)'}`,
+            background: doneCount === list.length ? 'rgba(0,201,255,0.1)' : 'rgba(108,71,255,0.1)',
+            color:      doneCount === list.length ? 'var(--mizan-cyan)' : 'var(--mizan-purple)',
+            border:     `1px solid ${doneCount === list.length ? 'rgba(0,201,255,0.2)' : 'rgba(108,71,255,0.2)'}`,
             borderRadius: 'var(--radius-full)', padding: '0.1rem 0.5rem',
           }}>
             {doneCount}/{list.length}
@@ -564,10 +564,10 @@ export default function AdhkarSection() {
                   key={key}
                   onClick={e => { e.stopPropagation(); setTab(key) }}
                   style={{
-                    flex: 1, padding: '0.65rem',
-                    background: tab === key ? 'var(--gold-dim)' : 'transparent',
+                    flex: 1, padding: '0.75rem',
+                    background: tab === key ? 'rgba(108,71,255,0.1)' : 'transparent',
                     border: 'none',
-                    borderBottom: tab === key ? '2px solid var(--gold)' : '2px solid transparent',
+                    borderBottom: tab === key ? '2px solid var(--mizan-purple)' : '2px solid transparent',
                     color: tab === key ? 'var(--gold)' : 'var(--text-muted)',
                     fontSize: '0.82rem', fontWeight: tab === key ? 500 : 400,
                     cursor: 'pointer', transition: 'all var(--transition)',
@@ -593,7 +593,7 @@ export default function AdhkarSection() {
               <button
                 onClick={() => goTo(currentIndex - 1)}
                 disabled={currentIndex === 0}
-                title={isAr ? 'السابق' : 'Previous'}
+                title={isAr ? 'السابق' : 'Previous'} // Navigation button
                 style={{
                   width: 30, height: 30, borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--border-strong)',
@@ -614,7 +614,7 @@ export default function AdhkarSection() {
                 <div style={{ width: '100%', height: 3, borderRadius: 2, background: 'var(--border)' }}>
                   <div style={{
                     height: '100%',
-                    width: `${(doneCount / list.length) * 100}%`,
+                    width: `${(doneCount / list.length) * 100}%`, // Progress bar
                     background: 'var(--emerald)',
                     borderRadius: 2, transition: 'width 0.35s ease',
                   }} />
@@ -625,7 +625,7 @@ export default function AdhkarSection() {
               <button
                 onClick={() => goTo(currentIndex + 1)}
                 disabled={currentIndex === list.length - 1}
-                title={isAr ? 'التالي' : 'Next'}
+                title={isAr ? 'التالي' : 'Next'} // Navigation button
                 style={{
                   width: 30, height: 30, borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--border-strong)',
@@ -649,7 +649,7 @@ export default function AdhkarSection() {
                   exit={{ opacity: 0, x: direction * -28 }}
                   transition={{ duration: 0.18 }}
                   style={{
-                    padding: '1.25rem',
+                    padding: '1.5rem',
                     background: isDone ? 'rgba(74,222,128,0.04)' : 'transparent',
                     transition: 'background var(--transition)',
                   }}
@@ -662,10 +662,10 @@ export default function AdhkarSection() {
                   }}>
                     <div style={{
                       width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
-                      border: `1.5px solid ${isDone ? 'var(--emerald)' : 'var(--border-strong)'}`,
-                      background: isDone ? 'var(--emerald-dim)' : 'transparent',
+                      border: `1.5px solid ${isDone ? 'var(--mizan-cyan)' : 'var(--v-glass-border)'}`,
+                      background: isDone ? 'rgba(0,201,255,0.1)' : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '0.65rem', fontWeight: 600,
+                      fontSize: '0.7rem', fontWeight: 600,
                       color: isDone ? 'var(--emerald)' : 'var(--text-muted)',
                     }}>
                       {isDone ? '✓' : currentIndex + 1}
@@ -679,7 +679,7 @@ export default function AdhkarSection() {
                     </span>
                     <span style={{
                       fontSize: '0.68rem',
-                      background: 'var(--gold-dim)', color: 'var(--gold)',
+                      background: 'rgba(108,71,255,0.1)', color: 'var(--mizan-purple)',
                       border: '1px solid rgba(212,175,106,0.2)',
                       borderRadius: 'var(--radius-full)', padding: '0.05rem 0.45rem',
                     }}>
@@ -741,7 +741,7 @@ export default function AdhkarSection() {
                       onClick={() => decrement(adhkar.id)}
                       disabled={current === 0}
                       style={{
-                        width: 34, height: 34, borderRadius: 'var(--radius-sm)',
+                        width: 34, height: 34, borderRadius: '8px',
                         border: '1px solid var(--border-strong)', background: 'transparent',
                         color: current === 0 ? 'var(--border-strong)' : 'var(--text-muted)',
                         fontSize: '1.2rem', lineHeight: 1,
@@ -763,7 +763,7 @@ export default function AdhkarSection() {
                       <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'var(--border)' }}>
                         <div style={{
                           height: '100%',
-                          width: `${Math.min((current / adhkar.count) * 100, 100)}%`,
+                          width: `${Math.min((current / adhkar.count) * 100, 100)}%`, // Progress bar
                           background: isDone ? 'var(--emerald)' : 'var(--gold)',
                           borderRadius: 2, transition: 'width 0.2s ease, background 0.2s',
                         }} />
@@ -774,9 +774,9 @@ export default function AdhkarSection() {
                       onClick={() => increment(adhkar.id, adhkar.count)}
                       disabled={isDone}
                       style={{
-                        width: 34, height: 34, borderRadius: 'var(--radius-sm)',
-                        border: `1px solid ${isDone ? 'var(--emerald)' : 'var(--gold)'}`,
-                        background: isDone ? 'var(--emerald-dim)' : 'var(--gold-dim)',
+                        width: 34, height: 34, borderRadius: '8px',
+                        border: `1px solid ${isDone ? 'var(--mizan-cyan)' : 'var(--mizan-purple)'}`,
+                        background: isDone ? 'rgba(0,201,255,0.1)' : 'rgba(108,71,255,0.1)',
                         color: isDone ? 'var(--emerald)' : 'var(--gold)',
                         fontSize: '1.2rem', lineHeight: 1,
                         cursor: isDone ? 'default' : 'pointer',

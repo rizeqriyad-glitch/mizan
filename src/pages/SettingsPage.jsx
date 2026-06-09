@@ -42,14 +42,14 @@ function SettingRow({ label, description, children, isAr }) {
   )
 }
 
-function ToggleGroup({ options, value, onChange, color = 'var(--gold)', colorDim = 'var(--gold-dim)' }) {
+function ToggleGroup({ options, value, onChange, accentColor = 'var(--mizan-purple)' }) {
   return (
     <div style={{
       display: 'flex',
-      background: 'var(--bg-input)',
-      borderRadius: 'var(--radius-md)',
+      background: 'rgba(255,255,255,0.05)',
+      borderRadius: '10px',
       padding: '3px',
-      gap: '3px',
+      gap: '2px',
     }}>
       {options.map(opt => (
         <button
@@ -57,11 +57,11 @@ function ToggleGroup({ options, value, onChange, color = 'var(--gold)', colorDim
           onClick={() => onChange(opt.value)}
           style={{
             padding: '0.35rem 0.9rem',
-            borderRadius: 'calc(var(--radius-md) - 2px)',
+            borderRadius: '8px',
             border: 'none',
-            background: value === opt.value ? 'var(--bg-card)' : 'transparent',
-            color: value === opt.value ? color : 'var(--text-muted)',
-            fontSize: '0.82rem',
+            background: value === opt.value ? accentColor : 'transparent',
+            color: value === opt.value ? 'white' : 'var(--text-secondary)',
+            fontSize: '0.8rem',
             fontWeight: value === opt.value ? 500 : 400,
             cursor: 'pointer',
             transition: 'all var(--transition)',
@@ -125,8 +125,8 @@ function AlarmUploader({ isAr }) {
         onClick={() => inputRef.current?.click()}
         style={{
           padding: '0.35rem 0.8rem',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-strong)',
+          borderRadius: '10px',
+          border: '1px solid var(--v-glass-border)',
           background: 'transparent',
           color: 'var(--text-secondary)',
           fontSize: '0.78rem',
@@ -134,8 +134,8 @@ function AlarmUploader({ isAr }) {
           transition: 'all var(--transition)',
           fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
         }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.color = 'var(--gold)' }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--mizan-purple)'; e.currentTarget.style.color = 'var(--mizan-purple)' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--v-glass-border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
       >
         {isAr ? '⬆ رفع ملف' : '⬆ Upload'}
       </button>
@@ -144,9 +144,9 @@ function AlarmUploader({ isAr }) {
         <button
           onClick={handleRemove}
           style={{
-            padding: '0.35rem 0.7rem',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border)',
+            padding: '0.35rem 0.75rem',
+            borderRadius: '10px',
+            border: '1px solid var(--v-glass-border)',
             background: 'transparent',
             color: 'var(--text-muted)',
             fontSize: '0.78rem',
@@ -154,8 +154,8 @@ function AlarmUploader({ isAr }) {
             transition: 'all var(--transition)',
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ruby)'; e.currentTarget.style.color = 'var(--ruby)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--mizan-cyan)'; e.currentTarget.style.color = 'var(--mizan-cyan)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--v-glass-border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
         >
           {isAr ? 'حذف' : 'Remove'}
         </button>
@@ -203,10 +203,9 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
+        className="glass-card"
         style={{
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
+          borderRadius: '16px',
           marginBottom: '1.5rem',
           overflow: 'hidden',
         }}
@@ -214,7 +213,7 @@ export default function SettingsPage() {
         <div style={{
           padding: '1rem 1.5rem',
           borderBottom: '1px solid var(--border)',
-          fontSize: '0.78rem',
+          fontSize: '0.75rem',
           fontWeight: 500,
           color: 'var(--text-muted)',
           textTransform: 'uppercase',
@@ -228,11 +227,11 @@ export default function SettingsPage() {
           {user?.photoURL ? (
             <img src={user.photoURL} alt="" style={{ width: 48, height: 48, borderRadius: '50%' }} />
           ) : (
-            <div style={{
+            <div className="glass-icon-mizan" style={{
               width: 48, height: 48, borderRadius: '50%',
-              background: 'var(--gold-dim)',
+              background: 'rgba(108,71,255,0.1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'var(--gold)', fontWeight: 600,
+              color: 'var(--mizan-purple)', fontWeight: 600,
             }}>
               {user?.displayName?.[0]}
             </div>
@@ -246,9 +245,9 @@ export default function SettingsPage() {
           <div style={{ marginLeft: 'auto' }}>
             <div style={{
               padding: '0.25rem 0.75rem',
-              borderRadius: 'var(--radius-full)',
-              background: 'var(--emerald-dim)',
-              border: '1px solid rgba(74,222,128,0.2)',
+              borderRadius: '9999px', // Mizan token for full-pill
+              background: 'rgba(0,201,255,0.1)',
+              border: '1px solid rgba(0,201,255,0.2)',
               color: 'var(--emerald)',
               fontSize: '0.72rem',
             }}>
@@ -263,10 +262,9 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
+        className="glass-card"
         style={{
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
+          borderRadius: '16px',
           marginBottom: '1.5rem',
           overflow: 'hidden',
         }}
@@ -274,7 +272,7 @@ export default function SettingsPage() {
         <div style={{
           padding: '1rem 1.5rem',
           borderBottom: '1px solid var(--border)',
-          fontSize: '0.78rem',
+          fontSize: '0.75rem',
           fontWeight: 500,
           color: 'var(--text-muted)',
           textTransform: 'uppercase',
@@ -296,6 +294,7 @@ export default function SettingsPage() {
             ]}
             value={language}
             onChange={changeLanguage}
+            accentColor="var(--mizan-purple)"
           />
         </SettingRow>
 
@@ -311,6 +310,7 @@ export default function SettingsPage() {
             ]}
             value={theme}
             onChange={changeTheme}
+            accentColor="var(--mizan-purple)"
           />
         </SettingRow>
 
@@ -326,6 +326,7 @@ export default function SettingsPage() {
             ]}
             value={timeFormat}
             onChange={changeTimeFormat}
+            accentColor="var(--mizan-purple)"
           />
         </SettingRow>
 
@@ -341,8 +342,7 @@ export default function SettingsPage() {
             ]}
             value={prayerNotifications}
             onChange={changePrayerNotifications}
-            color="var(--emerald)"
-            colorDim="var(--emerald-dim)"
+            accentColor="var(--mizan-cyan)"
           />
         </SettingRow>
 
@@ -353,10 +353,9 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
+        className="glass-card"
         style={{
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
+          borderRadius: '16px',
           marginBottom: '1.5rem',
           overflow: 'hidden',
         }}
@@ -364,7 +363,7 @@ export default function SettingsPage() {
         <div style={{
           padding: '1rem 1.5rem',
           borderBottom: '1px solid var(--border)',
-          fontSize: '0.78rem',
+          fontSize: '0.75rem',
           fontWeight: 500,
           color: 'var(--text-muted)',
           textTransform: 'uppercase',
@@ -388,10 +387,9 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
+        className="glass-card"
         style={{
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
+          borderRadius: '16px',
           marginBottom: '1.5rem',
           overflow: 'hidden',
         }}
@@ -399,7 +397,7 @@ export default function SettingsPage() {
         <div style={{
           padding: '1rem 1.5rem',
           borderBottom: '1px solid var(--border)',
-          fontSize: '0.78rem',
+          fontSize: '0.75rem',
           fontWeight: 500,
           color: 'var(--text-muted)',
           textTransform: 'uppercase',
@@ -416,18 +414,18 @@ export default function SettingsPage() {
             marginBottom: '1rem',
           }}>
             <div style={{
-              width: 44, height: 44,
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--gold-dim)',
+              width: 48, height: 48,
+              borderRadius: '14px',
+              background: 'rgba(108,71,255,0.1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1.4rem',
+              fontSize: '1.6rem',
             }}>
               ⚖️
             </div>
             <div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', color: 'var(--gold)', fontWeight: 600 }}>
                 Mizan — ميزان
-              </div>
+              </div> {/* This gold color will be updated to gradient-text later if it's a primary display. For now, it's fine as a secondary element. */}
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Version 1.0.0</div>
             </div>
           </div>
@@ -454,20 +452,20 @@ export default function SettingsPage() {
         <button
           onClick={handleLogout}
           style={{
-            width: '100%',
-            padding: '0.875rem',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid rgba(248,113,113,0.2)',
-            background: 'var(--ruby-dim)',
-            color: 'var(--ruby)',
-            fontSize: '0.9rem',
+            width: '100%', padding: '0.9rem',
+            borderRadius: '12px',
+            border: '1px solid var(--v-glass-border)',
+            background: 'rgba(255,0,0,0.1)',
+            color: 'var(--text-primary)',
+            fontSize: '0.85rem',
             fontWeight: 500,
             cursor: 'pointer',
+            boxShadow: 'var(--v-shadow)',
             transition: 'all var(--transition)',
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(248,113,113,0.2)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'var(--ruby-dim)'}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,0,0,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,0,0,0.4)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,0,0,0.1)'; e.currentTarget.style.borderColor = 'var(--v-glass-border)' }}
         >
           {t('signOut')}
         </button>

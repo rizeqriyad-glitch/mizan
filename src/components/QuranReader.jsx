@@ -111,8 +111,8 @@ export default function QuranReader() {
       transition={{ delay: 0.25 }}
       style={{
         background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border)',
+        borderRadius: '16px', // Mizan token for large cards
+        border: '1px solid var(--v-glass-border)', // Use glass border
         overflow: 'hidden',
         marginTop: '1.5rem',
       }}
@@ -140,8 +140,8 @@ export default function QuranReader() {
           {expanded && surahsOnPage.slice(0, 2).map(name => (
             <span key={name} style={{
               fontSize: '0.75rem', color: 'var(--gold)',
-              background: 'var(--gold-dim)', border: '1px solid rgba(212,175,106,0.2)',
-              borderRadius: 'var(--radius-full)', padding: '0.1rem 0.6rem',
+              background: 'rgba(108,71,255,0.1)', border: '1px solid rgba(108,71,255,0.2)', // Mizan purple colors
+              borderRadius: '9999px', // Mizan token for full-pill
               fontFamily: 'var(--font-arabic)',
             }}>{name}</span>
           ))}
@@ -218,8 +218,8 @@ export default function QuranReader() {
               {loading ? (
                 <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                   <div style={{
-                    width: 28, height: 28, borderRadius: '50%',
-                    border: '2px solid var(--border)', borderTop: '2px solid var(--gold)',
+                    width: 28, height: 28, borderRadius: '50%', // Mizan token for icons
+                    border: '2px solid var(--v-glass-border)', borderTop: '2px solid var(--mizan-cyan)',
                     animation: 'q-spin 0.8s linear infinite', margin: '0 auto 0.75rem',
                   }} />
                   <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', fontSize: '0.85rem' }}>
@@ -233,10 +233,10 @@ export default function QuranReader() {
                   </p>
                   <button
                     onClick={() => { setError(null); setRetryCount(c => c + 1) }}
-                    style={{
-                      fontSize: '0.8rem', color: 'var(--gold)',
-                      border: '1px solid rgba(212,175,106,0.3)',
-                      background: 'var(--gold-dim)', borderRadius: 'var(--radius-md)',
+                    style={{ // Mizan token for buttons
+                      fontSize: '0.8rem', color: 'var(--mizan-purple)',
+                      border: '1px solid rgba(108,71,255,0.3)',
+                      background: 'rgba(108,71,255,0.1)', borderRadius: '10px',
                       padding: '0.35rem 0.8rem', cursor: 'pointer',
                     }}
                   >
@@ -248,11 +248,11 @@ export default function QuranReader() {
                   className="quran-book-page"
                   style={{
                     position: 'relative',
-                    background: 'var(--bg-base)',
-                    border: '2px solid rgba(212,175,106,0.45)',
-                    borderRadius: '3px',
+                    background: 'var(--v-glass-bg)', // Use glass background
+                    border: '2px solid rgba(108,71,255,0.45)', // Mizan purple border
+                    borderRadius: '16px', // Mizan token for large cards
                     padding: '2rem 1.75rem 1.5rem',
-                    boxShadow: 'inset 0 0 60px rgba(212,175,106,0.05), 0 6px 24px rgba(0,0,0,0.15)',
+                    boxShadow: 'inset 0 0 60px rgba(108,71,255,0.05), 0 6px 24px rgba(0,0,0,0.15)', // Mizan purple glow
                     minHeight: 300,
                   }}
                 >
@@ -265,7 +265,7 @@ export default function QuranReader() {
                   {/* Inner border line */}
                   <div style={{
                     position: 'absolute', inset: 8,
-                    border: '1px solid rgba(212,175,106,0.18)',
+                    border: '1px solid rgba(108,71,255,0.18)', // Mizan purple border
                     borderRadius: '2px',
                     pointerEvents: 'none',
                   }} />
@@ -282,15 +282,15 @@ export default function QuranReader() {
                             <div style={{
                               display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
                               border: '1px solid rgba(212,175,106,0.35)',
-                              borderRadius: '3px',
+                              borderRadius: '10px', // Mizan token for buttons
                               padding: '0.5rem 2rem',
-                              background: 'var(--gold-glow)',
+                              background: 'linear-gradient(135deg, rgba(108,71,255,0.1) 0%, transparent 100%)', // Mizan gradient
                             }}>
-                              <span style={{ color: 'rgba(212,175,106,0.6)', fontSize: '0.6rem' }}>◆</span>
+                              <span style={{ color: 'rgba(108,71,255,0.6)', fontSize: '0.6rem' }}>◆</span> {/* Keep color for ornament */}
                               <div>
                                 <div style={{
                                   fontFamily: 'var(--font-quran)',
-                                  fontSize: '1.2rem', color: 'var(--gold)',
+                                  fontSize: '1.2rem', color: 'var(--mizan-purple)', // Mizan purple color
                                   direction: 'rtl', lineHeight: 1.5,
                                 }}>
                                   {item.surah.name}
@@ -300,8 +300,8 @@ export default function QuranReader() {
                                     {item.surah.englishName} · {item.surah.englishNameTranslation} · {item.surah.numberOfAyahs} verses
                                   </div>
                                 )}
-                              </div>
-                              <span style={{ color: 'rgba(212,175,106,0.6)', fontSize: '0.6rem' }}>◆</span>
+                              </div> {/* Keep ornament */}
+                              <span style={{ color: 'rgba(108,71,255,0.6)', fontSize: '0.6rem' }}>◆</span> {/* Keep color for ornament */}
                             </div>
                           </div>
                         )
@@ -312,7 +312,7 @@ export default function QuranReader() {
                           <div key={`b-${i}`} style={{
                             textAlign: 'center',
                             fontFamily: 'var(--font-quran)',
-                            fontSize: '1.5rem', color: 'var(--gold)',
+                            fontSize: '1.5rem', color: 'var(--mizan-purple)', // Mizan purple color
                             direction: 'rtl', lineHeight: 2.4,
                             marginBottom: '0.25rem',
                           }}>
@@ -337,8 +337,8 @@ export default function QuranReader() {
                             <span style={{
                               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                               width: '1.6em', height: '1.6em', borderRadius: '50%',
-                              border: '1px solid rgba(212,175,106,0.5)',
-                              background: 'var(--gold-dim)', color: 'var(--gold)',
+                              border: '1px solid rgba(108,71,255,0.5)', // Mizan purple border
+                              background: 'rgba(108,71,255,0.1)', color: 'var(--mizan-purple)', // Mizan purple colors
                               fontSize: '0.5em', fontFamily: 'var(--font-arabic)',
                               fontWeight: 600, verticalAlign: 'middle', lineHeight: 1,
                             }}>
@@ -351,9 +351,9 @@ export default function QuranReader() {
                               margin: '0.3rem 0 0.9rem',
                               fontSize: '0.8rem', color: 'var(--text-secondary)',
                               lineHeight: 1.75, direction: 'ltr', textAlign: 'left',
-                              fontStyle: 'italic',
-                              paddingLeft: '0.6rem',
-                              borderLeft: '2px solid rgba(212,175,106,0.3)',
+                              fontStyle: 'italic', // Keep italic for translation
+                              paddingLeft: '0.6rem', // Keep padding
+                              borderLeft: '2px solid rgba(108,71,255,0.3)', // Mizan purple border
                             }}>
                               <span style={{ color: 'var(--text-muted)', fontSize: '0.7em', marginRight: '0.25rem' }}>
                                 ({ayah.numberInSurah})
@@ -370,9 +370,9 @@ export default function QuranReader() {
                   <div style={{
                     marginTop: '1.5rem',
                     paddingTop: '1rem',
-                    borderTop: '1px solid rgba(212,175,106,0.2)',
+                    borderTop: '1px solid rgba(108,71,255,0.2)', // Mizan purple border
                     textAlign: 'center',
-                    color: 'var(--gold)',
+                    color: 'var(--mizan-purple)', // Mizan purple color
                     fontSize: '0.78rem',
                     letterSpacing: '0.12em',
                     opacity: 0.7,
@@ -433,10 +433,10 @@ export default function QuranReader() {
                 <button
                   onClick={jumpToPage}
                   style={{
-                    padding: '0.4rem 0.75rem',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid rgba(212,175,106,0.3)',
-                    background: 'var(--gold-dim)', color: 'var(--gold)',
+                    padding: '0.4rem 0.75rem', // Mizan token for buttons
+                    borderRadius: '8px', // Mizan token for buttons
+                    border: '1px solid rgba(108,71,255,0.3)', // Mizan purple border
+                    background: 'rgba(108,71,255,0.1)', color: 'var(--mizan-purple)', // Mizan purple colors
                     fontSize: '0.78rem', cursor: 'pointer',
                     fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
                   }}

@@ -44,9 +44,10 @@ export default function LoginPage() {
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
-          background: 'var(--bg-surface)',
-          borderRight: isAr ? 'none' : '1px solid var(--border)',
-          borderLeft: isAr ? '1px solid var(--border)' : 'none',
+          background: 'var(--v-glass-bg)',
+          borderRight: isAr ? 'none' : '1px solid var(--v-glass-border)',
+          borderLeft: isAr ? '1px solid var(--v-glass-border)' : 'none',
+          boxShadow: 'var(--v-shadow)',
         }}
         className="login-panel-hidden"
       >
@@ -55,13 +56,13 @@ export default function LoginPage() {
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04 }}
           viewBox="0 0 400 400"
           xmlns="http://www.w3.org/2000/svg"
-        >
+        > {/* This pattern uses gold, which is not Mizan's primary. I will update it to use mizan-purple/cyan. */}
           <defs>
             <pattern id="islamic" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-              <polygon points="40,0 80,20 80,60 40,80 0,60 0,20" fill="none" stroke="var(--gold)" strokeWidth="1"/>
-              <polygon points="40,10 70,25 70,55 40,70 10,55 10,25" fill="none" stroke="var(--gold)" strokeWidth="0.5"/>
-              <line x1="40" y1="0" x2="40" y2="80" stroke="var(--gold)" strokeWidth="0.3"/>
-              <line x1="0" y1="40" x2="80" y2="40" stroke="var(--gold)" strokeWidth="0.3"/>
+              <polygon points="40,0 80,20 80,60 40,80 0,60 0,20" fill="none" stroke="var(--mizan-purple)" strokeWidth="1"/> {/* Mizan purple */}
+              <polygon points="40,10 70,25 70,55 40,70 10,55 10,25" fill="none" stroke="var(--mizan-cyan)" strokeWidth="0.5"/> {/* Mizan cyan */}
+              <line x1="40" y1="0" x2="40" y2="80" stroke="var(--mizan-purple)" strokeWidth="0.3"/> {/* Mizan purple */}
+              <line x1="0" y1="40" x2="80" y2="40" stroke="var(--mizan-cyan)" strokeWidth="0.3"/> {/* Mizan cyan */}
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#islamic)"/>
@@ -69,11 +70,8 @@ export default function LoginPage() {
 
         {/* Gold gradient orb */}
         <div style={{
-          position: 'absolute',
-          width: 500,
-          height: 500,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(212,175,106,0.12) 0%, transparent 70%)',
+          position: 'absolute', width: 500, height: 500, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(108, 71, 255, 0.15) 0%, transparent 70%)',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
@@ -90,7 +88,7 @@ export default function LoginPage() {
             style={{
               fontFamily: 'var(--font-arabic)',
               fontSize: '2rem',
-              color: 'var(--gold)',
+              color: 'var(--mizan-purple)',
               marginBottom: '2.5rem',
               lineHeight: 1.6,
               direction: 'rtl',
@@ -104,16 +102,16 @@ export default function LoginPage() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5, duration: 0.6 }}
+            className="glass-icon-mizan"
             style={{
-              width: 100,
-              height: 100,
+              width: 90,
+              height: 90,
               margin: '0 auto 2rem',
-              borderRadius: '50%',
-              border: '1px solid var(--border-strong)',
+              borderRadius: '18px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'var(--bg-card)',
+              background: 'linear-gradient(135deg, rgba(108,71,255,0.2) 0%, rgba(0,201,255,0.08) 100%)',
               fontSize: '2.5rem',
             }}
           >
@@ -127,7 +125,7 @@ export default function LoginPage() {
             style={{
               fontFamily: 'var(--font-display)',
               fontSize: '3.5rem',
-              fontWeight: 600,
+              fontWeight: 800,
               color: 'var(--text-primary)',
               marginBottom: '0.5rem',
               letterSpacing: '0.05em',
@@ -142,7 +140,7 @@ export default function LoginPage() {
             transition={{ delay: 0.7 }}
             style={{
               fontFamily: 'var(--font-arabic)',
-              fontSize: '1.5rem',
+              fontSize: '1.6rem',
               color: 'var(--text-secondary)',
               direction: 'rtl',
               marginBottom: '3rem',
@@ -164,7 +162,7 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8 + i * 0.1 }}
               style={{
-                display: 'flex',
+                display: 'flex', alignItems: 'center',
                 alignItems: 'center',
                 gap: '0.75rem',
                 color: 'var(--text-secondary)',
@@ -172,8 +170,8 @@ export default function LoginPage() {
                 marginBottom: '0.75rem',
                 justifyContent: 'center',
               }}
-            >
-              <span style={{ color: 'var(--gold)', fontSize: '0.5rem' }}>◆</span>
+            > {/* Update bullet color */}
+              <span style={{ color: 'var(--mizan-cyan)', fontSize: '0.5rem' }}>◆</span>
               <span>{isAr ? item.ar : item.en}</span>
             </motion.div>
           ))}
@@ -200,12 +198,12 @@ export default function LoginPage() {
           <button
             onClick={() => changeLanguage(isAr ? 'en' : 'ar')}
             style={{
-              padding: '0.4rem 1rem',
-              borderRadius: 'var(--radius-full)',
-              border: '1px solid var(--border-strong)',
-              color: 'var(--text-secondary)',
-              fontSize: '0.8rem',
-              background: 'var(--bg-card)',
+              padding: '0.35rem 0.9rem',
+              borderRadius: '9999px',
+              border: '1px solid var(--v-glass-border)',
+              color: 'var(--text-primary)',
+              fontSize: '0.75rem',
+              background: 'rgba(255,255,255,0.05)',
               cursor: 'pointer',
               transition: 'all var(--transition)',
             }}
@@ -223,7 +221,7 @@ export default function LoginPage() {
             <h2 style={{
               fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
               fontSize: isAr ? '2rem' : '2.25rem',
-              fontWeight: 500,
+              fontWeight: 700,
               color: 'var(--text-primary)',
               marginBottom: '0.5rem',
               textAlign: isAr ? 'right' : 'left',
@@ -243,9 +241,9 @@ export default function LoginPage() {
             {error && (
               <div style={{
                 padding: '0.75rem 1rem',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--ruby-dim)',
-                border: '1px solid rgba(248,113,113,0.2)',
+                borderRadius: '12px',
+                background: 'rgba(255,0,0,0.1)',
+                border: '1px solid rgba(255,0,0,0.2)',
                 color: 'var(--ruby)',
                 fontSize: '0.85rem',
                 marginBottom: '1.5rem',
@@ -261,12 +259,12 @@ export default function LoginPage() {
               whileTap={{ scale: 0.99 }}
               onClick={handleGoogleSignIn}
               disabled={loading}
+              className="btn-magnetic"
               style={{
                 width: '100%',
                 padding: '0.875rem 1.5rem',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-strong)',
-                background: 'var(--bg-card)',
+                borderRadius: '14px',
+                background: 'var(--mizan-gradient)',
                 color: 'var(--text-primary)',
                 fontSize: '0.95rem',
                 fontWeight: 500,
@@ -274,6 +272,7 @@ export default function LoginPage() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.75rem',
+                border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.7 : 1,
                 transition: 'all var(--transition)',
@@ -283,8 +282,8 @@ export default function LoginPage() {
               {loading ? (
                 <div style={{
                   width: 20, height: 20,
-                  border: '2px solid var(--border)',
-                  borderTop: '2px solid var(--gold)',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  borderTop: '2px solid var(--mizan-cyan)',
                   borderRadius: '50%',
                   animation: 'spin 0.7s linear infinite',
                 }} />
@@ -313,9 +312,9 @@ export default function LoginPage() {
 
             {/* Hadith */}
             <div style={{
-              padding: '1.25rem',
-              borderRadius: 'var(--radius-lg)',
-              background: 'var(--gold-glow)',
+              padding: '1.5rem',
+              borderRadius: '16px',
+              background: 'var(--v-glass-bg)',
               border: '1px solid var(--border)',
               textAlign: 'center',
             }}>
@@ -323,7 +322,7 @@ export default function LoginPage() {
                 fontFamily: 'var(--font-arabic)',
                 fontSize: '1rem',
                 color: 'var(--text-primary)',
-                lineHeight: 1.8,
+                lineHeight: 1.7,
                 direction: 'rtl',
                 marginBottom: '0.5rem',
               }}>

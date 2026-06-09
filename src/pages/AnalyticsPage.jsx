@@ -77,7 +77,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <div style={{ width: 32, height: 32, border: '2px solid var(--border)', borderTop: '2px solid var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 32, height: 32, border: '2px solid var(--v-glass-border)', borderTop: '2px solid var(--mizan-cyan)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     )
@@ -110,27 +110,27 @@ export default function AnalyticsPage() {
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }} className="analytics-grid">
         {[
-          { label: isAr ? 'المهام المكتملة' : 'Tasks Completed', value: totalDone, icon: '✅', color: 'var(--emerald)', dim: 'var(--emerald-dim)' },
-          { label: t('streak'), value: `${stats.streak || 0} ${isAr ? 'يوم' : 'days'}`, icon: '🔥', color: 'var(--amber)', dim: 'var(--amber-dim)' },
-          { label: t('points'), value: stats.points || 0, icon: '⭐', color: 'var(--gold)', dim: 'var(--gold-dim)' },
+          { label: isAr ? 'المهام المكتملة' : 'Tasks Completed', value: totalDone, icon: '✅', color: 'var(--mizan-cyan)', dim: 'rgba(0,201,255,0.1)' },
+          { label: t('streak'), value: `${stats.streak || 0} ${isAr ? 'يوم' : 'days'}`, icon: '🔥', color: 'var(--mizan-purple)', dim: 'rgba(108,71,255,0.1)' },
+          { label: t('points'), value: stats.points || 0, icon: '⭐', color: 'var(--mizan-purple)', dim: 'rgba(108,71,255,0.1)' },
         ].map((card, i) => (
           <motion.div
             key={card.label}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
+            className="glass-card"
             style={{
-              background: 'var(--bg-card)',
-              borderRadius: 'var(--radius-lg)',
-              border: '1px solid var(--border)',
+              borderRadius: '16px',
               padding: '1.25rem',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-              <span style={{
-                width: 34, height: 34,
-                borderRadius: 'var(--radius-md)',
-                background: card.dim,
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <span className="glass-icon-mizan" style={{
+                width: 38, height: 38,
+                borderRadius: '14px',
+                background: card.dim, // This dim color is already rgba, so it will blend with glass-icon-mizan's gradient
+                border: `1px solid ${card.color}20`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '1rem',
               }}>
@@ -159,10 +159,9 @@ export default function AnalyticsPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
+        className="glass-card"
         style={{
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
+          borderRadius: '16px',
           padding: '1.5rem',
           marginBottom: '1.5rem',
         }}
@@ -203,7 +202,7 @@ export default function AnalyticsPage() {
                     animate={{ height: `${Math.max(heightPct, 4)}%` }}
                     transition={{ delay: i * 0.05, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                     style={{
-                      width: '70%',
+                      width: '80%',
                       borderRadius: '3px 3px 0 0',
                       background: isToday ? 'var(--gold)' : 'var(--border-strong)',
                     }}
@@ -227,10 +226,9 @@ export default function AnalyticsPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
+        className="glass-card"
         style={{
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
+          borderRadius: '16px',
           padding: '1.5rem',
           marginBottom: '1.5rem',
         }}
@@ -292,8 +290,8 @@ export default function AnalyticsPage() {
                       <td key={d.key} style={{ textAlign: 'center', padding: '0.5rem 0.25rem' }}>
                         <div style={{
                           width: 28, height: 28,
-                          borderRadius: 'var(--radius-sm)',
-                          background: done ? 'var(--emerald-dim)' : 'var(--bg-input)',
+                          borderRadius: '8px',
+                          background: done ? 'rgba(0,201,255,0.1)' : 'rgba(255,255,255,0.05)',
                           border: done ? '1px solid rgba(74,222,128,0.25)' : '1px solid var(--border)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           margin: '0 auto',
@@ -317,10 +315,9 @@ export default function AnalyticsPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
+        className="glass-card"
         style={{
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
+          borderRadius: '16px',
           padding: '1.5rem',
         }}
       >
@@ -377,7 +374,7 @@ function SectionRow({ section, language }) {
       <div style={{
         flex: 1, height: 6, background: 'var(--bg-input)',
         borderRadius: 3, overflow: 'hidden',
-      }}>
+      }}> {/* Progress bar background */}
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
@@ -385,7 +382,7 @@ function SectionRow({ section, language }) {
           style={{
             height: '100%',
             borderRadius: 3,
-            background: pct === 100 ? 'var(--emerald)' : pct > 50 ? 'var(--gold)' : 'var(--sapphire)',
+            background: pct === 100 ? 'var(--mizan-cyan)' : pct > 50 ? 'var(--mizan-purple)' : 'var(--mizan-cyan)',
           }}
         />
       </div>

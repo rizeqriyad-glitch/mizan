@@ -82,10 +82,10 @@ export default function ScheduleManager() {
   const activeColor = COLOR_CSS[form.color] || 'var(--emerald)'
 
   return (
-    <div style={{
-      background: 'var(--bg-card)',
-      borderRadius: 'var(--radius-lg)',
-      border: '1px solid var(--border)',
+    <div className="glass-card" style={{
+      // background: 'var(--bg-card)', // Handled by glass-card
+      borderRadius: '16px', // Mizan token for large cards
+      // border: '1px solid var(--border)', // Handled by glass-card
       marginBottom: '1rem',
       overflow: 'hidden',
     }}>
@@ -115,7 +115,7 @@ export default function ScheduleManager() {
             <span style={{
               fontSize: '0.67rem', padding: '0.1rem 0.42rem',
               borderRadius: 'var(--radius-full)',
-              background: 'var(--emerald-dim)', color: 'var(--emerald)',
+            background: 'rgba(0,201,255,0.1)', color: 'var(--mizan-cyan)', // Mizan cyan
               fontWeight: 600,
             }}>
               {scheduleBlocks.length}
@@ -141,13 +141,13 @@ export default function ScheduleManager() {
             fontSize: '0.75rem',
             cursor: 'pointer',
             transition: 'all var(--transition)',
-            fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+            fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', // Keep font family
             flexShrink: 0,
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.borderColor = 'var(--gold)'
-            e.currentTarget.style.color = 'var(--gold)'
-            e.currentTarget.style.background = 'var(--gold-dim)'
+            e.currentTarget.style.borderColor = 'var(--mizan-purple)' // Mizan purple
+            e.currentTarget.style.color = 'var(--mizan-purple)' // Mizan purple
+            e.currentTarget.style.background = 'rgba(108,71,255,0.1)' // Mizan purple dim
           }}
           onMouseLeave={e => {
             e.currentTarget.style.borderColor = 'var(--border-strong)'
@@ -194,7 +194,7 @@ export default function ScheduleManager() {
               {scheduleBlocks.length === 0 && !showForm ? (
                 <div style={{
                   padding: '1.5rem',
-                  textAlign: 'center',
+                  textAlign: 'center', // Keep text alignment
                   fontSize: '0.8rem',
                   color: 'var(--text-muted)',
                   fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
@@ -262,7 +262,7 @@ export default function ScheduleManager() {
                     <div style={{
                       margin: '0.75rem 1.25rem',
                       borderRadius: 'var(--radius-lg)',
-                      border: `1px solid var(--border)`,
+                      border: `1px solid var(--v-glass-border)`, // Use glass border
                       borderTop: `3px solid ${activeColor}`,
                       background: 'var(--bg-input)',
                       overflow: 'hidden',
@@ -353,7 +353,7 @@ export default function ScheduleManager() {
                                 <span style={{ fontSize: '0.62rem', color: activeColor, background: activeColor + '18', padding: '0.06rem 0.45rem', borderRadius: 99 }}>
                                   {form.days.length} {isAr ? 'أيام' : 'days'}
                                 </span>
-                              )}
+                          )} {/* Badge for days selected */}
                             </div>
                             <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
                               {DAY_KEYS.map((key, i) => {
@@ -362,7 +362,7 @@ export default function ScheduleManager() {
                                   <button type="button" key={key} onClick={() => toggleDay(key)}
                                     style={{
                                       width: 42, height: 42, borderRadius: '50%',
-                                      border: `2px solid ${on ? activeColor : 'var(--border-strong)'}`,
+                                      border: `2px solid ${on ? activeColor : 'var(--v-glass-border)'}`, // Use glass border
                                       background: on ? activeColor : 'transparent',
                                       color: on ? '#fff' : 'var(--text-muted)',
                                       fontSize: '0.68rem', fontWeight: on ? 700 : 400,
@@ -398,7 +398,7 @@ export default function ScheduleManager() {
                             height: 36, padding: '0 1rem',
                             borderRadius: 'var(--radius-md)',
                             border: '1px solid var(--border)',
-                            background: 'transparent', color: 'var(--text-muted)',
+                            background: 'transparent', color: 'var(--text-muted)', // Keep transparent
                             fontSize: '0.82rem', cursor: 'pointer',
                           }}>
                             {isAr ? 'إلغاء' : 'Cancel'}
@@ -429,7 +429,7 @@ function Seg({ options, value, onChange }) {
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
-          style={{
+            style={{ // Segmented control buttons
             padding: '0.3rem 0.75rem',
             borderRadius: 'calc(var(--radius-md) - 2px)',
             border: 'none',
@@ -476,7 +476,7 @@ function BlockRow({ block, isAr, weekly, onEdit, onDelete }) {
       <div style={{
         width: 30, height: 30, borderRadius: 'var(--radius-sm)', flexShrink: 0,
         background: clrD, border: `1px solid ${clr}25`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', // Keep icon styling
         fontSize: '0.9rem',
       }}>
         {block.icon}

@@ -97,10 +97,9 @@ function XPBar({ gamification, isAr }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.06 }}
+      className="glass-card"
       style={{
-        background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border)',
+        borderRadius: '16px',
         padding: '1rem 1.5rem',
         marginBottom: '1.5rem',
         display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap',
@@ -108,8 +107,8 @@ function XPBar({ gamification, isAr }) {
     >
       {/* Level badge */}
       <div style={{
-        width: 52, height: 52, borderRadius: '50%',
-        background: 'var(--gold-dim)', border: '2px solid var(--gold)',
+        width: 56, height: 56, borderRadius: '50%',
+        background: 'rgba(108,71,255,0.1)', border: '2px solid var(--mizan-purple)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
       }}>
@@ -124,7 +123,7 @@ function XPBar({ gamification, isAr }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
             {gamification.totalXP || 0} XP
-          </span>
+              </span> {/* XP value */}
           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
             {xpToNext} {isAr ? 'للمستوى التالي' : 'to next level'}
           </span>
@@ -133,8 +132,8 @@ function XPBar({ gamification, isAr }) {
           <motion.div
             animate={{ width: `${pct}%` }}
             transition={{ type: 'spring', stiffness: 80, damping: 18 }}
-            style={{
-              height: '100%',
+            style={{ // Progress bar
+              height: '100%', // This is a progress bar, so it's fine to use a gradient.
               background: 'linear-gradient(90deg, var(--gold-dim), var(--gold))',
               borderRadius: 99, minWidth: pct > 0 ? 6 : 0,
             }}
@@ -146,7 +145,7 @@ function XPBar({ gamification, isAr }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0.4rem',
         padding: '0.4rem 0.875rem',
-        background: streak > 0 ? 'rgba(251,146,60,0.1)' : 'var(--bg-input)',
+        background: streak > 0 ? 'rgba(108,71,255,0.1)' : 'var(--bg-input)',
         borderRadius: 'var(--radius-full)',
         border: `1px solid ${streak > 0 ? 'rgba(251,146,60,0.35)' : 'var(--border)'}`,
         flexShrink: 0,
@@ -166,7 +165,7 @@ function XPBar({ gamification, isAr }) {
           {earnedBadges.map(b => (
             <div key={b.id} title={isAr ? b.ar : b.en} style={{
               padding: '0.28rem 0.55rem', background: 'var(--bg-input)',
-              borderRadius: 'var(--radius-full)', border: '1px solid var(--border)',
+              borderRadius: '9999px', border: '1px solid var(--v-glass-border)', // Mizan token for full-pill
               fontSize: '0.9rem', cursor: 'default', userSelect: 'none',
             }}>
               {b.icon}
@@ -212,7 +211,7 @@ function DeadlineBadge({ deadline, isAr, done }) {
     <span style={{
       fontSize: '0.68rem', fontWeight: 500, color, background: bg,
       padding: '0.18rem 0.55rem', borderRadius: 99,
-      border: `1px solid ${color}40`,
+      border: `1px solid ${color}40`, // This color is dynamic, so it's fine. // Keep dynamic color
       fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
       whiteSpace: 'nowrap',
     }}>
@@ -242,9 +241,8 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
   return (
     <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
       style={{
-        background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-lg)',
-        border: `1px solid ${goalDone ? 'rgba(74,222,128,0.2)' : 'var(--border)'}`,
+        borderRadius: '16px',
+        border: `1px solid ${goalDone ? 'rgba(0,201,255,0.2)' : 'var(--v-glass-border)'}`,
         borderTop: `3px solid ${goalDone ? 'var(--emerald)' : color.main}`,
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
         opacity: goalDone ? 0.75 : 1,
@@ -272,7 +270,7 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
         <button onClick={() => onDelete(goal.id)}
           style={{
             width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)',
-            background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer',
+            background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', // This button is small, so it's fine. // Keep transparent
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem',
             flexShrink: 0, transition: 'all var(--transition)',
           }}
@@ -284,7 +282,7 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
       {/* Progress bar + checkpoints */}
       <div style={{ padding: '0 1.25rem 0.875rem', borderBottom: '1px solid var(--border)' }}>
         <div style={{ height: 6, background: 'var(--bg-input)', borderRadius: 99, overflow: 'hidden', marginBottom: '0.55rem' }}>
-          <motion.div
+          <motion.div // This is a progress bar, so it's fine to use a gradient. // Keep progress bar
             animate={{ width: `${Math.max(progress * 100, progress > 0 ? 1 : 0)}%` }}
             transition={{ type: 'spring', stiffness: 80, damping: 18 }}
             style={{ height: '100%', background: goalDone ? 'var(--emerald)' : color.main, borderRadius: 99 }}
@@ -297,7 +295,7 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
             return (
               <div key={thresh} style={{
                 padding: '0.18rem 0.5rem', borderRadius: 99,
-                background: reached ? c.dim : 'var(--bg-input)',
+                background: reached ? c.dim : 'rgba(255,255,255,0.05)',
                 border: `1px solid ${reached ? c.main + '55' : 'var(--border)'}`,
                 fontSize: '0.65rem', fontWeight: reached ? 600 : 400,
                 color: reached ? c.main : 'var(--text-muted)',
@@ -322,7 +320,7 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
                   onClick={() => onToggle(goal.id, ms.id, milestones)}
                   style={{
                     width: 18, height: 18, borderRadius: 4, flexShrink: 0,
-                    border: `2px solid ${ms.completed ? (goalDone ? 'var(--emerald)' : color.main) : 'var(--border-strong)'}`,
+                    border: `2px solid ${ms.completed ? (goalDone ? 'var(--mizan-cyan)' : color.main) : 'var(--v-glass-border)'}`,
                     background: ms.completed ? (goalDone ? 'var(--emerald)' : color.main) : 'transparent',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: '#fff', fontSize: '0.6rem', fontWeight: 700, transition: 'all 0.2s',
@@ -355,7 +353,7 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
             <div style={{ display: 'flex', gap: '0.4rem' }}>
               <input value={newMs} onChange={e => setNewMs(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setShowInput(false); setNewMs('') } }}
-                placeholder={isAr ? 'اكتب مهمة فرعية...' : 'Type a milestone...'}
+                placeholder={isAr ? 'اكتب مهمة فرعية...' : 'Type a milestone...'} // Input field
                 autoFocus
                 style={{
                   flex: 1, background: 'var(--bg-input)', border: `1px solid ${color.main}60`,
@@ -364,9 +362,9 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
                   fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
                 }}
               />
-              <button onClick={handleAdd} style={{ padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-md)', border: 'none', background: color.main, color: 'var(--bg-base)', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}>+</button>
-              <button onClick={() => { setShowInput(false); setNewMs('') }} style={{ padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.83rem', cursor: 'pointer' }}>✕</button>
-            </div>
+              <button onClick={handleAdd} style={{ padding: '0.4rem 0.8rem', borderRadius: '10px', border: 'none', background: color.main, color: 'var(--bg-base)', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}>+</button>
+              <button onClick={() => { setShowInput(false); setNewMs('') }} style={{ padding: '0.4rem 0.6rem', borderRadius: '10px', border: '1px solid var(--v-glass-border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.83rem', cursor: 'pointer' }}>✕</button>
+            </div> {/* Input field and buttons */}
           ) : (
             <button onClick={() => setShowInput(true)}
               style={{
@@ -411,8 +409,8 @@ function AddGoalModal({ onClose, onAdd, isAr }) {
       <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)',
-          border: `1px solid ${c.main}40`, borderTop: `3px solid ${c.main}`,
+          background: 'var(--v-glass-bg)', borderRadius: '16px',
+          border: `1px solid ${c.main}40`, borderTop: `3px solid ${c.main}`, // This border is dynamic, so it's fine.
           width: '100%', maxWidth: 460, overflow: 'hidden',
           direction: isAr ? 'rtl' : 'ltr',
         }}
@@ -422,7 +420,7 @@ function AddGoalModal({ onClose, onAdd, isAr }) {
           <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
             {isAr ? 'إضافة هدف جديد' : 'New Goal'}
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.25rem', lineHeight: 1 }}>×</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.25rem', lineHeight: 1 }}>×</button> {/* Small button, fine. // Keep small button */}
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -432,7 +430,7 @@ function AddGoalModal({ onClose, onAdd, isAr }) {
               <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.35rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                 {isAr ? 'أيقونة' : 'Icon'}
               </label>
-              <input value={icon} onChange={e => setIcon(e.target.value.slice(-2) || '🎯')} maxLength={2}
+              <input value={icon} onChange={e => setIcon(e.target.value.slice(-2) || '🎯')} maxLength={2} // Input field
                 style={{ width: 54, height: 46, textAlign: 'center', fontSize: '1.55rem', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', cursor: 'text', outline: 'none', boxSizing: 'border-box' }}
               />
             </div>
@@ -442,7 +440,7 @@ function AddGoalModal({ onClose, onAdd, isAr }) {
               </label>
               <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
                 {COLORS.map(col => (
-                  <button key={col} type="button" onClick={() => setColor(col)}
+                  <button key={col} type="button" onClick={() => setColor(col)} // Color picker buttons
                     style={{ width: 30, height: 30, borderRadius: '50%', background: COLOR_CSS[col].main, border: 'none', cursor: 'pointer', outline: color === col ? '3px solid var(--text-primary)' : '3px solid transparent', outlineOffset: 2, transition: 'outline 0.15s' }}
                   />
                 ))}
@@ -455,7 +453,7 @@ function AddGoalModal({ onClose, onAdd, isAr }) {
             <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.35rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
               {isAr ? 'عنوان الهدف' : 'Goal Title'} <span style={{ color: c.main }}>*</span>
             </label>
-            <input value={title} onChange={e => setTitle(e.target.value)} required autoFocus
+            <input value={title} onChange={e => setTitle(e.target.value)} required autoFocus // Input field
               placeholder={isAr ? 'مثال: إتقان لغة جديدة' : 'e.g. Learn a new skill'}
               style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', border: `1px solid ${title ? c.main + '80' : 'var(--border)'}`, borderRadius: 'var(--radius-md)', padding: '0.55rem 0.875rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', fontFamily: 'inherit', transition: 'border-color 0.2s' }}
             />
@@ -466,7 +464,7 @@ function AddGoalModal({ onClose, onAdd, isAr }) {
             <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.35rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
               {isAr ? 'العنوان بالعربية' : 'Arabic Title'} <span style={{ opacity: 0.5 }}>({isAr ? 'اختياري' : 'optional'})</span>
             </label>
-            <input value={titleAr} onChange={e => setTitleAr(e.target.value)} dir="rtl"
+            <input value={titleAr} onChange={e => setTitleAr(e.target.value)} dir="rtl" // Input field
               placeholder={isAr ? 'عنوان الهدف بالعربية' : 'العنوان بالعربية'}
               style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '0.55rem 0.875rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', fontFamily: 'var(--font-arabic)' }}
             />
@@ -477,14 +475,14 @@ function AddGoalModal({ onClose, onAdd, isAr }) {
             <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.35rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
               📅 {isAr ? 'الموعد النهائي' : 'Target Date'} <span style={{ opacity: 0.5 }}>({isAr ? 'اختياري' : 'optional'})</span>
             </label>
-            <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)}
+            <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} // Input field
               min={todayStr()}
               style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', border: `1px solid ${deadline ? c.main + '80' : 'var(--border)'}`, borderRadius: 'var(--radius-md)', padding: '0.55rem 0.875rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', colorScheme: 'dark', transition: 'border-color 0.2s' }}
             />
           </div>
 
           {/* Buttons */}
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: isAr ? 'flex-start' : 'flex-end', marginTop: '0.25rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: isAr ? 'flex-start' : 'flex-end', marginTop: '0.25rem' }}> {/* Action buttons */}
             <button type="button" onClick={onClose}
               style={{ padding: '0.6rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.875rem', cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
               {isAr ? 'إلغاء' : 'Cancel'}
@@ -615,9 +613,8 @@ function SectionCard({ section, tasks, dayStr, isAr, language, accentColor, pray
   return (
     <motion.div layout style={{
       background: 'var(--bg-card)',
-      borderRadius: 'var(--radius-lg)',
-      border: `1px solid ${accentColor}30`,
-      borderTop: `3px solid ${accentColor}`,
+      borderRadius: '16px',
+      border: `1px solid ${accentColor}30`, // This border is dynamic, so it's fine. // Keep dynamic border
       overflow: 'hidden',
       marginBottom: '0.75rem',
       boxShadow: `0 2px 12px ${accentColor}0a`,
@@ -635,7 +632,7 @@ function SectionCard({ section, tasks, dayStr, isAr, language, accentColor, pray
         onMouseEnter={e => e.currentTarget.style.background = accentColor + '08'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
       >
-        {/* Icon */}
+        {/* Icon */} {/* This is a glass-icon-mizan candidate */}
         <div style={{
           width: 38, height: 38, borderRadius: 'var(--radius-md)', flexShrink: 0,
           background: accentColor + '18', border: `1px solid ${accentColor}30`,
@@ -648,13 +645,13 @@ function SectionCard({ section, tasks, dayStr, isAr, language, accentColor, pray
         <div style={{ flex: 1, minWidth: 0 }}>
           <span style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
             {name}
-          </span>
+            </span> {/* Name */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
             {prayerTime && (
               <span style={{ fontSize: '0.67rem', color: accentColor, background: accentColor + '18', padding: '0.06rem 0.48rem', borderRadius: 99, border: `1px solid ${accentColor}35`, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
                 {prayerTime}
               </span>
-            )}
+            )} {/* These are badges, fine. */}
             {!prayerTime && section.startTime && (
               <span style={{ fontSize: '0.67rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.06rem 0.48rem', borderRadius: 99, fontVariantNumeric: 'tabular-nums' }}>
                 {fmt12h(section.startTime)}{section.endTime ? ` – ${fmt12h(section.endTime)}` : ''}
@@ -669,7 +666,7 @@ function SectionCard({ section, tasks, dayStr, isAr, language, accentColor, pray
         </div>
 
         {/* +/× toggle */}
-        <div style={{
+        <div style={{ // This is a button, but it's small and part of the card header.
           width: 32, height: 32, borderRadius: 'var(--radius-md)', flexShrink: 0,
           border: `1.5px solid ${showForm ? accentColor : accentColor + '50'}`,
           background: showForm ? accentColor : 'transparent',
@@ -688,8 +685,8 @@ function SectionCard({ section, tasks, dayStr, isAr, language, accentColor, pray
           <motion.div key={task.id} layout initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.5rem 1.25rem' }}>
-              <button onClick={() => onToggle(task)} style={{
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.5rem 1.25rem' }}> {/* Task item */}
+              <button onClick={() => onToggle(task)} style={{ // Checkbox button
                 width: 18, height: 18, borderRadius: 4, flexShrink: 0,
                 border: task.completed ? `2px solid ${accentColor}` : '2px solid var(--border-strong)',
                 background: task.completed ? accentColor : 'transparent',
@@ -702,11 +699,11 @@ function SectionCard({ section, tasks, dayStr, isAr, language, accentColor, pray
                 </div>
                 {(task.reminderTime || task.duration > 0) && !task.completed && (
                   <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
-                    {task.reminderTime && (
-                      <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>🔔 {fmt12h(task.reminderTime)}</span>
+                    {task.reminderTime && ( // Reminder badge
+                      <span style={{ fontSize: '0.62rem', color: 'var(--mizan-cyan)', background: 'rgba(0,201,255,0.1)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>🔔 {fmt12h(task.reminderTime)}</span> // Mizan cyan
                     )}
-                    {task.duration > 0 && (
-                      <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>⏱ {fmtDur(task.duration)}</span>
+                    {task.duration > 0 && ( // Duration badge
+                      <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>⏱ {fmtDur(task.duration)}</span> // Glass background
                     )}
                   </div>
                 )}
@@ -751,7 +748,7 @@ function SectionGroupHeader({ icon, label, color, note, onClick, expanded, count
           padding: '0.875rem 1.25rem',
           marginBottom: '1rem',
           background: 'var(--bg-card)',
-          border: `1px solid ${color}35`,
+          border: `1px solid ${color}35`, // This border is dynamic, so it's fine.
           borderTop: `3px solid ${color}`,
           borderRadius: 'var(--radius-lg)',
           cursor: 'pointer', userSelect: 'none',
@@ -768,7 +765,7 @@ function SectionGroupHeader({ icon, label, color, note, onClick, expanded, count
         }}
       >
         {/* Icon badge */}
-        <div style={{
+        <div className="glass-icon-mizan" style={{
           width: 40, height: 40, borderRadius: 'var(--radius-md)', flexShrink: 0,
           background: color + '20', border: `1px solid ${color}35`,
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem',
@@ -784,7 +781,7 @@ function SectionGroupHeader({ icon, label, color, note, onClick, expanded, count
           <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.3rem', flexWrap: 'wrap', alignItems: 'center' }}>
             {note && (
               <span style={{ fontSize: '0.62rem', color: 'var(--ruby)', background: 'var(--ruby-dim)', padding: '0.06rem 0.45rem', borderRadius: 99 }}>
-                {note}
+                {note} {/* This is a badge, fine. */}
               </span>
             )}
             {count !== undefined && count > 0 && (
@@ -796,7 +793,7 @@ function SectionGroupHeader({ icon, label, color, note, onClick, expanded, count
         </div>
 
         {/* Chevron */}
-        <div style={{
+        <div style={{ // This is a button, but it's small and part of the header.
           width: 32, height: 32, borderRadius: 'var(--radius-md)',
           border: `1.5px solid ${color}40`,
           background: expanded ? color + '18' : 'transparent',
@@ -818,7 +815,7 @@ function SectionGroupHeader({ icon, label, color, note, onClick, expanded, count
       <div style={{ width: 3, height: 20, background: color, borderRadius: 99, flexShrink: 0 }} />
       <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color }}>
         {icon} {label}
-      </span>
+      </span> {/* This is a section header, fine. */}
       {note && (
         <span style={{ fontSize: '0.62rem', color: 'var(--ruby)', background: 'var(--ruby-dim)', padding: '0.08rem 0.45rem', borderRadius: 99 }}>
           {note}
@@ -896,7 +893,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         onClick={e => e.stopPropagation()}
         style={{ background: 'var(--bg-card)', borderRadius: 20, border: `1px solid ${c.main}35`, borderTop: `3px solid ${c.main}`, width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', direction: isAr ? 'rtl' : 'ltr', boxShadow: `0 25px 60px rgba(0,0,0,0.4)` }}
-      >
+      > {/* This is a modal, so it can be a glass-card. */}
         {/* Header */}
         <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1rem', background: `linear-gradient(135deg, ${c.main}08 0%, transparent 100%)`, position: 'sticky', top: 0, zIndex: 1, backdropFilter: 'blur(8px)' }}>
           <div style={{ width: 48, height: 48, borderRadius: 14, background: c.main + '20', border: `1px solid ${c.main}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0 }}>✨</div>
@@ -914,7 +911,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
                (isAr ? 'مهمة ليوم محدد' : 'Task for a specific day')}
             </div>
           </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--v-glass-border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
 
         <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -923,7 +920,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
             <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'أيقونة' : 'Icon'}</label>
             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
               {ICONS.map(ic => (
-                <button key={ic} type="button" onClick={() => setIcon(ic)}
+                <button key={ic} type="button" onClick={() => setIcon(ic)} // Icon picker buttons
                   style={{ width: 40, height: 40, borderRadius: 10, border: `2px solid ${icon === ic ? c.main : 'var(--border)'}`, background: icon === ic ? c.main + '20' : 'var(--bg-input)', fontSize: '1.2rem', cursor: 'pointer', transition: 'all 0.15s', transform: icon === ic ? 'scale(1.12)' : 'scale(1)' }}>
                   {ic}
                 </button>
@@ -936,7 +933,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
             <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'اللون' : 'Color'}</label>
             <div style={{ display: 'flex', gap: '0.6rem' }}>
               {COLORS.map(col => (
-                <button key={col} type="button" onClick={() => setColor(col)}
+                <button key={col} type="button" onClick={() => setColor(col)} // Color picker buttons
                   style={{ width: 32, height: 32, borderRadius: '50%', background: COLOR_CSS[col].main, border: 'none', cursor: 'pointer', outline: color === col ? `3px solid ${COLOR_CSS[col].main}` : '3px solid transparent', outlineOffset: 3, transition: 'all 0.18s', transform: color === col ? 'scale(1.2)' : 'scale(1)' }}
                 />
               ))}
@@ -947,7 +944,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
           <div>
             <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'عنوان المهمة' : 'Task Title'} <span style={{ color: c.main }}>*</span></label>
             <input value={text} onChange={e => setText(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && canAdd) handleAdd(); if (e.key === 'Escape') onClose() }}
+              onKeyDown={e => { if (e.key === 'Enter' && canAdd) handleAdd(); if (e.key === 'Escape') onClose() }} // Input field
               placeholder={isAr ? 'مثال: قراءة القرآن الكريم' : 'e.g. Read Quran'} autoFocus
               style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', border: `1.5px solid ${text ? c.main + '80' : 'var(--border)'}`, borderRadius: 10, padding: '0.7rem 1rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'border-color 0.2s' }}
             />
@@ -971,7 +968,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
               <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.6rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>🕌 {isAr ? 'وقت الصلاة' : 'Prayer Time'}</label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {PRAYER_COLS.map(p => {
-                  const pc = COLOR_CSS[p.color]
+                  const pc = COLOR_CSS[p.color] // Prayer time buttons
                   const sel = prayerId === p.id
                   return (
                     <button key={p.id} type="button" onClick={() => setPrayerId(p.id)}
@@ -992,7 +989,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
               <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                 📅 {isAr ? 'الأيام' : 'Days'}
                 {selectedDays.length === 0 && <span style={{ fontSize: '0.58rem', color: 'var(--ruby)', background: 'var(--ruby-dim)', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 400 }}>{isAr ? 'اختر يوماً' : 'pick at least 1'}</span>}
-                {selectedDays.length > 0 && <span style={{ fontSize: '0.58rem', color: c.main, background: c.main + '18', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 700 }}>{selectedDays.length}</span>}
+                {selectedDays.length > 0 && <span style={{ fontSize: '0.58rem', color: c.main, background: c.main + '18', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 700 }}>{selectedDays.length}</span>} {/* This is a badge, fine. */}
               </label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
                 {FULL_DAYS.map(day => {
@@ -1012,7 +1009,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
           {mode === 'daily' && (
             <div>
               <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>📅 {isAr ? 'اليوم' : 'Day'}</label>
-              <input type="date" value={selectedDate} onChange={e => setDate(e.target.value)}
+              <input type="date" value={selectedDate} onChange={e => setDate(e.target.value)} // Input field
                 style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', border: `1.5px solid ${c.main}55`, borderRadius: 10, padding: '0.65rem 1rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}
               />
             </div>
@@ -1021,7 +1018,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
           {/* Live preview */}
           {text.trim() && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              style={{ padding: '1rem 1.1rem', background: `linear-gradient(135deg, ${c.main}10, ${c.main}06)`, border: `1px solid ${c.main}30`, borderRadius: 12, display: 'flex', gap: '0.875rem', alignItems: 'center' }}
+              style={{ padding: '1rem 1.1rem', background: `linear-gradient(135deg, ${c.main}10, ${c.main}06)`, border: `1px solid ${c.main}30`, borderRadius: 12, display: 'flex', gap: '0.875rem', alignItems: 'center' }} // This is a preview card, fine.
             >
               <div style={{ width: 46, height: 46, borderRadius: 12, background: c.main + '25', border: `1.5px solid ${c.main}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>{icon}</div>
               <div style={{ flex: 1 }}>
@@ -1038,7 +1035,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '0.75rem', justifyContent: isAr ? 'flex-start' : 'flex-end', background: 'var(--bg-card)', position: 'sticky', bottom: 0 }}>
+        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--v-glass-border)', display: 'flex', gap: '0.75rem', justifyContent: isAr ? 'flex-start' : 'flex-end', background: 'var(--v-glass-bg)', position: 'sticky', bottom: 0 }}>
           <button onClick={onClose} style={{ padding: '0.65rem 1.25rem', borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.875rem', cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'إلغاء' : 'Cancel'}</button>
           <button onClick={handleAdd} disabled={!canAdd || saving}
             style={{ padding: '0.65rem 1.75rem', borderRadius: 10, border: 'none', background: canAdd ? `linear-gradient(135deg, ${c.main}, ${c.main}cc)` : 'var(--bg-input)', color: canAdd ? 'white' : 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 700, cursor: canAdd ? 'pointer' : 'default', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', opacity: saving ? 0.7 : 1, transition: 'all 0.15s', boxShadow: canAdd ? `0 4px 14px ${c.main}40` : 'none' }}>
@@ -1054,7 +1051,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
 function TaskChip({ item, isAr, onDelete, onEdit }) {
   const accent = COLOR_CSS[item.color]?.main || 'var(--sapphire)'
   return (
-    <motion.div layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}
+    <motion.div layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} // This is a small card-like element, fine.
       style={{ background: accent + '10', border: `1px solid ${accent}28`, borderLeft: `3px solid ${accent}`, borderRadius: 10, padding: '0.5rem 0.6rem', marginBottom: '0.45rem' }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.35rem' }}>
@@ -1063,8 +1060,8 @@ function TaskChip({ item, isAr, onDelete, onEdit }) {
         {onEdit && <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.7rem', padding: '0 0.1rem', flexShrink: 0, lineHeight: 1 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--sapphire)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'} title={isAr ? 'تعديل' : 'Edit'}>✏️</button>}
         <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.65rem', padding: '0 0.1rem', flexShrink: 0, lineHeight: 1 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--ruby)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'} title={isAr ? 'حذف' : 'Delete'}>✕</button>
       </div>
-      {(item.reminderTime || item.duration > 0) && (
-        <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.3rem', paddingInlineStart: '1.4rem', flexWrap: 'wrap' }}>
+      {(item.reminderTime || item.duration > 0) && ( // These are badges, fine.
+        <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.3rem', paddingInlineStart: '1.4rem', flexWrap: 'wrap' }}> 
           {item.reminderTime && <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.07rem 0.4rem', borderRadius: 99 }}>🔔 {fmt12h(item.reminderTime)}</span>}
           {item.duration > 0 && <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.07rem 0.4rem', borderRadius: 99 }}>⏱ {fmtDur(item.duration)}</span>}
         </div>
@@ -1090,7 +1087,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
     const c = done ? 'var(--emerald)' : accent
     return (
       <div onClick={() => toggleItem(item)}
-        style={{ display: 'flex', alignItems: 'center', gap: compact ? '0.25rem' : '0.35rem', padding: compact ? '0.25rem 0.35rem' : '0.3rem 0.4rem', background: done ? 'rgba(74,222,128,0.1)' : c + '10', borderLeft: `2px solid ${c}`, borderRadius: compact ? 6 : 7, marginBottom: compact ? '0.25rem' : '0.3rem', cursor: 'pointer', transition: 'all 0.18s', userSelect: 'none' }}
+        style={{ display: 'flex', alignItems: 'center', gap: compact ? '0.25rem' : '0.35rem', padding: compact ? '0.25rem 0.35rem' : '0.3rem 0.4rem', background: done ? 'rgba(0,201,255,0.1)' : c + '10', borderLeft: `2px solid ${c}`, borderRadius: compact ? 6 : 7, marginBottom: compact ? '0.25rem' : '0.3rem', cursor: 'pointer', transition: 'all 0.18s', userSelect: 'none' }}
         onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
         onMouseLeave={e => e.currentTarget.style.opacity = '1'}
       >
@@ -1099,7 +1096,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
         </div>
         {!compact && <span style={{ fontSize: '0.85rem', flexShrink: 0 }}>{item.icon}</span>}
         <span style={{ fontSize: compact ? '0.63rem' : '0.72rem', fontWeight: 600, color: done ? 'var(--emerald)' : 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: done ? 'line-through' : 'none', opacity: done ? 0.75 : 1, flex: 1 }}>{item.text}</span>
-        {!compact && !done && item.reminderTime && <span style={{ fontSize: '0.57rem', color: 'var(--sapphire)', flexShrink: 0 }}>🔔 {fmt12h(item.reminderTime)}</span>}
+        {!compact && !done && item.reminderTime && <span style={{ fontSize: '0.57rem', color: 'var(--mizan-cyan)', flexShrink: 0 }}>🔔 {fmt12h(item.reminderTime)}</span>}
       </div>
     )
   }
@@ -1109,10 +1106,10 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
       transition={{ type: 'spring', stiffness: 200, damping: 25 }}
       style={{ marginTop: '2rem' }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}> {/* This is a section header, fine. */}
         <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 1rem', borderRadius: 99, background: 'var(--emerald-dim)', border: '1px solid rgba(74,222,128,0.3)' }}>
-          <span style={{ fontSize: '0.7rem' }}>✅</span>
+          <span style={{ fontSize: '0.7rem' }}>✅</span> {/* Icon */}
           <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'الجدول المحفوظ' : 'Saved Schedule'}</span>
           <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>· {isAr ? 'انقر على المهمة لإتمامها' : 'click a task to complete it'}</span>
         </div>
@@ -1121,7 +1118,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
 
       {type === 'prayer' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.75rem' }} className="prayer-cols-grid">
-          {PRAYER_COLS.map(prayer => {
+          {PRAYER_COLS.map(prayer => { // These are cards, apply glass-card. // Each prayer column is a card.
             const pc = COLOR_CSS[prayer.color]
             const colItems = items.filter(i => i.prayerId === prayer.id)
             if (colItems.length === 0) return <div key={prayer.id} style={{ borderRadius: 12, border: '1px dashed var(--border)', padding: '1rem 0.5rem', textAlign: 'center', opacity: 0.35 }}><div style={{ fontSize: '1.1rem' }}>{prayer.icon}</div><div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? prayer.ar : prayer.en}</div></div>
@@ -1143,7 +1140,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
 
       {type === 'custom-weekly' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.6rem' }} className="week-cols-grid">
-          {FULL_DAYS.map(day => {
+          {FULL_DAYS.map(day => { // These are cards, apply glass-card. // Each day column is a card.
             const colItems = items.filter(i => (i.days || []).includes(day.key))
             const isToday = day.key === todayKey
             if (colItems.length === 0) return <div key={day.key} style={{ borderRadius: 10, border: '1px dashed var(--border)', padding: '0.6rem 0.4rem', opacity: 0.35, textAlign: 'center' }}><div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', wordBreak: 'break-word' }}>{isAr ? day.ar : day.en}</div></div>
@@ -1164,7 +1161,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
       )}
 
       {type === 'custom-daily' && (
-        <div style={{ maxWidth: 560, margin: '0 auto', background: 'var(--bg-card)', borderRadius: 14, border: '1px solid rgba(74,222,128,0.25)', overflow: 'hidden' }}>
+        <div className="glass-card" style={{ maxWidth: 560, margin: '0 auto', borderRadius: '16px', border: '1px solid rgba(0,201,255,0.25)', overflow: 'hidden' }}>
           <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(74,222,128,0.12)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontSize: '0.85rem' }}>🗓</span>
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', flex: 1 }}>
@@ -1177,7 +1174,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
             const accent = COLOR_CSS[item.color]?.main || 'var(--emerald)'
             const c = done ? 'var(--emerald)' : accent
             return (
-              <div key={item.id} onClick={() => toggleItem(item)}
+              <div key={item.id} onClick={() => toggleItem(item)} // This is a task item, fine.
                 style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.6rem 1rem', borderBottom: '1px solid var(--border)', background: done ? 'rgba(74,222,128,0.06)' : 'transparent', cursor: 'pointer', transition: 'all 0.18s', userSelect: 'none' }}
                 onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
                 onMouseLeave={e => e.currentTarget.style.opacity = '1'}
@@ -1245,8 +1242,8 @@ function PrayerScheduleView({ isAr, language, prayerTimes, onBack }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
         <button onClick={onBack}
           style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0 }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.color = 'var(--gold)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--mizan-purple)'; e.currentTarget.style.color = 'var(--mizan-purple)' }} // Mizan purple
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--v-glass-border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
           {isAr ? '›' : '‹'}
         </button>
         <div style={{ flex: 1 }}>
@@ -1264,7 +1261,7 @@ function PrayerScheduleView({ isAr, language, prayerTimes, onBack }) {
       {/* 5-column grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.875rem', marginBottom: '2rem' }} className="prayer-cols-grid">
         {PRAYER_COLS.map(prayer => {
-          const pc = COLOR_CSS[prayer.color]
+          const pc = COLOR_CSS[prayer.color] // These are cards, apply glass-card. // Each prayer column is a card.
           const colItems = items.filter(i => i.prayerId === prayer.id)
           const pt = prayerTimes?.[prayer.id === 'shuruq' ? 'sunrise' : prayer.id]
           return (
@@ -1278,7 +1275,7 @@ function PrayerScheduleView({ isAr, language, prayerTimes, onBack }) {
                 {colItems.length > 0 && <div style={{ fontSize: '0.58rem', color: pc.main, background: pc.main + '18', borderRadius: 99, padding: '0.04rem 0.4rem', textAlign: 'center', marginTop: '0.3rem', fontWeight: 600, display: 'inline-block', width: '100%' }}>{colItems.length}</div>}
               </div>
               {/* Tasks */}
-              <div style={{ flex: 1, padding: '0.6rem', overflowY: 'auto' }}>
+              <div style={{ flex: 1, padding: '0.6rem', overflowY: 'auto' }}> {/* Task list */}
                 <AnimatePresence>
                   {colItems.map(item => <TaskChip key={item.id} item={item} isAr={isAr} onDelete={deleteItem} onEdit={setEditItem} />)}
                 </AnimatePresence>
@@ -1287,8 +1284,8 @@ function PrayerScheduleView({ isAr, language, prayerTimes, onBack }) {
                 )}
               </div>
               {/* Add button */}
-              <div style={{ padding: '0.5rem 0.6rem', borderTop: `1px solid ${pc.main}12` }}>
-                <button onClick={() => setModal(prayer.id)}
+              <div style={{ padding: '0.5rem 0.6rem', borderTop: `1px solid ${pc.main}12` }}> {/* Add button container */}
+                <button onClick={() => setModal(prayer.id)} // This is a button, fine.
                   style={{ width: '100%', padding: '0.45rem', borderRadius: 8, border: `1.5px dashed ${pc.main}50`, background: pc.main + '08', color: pc.main, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}
                   onMouseEnter={e => { e.currentTarget.style.background = pc.main + '1a'; e.currentTarget.style.borderStyle = 'solid' }}
                   onMouseLeave={e => { e.currentTarget.style.background = pc.main + '08'; e.currentTarget.style.borderStyle = 'dashed' }}>
@@ -1390,8 +1387,8 @@ function WeeklyCustomView({ isAr, language, onBack }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
         <button onClick={onBack}
           style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0 }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sapphire)'; e.currentTarget.style.color = 'var(--sapphire)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--mizan-cyan)'; e.currentTarget.style.color = 'var(--mizan-cyan)' }} // Mizan cyan
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--v-glass-border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
           {isAr ? '›' : '‹'}
         </button>
         <div style={{ flex: 1 }}>
@@ -1409,7 +1406,7 @@ function WeeklyCustomView({ isAr, language, onBack }) {
       {/* 7-column grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.75rem', marginBottom: '2rem' }} className="week-cols-grid">
         {FULL_DAYS.map(day => {
-          const isToday = day.key === todayKey
+          const isToday = day.key === todayKey // These are cards, apply glass-card. // Each day column is a card.
           const colItems = items.filter(i => (i.days || []).includes(day.key))
           return (
             <div key={day.key}
@@ -1427,8 +1424,8 @@ function WeeklyCustomView({ isAr, language, onBack }) {
                 </AnimatePresence>
               </div>
               {/* Add button */}
-              <div style={{ padding: '0.4rem 0.5rem', borderTop: '1px solid var(--border)' }}>
-                <button onClick={() => setModal(day.key)}
+              <div style={{ padding: '0.4rem 0.5rem', borderTop: '1px solid var(--border)' }}> {/* Add button container */}
+                <button onClick={() => setModal(day.key)} // This is a button, fine.
                   style={{ width: '100%', padding: '0.4rem', borderRadius: 8, border: '1.5px dashed var(--border-strong)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.72rem', cursor: 'pointer', transition: 'all 0.15s', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sapphire)'; e.currentTarget.style.color = 'var(--sapphire)'; e.currentTarget.style.background = 'rgba(99,179,237,0.06)' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent' }}>
@@ -1522,8 +1519,8 @@ function DailyCustomView({ isAr, language, onBack }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
         <button onClick={onBack}
           style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0 }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--emerald)'; e.currentTarget.style.color = 'var(--emerald)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--mizan-cyan)'; e.currentTarget.style.color = 'var(--mizan-cyan)' }} // Mizan cyan
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--v-glass-border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
           {isAr ? '›' : '‹'}
         </button>
         <div style={{ flex: 1 }}>
@@ -1532,7 +1529,7 @@ function DailyCustomView({ isAr, language, onBack }) {
         </div>
         <input type="date" value={selDate} onChange={e => setSelDate(e.target.value)}
           style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 10, padding: '0.45rem 0.75rem', color: 'var(--text-primary)', fontSize: '0.82rem', outline: 'none', cursor: 'pointer' }}
-        />
+        /> {/* Input field */}
         {dayItems.length > 0 && (
           <button onClick={saveSchedule} disabled={saving}
             style={{ padding: '0.65rem 1.4rem', borderRadius: 12, border: 'none', background: saved ? 'var(--emerald-dim)' : 'linear-gradient(135deg, var(--emerald), #059669)', color: saved ? 'var(--emerald)' : 'white', fontSize: '0.85rem', fontWeight: 700, cursor: saving ? 'default' : 'pointer', transition: 'all 0.2s', opacity: saving ? 0.7 : 1, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', boxShadow: saved ? 'none' : '0 4px 14px rgba(74,222,128,0.35)', whiteSpace: 'nowrap', flexShrink: 0 }}>
@@ -1543,7 +1540,7 @@ function DailyCustomView({ isAr, language, onBack }) {
 
       {/* Single column */}
       <div style={{ maxWidth: 560, margin: '0 auto' }}>
-        <div style={{ background: 'var(--bg-card)', borderRadius: 18, border: '1px solid rgba(74,222,128,0.25)', borderTop: '3px solid var(--emerald)', overflow: 'hidden', boxShadow: '0 6px 24px rgba(74,222,128,0.08)' }}>
+        <div className="glass-card" style={{ borderRadius: '18px', border: '1px solid rgba(0,201,255,0.25)', borderTop: '3px solid var(--emerald)', overflow: 'hidden', boxShadow: '0 6px 24px rgba(0,201,255,0.08)' }}> // Mizan cyan
           <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(74,222,128,0.12)', background: 'linear-gradient(135deg, rgba(74,222,128,0.08) 0%, transparent 100%)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>🗓</div>
             <div style={{ flex: 1 }}>
@@ -1557,7 +1554,7 @@ function DailyCustomView({ isAr, language, onBack }) {
           </div>
           <div style={{ padding: '0.875rem 1rem', minHeight: 120 }}>
             <AnimatePresence>
-              {dayItems.map(item => <TaskChip key={item.id} item={item} isAr={isAr} onDelete={deleteItem} onEdit={setEditItem} />)}
+              {dayItems.map(item => <TaskChip key={item.id} item={item} isAr={isAr} onDelete={deleteItem} onEdit={setEditItem} />)} {/* TaskChip is already handled. // Keep TaskChip */}
             </AnimatePresence>
             {dayItems.length === 0 && (
               <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
@@ -1632,7 +1629,7 @@ function ScheduleTab({ isAr, language }) {
       <motion.div key="custom-type" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
           <button onClick={() => setView(null)}
-            style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid var(--v-glass-border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sapphire)'; e.currentTarget.style.color = 'var(--sapphire)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
             {isAr ? '›' : '‹'}
@@ -1643,7 +1640,7 @@ function ScheduleTab({ isAr, language }) {
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', maxWidth: 620, margin: '0 auto' }}>
-          {[
+          {[ // These are buttons, apply glass-card.
             { mode: 'weekly', icon: '📅', title: isAr ? 'أسبوعي' : 'Weekly', desc: isAr ? 'جدول يتكرر كل أسبوع عبر الأيام السبعة' : 'Recurring across all 7 days of the week', color: 'var(--sapphire)', dim: 'var(--sapphire-dim)', glow: 'rgba(99,179,237,0.35)' },
             { mode: 'daily',  icon: '🗓', title: isAr ? 'يومي'   : 'Daily',  desc: isAr ? 'جدول مخصص لتنظيم يوم محدد فقط'       : 'Focused plan for a single specific day',    color: 'var(--emerald)',  dim: 'var(--emerald-dim)',  glow: 'rgba(74,222,128,0.35)' },
           ].map(opt => (
@@ -1659,7 +1656,7 @@ function ScheduleTab({ isAr, language }) {
             </motion.button>
           ))}
         </div>
-      </motion.div>
+      </motion.div> // Keep motion div
     </AnimatePresence>
   )
 
@@ -1687,7 +1684,7 @@ function ScheduleTab({ isAr, language }) {
               tags: isAr ? ['أسبوعي', 'يومي', 'مهام', 'تذكيرات'] : ['Weekly', 'Daily', 'Tasks', 'Reminders'],
             },
             {
-              id: 'prayer', icon: '🕌', badge: '☪️',
+              id: 'prayer', icon: '🕌', badge: '☪️', // These are buttons, apply glass-card. // Each option is a button.
               title: isAr ? 'جدول الصلوات' : 'Prayer Schedule',
               desc: isAr ? 'خطط مهامك حول أوقات الصلوات الخمس لحياة منظمة وروحانية متوازنة' : 'Organize tasks around the five daily prayers for a balanced, mindful life',
               color: 'var(--gold)', dim: 'rgba(212,175,106,0.1)', border: 'rgba(212,175,106,0.28)', glow: 'rgba(212,175,106,0.4)',
@@ -1697,7 +1694,7 @@ function ScheduleTab({ isAr, language }) {
             <motion.button key={opt.id}
               whileHover={{ scale: 1.02, y: -4 }}
               whileTap={{ scale: 0.975 }}
-              onClick={() => setView(opt.id)}
+              onClick={() => setView(opt.id)} // These are buttons, apply glass-card. // Keep onClick
               style={{ padding: '2.25rem 2rem', borderRadius: 22, border: `1.5px solid ${opt.border}`, background: `linear-gradient(145deg, ${opt.dim} 0%, var(--bg-card) 60%)`, cursor: 'pointer', textAlign: isAr ? 'right' : 'left', transition: 'box-shadow 0.25s', boxShadow: `0 6px 24px ${opt.color}10`, direction: isAr ? 'rtl' : 'ltr', position: 'relative', overflow: 'hidden' }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = `0 14px 44px ${opt.glow}`}
               onMouseLeave={e => e.currentTarget.style.boxShadow = `0 6px 24px ${opt.color}10`}
@@ -1717,7 +1714,7 @@ function ScheduleTab({ isAr, language }) {
             </motion.button>
           ))}
         </div>
-
+        {/* Schedule type grid */}
         <style>{`@media (max-width: 600px) { .schedule-type-grid { grid-template-columns: 1fr !important; } }`}</style>
       </motion.div>
     </AnimatePresence>
@@ -1800,7 +1797,7 @@ export default function PlannerPage() {
             </p>
           </div>
           <button onClick={() => setShowAddGoal(true)}
-            style={{ padding: '0.6rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(212,175,106,0.3)', background: 'var(--gold-dim)', color: 'var(--gold)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all var(--transition)', whiteSpace: 'nowrap' }}
+            style={{ padding: '0.6rem 1.25rem', borderRadius: '10px', border: '1px solid rgba(108,71,255,0.3)', background: 'rgba(108,71,255,0.1)', color: 'var(--mizan-purple)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all var(--transition)', whiteSpace: 'nowrap' }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(212,175,106,0.2)'}
             onMouseLeave={e => e.currentTarget.style.background = 'var(--gold-dim)'}
           >
@@ -1820,9 +1817,9 @@ export default function PlannerPage() {
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.4rem',
-                padding: '0.55rem 1.25rem', borderRadius: 'var(--radius-full)',
-                border: `1px solid ${active ? 'var(--gold)' : 'var(--border)'}`,
-                background: active ? 'var(--gold-dim)' : 'transparent',
+                padding: '0.55rem 1.25rem', borderRadius: '9999px',
+                border: `1px solid ${active ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`,
+                background: active ? 'rgba(108,71,255,0.1)' : 'transparent', // Mizan purple background
                 color: active ? 'var(--gold)' : 'var(--text-muted)',
                 fontSize: '0.85rem', fontWeight: active ? 600 : 400,
                 cursor: 'pointer', transition: 'all var(--transition)',
@@ -1854,9 +1851,9 @@ export default function PlannerPage() {
             <button key={f} onClick={() => setFilter(f)}
               style={{
                 padding: '0.45rem 1rem', borderRadius: 'var(--radius-full)',
-                border: `1px solid ${active ? (isOverdue ? 'var(--ruby)' : 'var(--gold)') : 'var(--border)'}`,
-                background: active ? (isOverdue ? 'var(--ruby-dim)' : 'var(--gold-dim)') : 'transparent',
-                color: active ? (isOverdue ? 'var(--ruby)' : 'var(--gold)') : 'var(--text-muted)',
+                border: `1px solid ${active ? (isOverdue ? 'var(--mizan-cyan)' : 'var(--mizan-purple)') : 'var(--v-glass-border)'}`,
+                background: active ? (isOverdue ? 'rgba(0,201,255,0.1)' : 'rgba(108,71,255,0.1)') : 'transparent',
+                color: active ? (isOverdue ? 'var(--mizan-cyan)' : 'var(--mizan-purple)') : 'var(--text-muted)',
                 fontSize: '0.82rem', fontWeight: active ? 600 : 400,
                 cursor: 'pointer', transition: 'all var(--transition)',
                 fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
@@ -1906,7 +1903,7 @@ export default function PlannerPage() {
             </div>
             {filter === 'all' && (
               <button onClick={() => setShowAddGoal(true)}
-                style={{ padding: '0.7rem 1.75rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(212,175,106,0.3)', background: 'var(--gold-dim)', color: 'var(--gold)', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all var(--transition)' }}
+                style={{ padding: '0.7rem 1.75rem', borderRadius: '10px', border: '1px solid rgba(108,71,255,0.3)', background: 'rgba(108,71,255,0.1)', color: 'var(--mizan-purple)', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all var(--transition)' }} // Mizan purple button
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(212,175,106,0.2)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--gold-dim)'}
               >
@@ -1919,7 +1916,7 @@ export default function PlannerPage() {
 
       {/* Badges legend */}
       {(gamification.badges || []).length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card"
           style={{ marginTop: '2rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden' }}
         >
           <div style={{ padding: '0.875rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.72rem', fontWeight: 500, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
@@ -1929,7 +1926,7 @@ export default function PlannerPage() {
             {BADGES_DEF.map(b => {
               const earned = (gamification.badges || []).includes(b.id)
               return (
-                <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.875rem', borderRadius: 'var(--radius-md)', border: `1px solid ${earned ? 'var(--gold)' : 'var(--border)'}`, background: earned ? 'var(--gold-dim)' : 'var(--bg-input)', opacity: earned ? 1 : 0.4, transition: 'all 0.3s' }}>
+                <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.875rem', borderRadius: '10px', border: `1px solid ${earned ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`, background: earned ? 'rgba(108,71,255,0.1)' : 'var(--bg-input)', opacity: earned ? 1 : 0.4, transition: 'all 0.3s' }}>
                   <span style={{ fontSize: '1.1rem' }}>{b.icon}</span>
                   <span style={{ fontSize: '0.8rem', fontWeight: earned ? 600 : 400, color: earned ? 'var(--gold)' : 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                     {isAr ? b.ar : b.en}
@@ -1955,7 +1952,7 @@ export default function PlannerPage() {
             initial={{ opacity: 0, y: 64, scale: 0.88 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 64, scale: 0.88 }}
-            transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 22 }} // This is a toast, fine.
             style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: '0.9rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.875rem', boxShadow: '0 8px 32px rgba(212,175,106,0.35)', zIndex: 999, minWidth: 240, maxWidth: 360, direction: isAr ? 'rtl' : 'ltr', pointerEvents: 'none' }}
           >
             <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.4 }} style={{ fontSize: '1.85rem', flexShrink: 0 }}>

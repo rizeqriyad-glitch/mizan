@@ -70,6 +70,112 @@ export const AppProvider = ({ children }) => {
   // Apply theme to DOM
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
+    
+    // Inject VisionOS Material Tokens
+    const styleId = 'v-os-tokens';
+    let styleTag = document.getElementById(styleId);
+    
+    // Import Fonts
+    if (!document.getElementById('mizan-fonts')) {
+      const link = document.createElement('link');
+      link.id = 'mizan-fonts';
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Sora:wght@400;600;700;800&display=swap';
+      document.head.appendChild(link);
+    }
+
+    if (!styleTag) {
+      styleTag = document.createElement('style');
+      styleTag.id = styleId;
+      document.head.appendChild(styleTag);
+    }
+    
+    styleTag.innerHTML = `
+      :root {
+        /* MIZAN TOKENS */
+        --mizan-purple: #6c47ff;
+        --mizan-cyan: #00c9ff;
+        --mizan-dark: #0f172a;
+        --mizan-surface: #ffffff;
+        --mizan-base: #f8fafc;
+        --mizan-gradient: linear-gradient(135deg, var(--mizan-purple), var(--mizan-cyan));
+        
+        /* VisionOS Materials */
+        --v-glass-bg: ${theme === 'dark' ? 'rgba(15, 23, 42, 0.65)' : 'rgba(255, 255, 255, 0.75)'};
+        --v-glass-border: ${theme === 'dark' ? 'rgba(108, 71, 255, 0.15)' : 'rgba(108, 71, 255, 0.1)'};
+        --v-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        --v-blur: blur(30px) saturate(190%);
+        
+        /* Motion */
+        --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        --dur-slow: 700ms;
+        
+        /* Typography */
+        --font-arabic: 'Cairo', sans-serif;
+        --font-display: 'Sora', sans-serif;
+      }
+      
+      [data-theme='dark'] {
+        --bg-base: #020617;
+        --bg-surface: #0f172a;
+        --text-primary: #f4f4f5;
+        --text-secondary: #94a3b8;
+        --text-muted: #64748b;
+      }
+
+      body {
+        font-family: var(--font-display);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .glass-card {
+        background: var(--v-glass-bg);
+        backdrop-filter: var(--v-blur);
+        border: 1px solid var(--v-glass-border);
+        box-shadow: var(--v-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(108,71,255,0.1);
+        border-radius: 20px;
+        transition: transform 0.4s var(--ease-spring), border-color 0.3s ease;
+      }
+
+      .glass-icon-mizan {
+        background: linear-gradient(135deg, rgba(108,71,255,0.2) 0%, rgba(0,201,255,0.08) 100%);
+        backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(108,71,255,0.25);
+        border-radius: 18px; /* Mizan token for icons */
+        box-shadow: 0 8px 32px rgba(108,71,255,0.15), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(108,71,255,0.1);
+        transition: transform 0.4s var(--ease-spring);
+      }
+      .glass-icon-mizan::before {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        border-radius: 17px; /* Mizan token for icons */
+        background: linear-gradient(135deg, rgba(255,255,255,0.4), transparent 60%);
+        pointer-events: none;
+      }
+      
+      .glass-icon-mizan:hover {
+        transform: perspective(400px) rotateY(-8deg) rotateX(4deg) translateY(-6px);
+        box-shadow: 16px 16px 40px rgba(108,71,255,0.25);
+      }
+
+      [data-reveal] {
+        opacity: 0;
+        transform: translateY(32px);
+        transition: opacity var(--dur-slow) var(--ease-smooth), transform var(--dur-slow) var(--ease-smooth);
+      }
+      [data-reveal].revealed {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .gradient-text {
+        background: var(--mizan-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+    `;
   }, [theme])
 
   // Apply language/RTL to DOM
