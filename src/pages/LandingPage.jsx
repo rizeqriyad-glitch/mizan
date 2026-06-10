@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion } from "framer-motion";
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { useEffect, useRef } from 'react'
@@ -122,7 +122,7 @@ export default function LandingPage() {
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section style={{
-        position: 'relative', zIndex: 1,
+        position: 'relative',
         padding: '10rem 2rem 6rem',
         textAlign: 'center',
         zIndex: 2,
