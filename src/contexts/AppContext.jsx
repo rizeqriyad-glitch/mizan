@@ -91,6 +91,14 @@ export const AppProvider = ({ children }) => {
     }
     
     styleTag.innerHTML = `
+      @font-face {
+        font-family: 'Palestine-Regular';
+        src: url('/fonts/Palestine-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+
       :root {
         /* MIZAN TOKENS */
         --mizan-purple: #6c47ff;
@@ -99,6 +107,7 @@ export const AppProvider = ({ children }) => {
         --mizan-surface: #ffffff;
         --mizan-base: #f8fafc;
         --mizan-gradient: linear-gradient(135deg, var(--mizan-purple), var(--mizan-cyan));
+        --mizan-glass-deep: rgba(255, 255, 255, 0.03);
         
         /* VisionOS Materials */
         --v-glass-bg: ${theme === 'dark' ? 'rgba(15, 23, 42, 0.65)' : 'rgba(255, 255, 255, 0.75)'};
@@ -114,6 +123,7 @@ export const AppProvider = ({ children }) => {
         /* Typography */
         --font-arabic: 'Cairo', sans-serif;
         --font-display: 'Sora', sans-serif;
+        --font-brand: 'Palestine-Regular', serif;
       }
       
       [data-theme='dark'] {
@@ -122,11 +132,18 @@ export const AppProvider = ({ children }) => {
         --text-primary: #f4f4f5;
         --text-secondary: #94a3b8;
         --text-muted: #64748b;
+        --v-glass-bg: rgba(15, 23, 42, 0.7);
+        --v-glass-border: rgba(255, 255, 255, 0.08);
       }
 
       body {
         font-family: var(--font-display);
         -webkit-font-smoothing: antialiased;
+      }
+
+      h1, h2, h3, .brand-logo {
+        font-family: var(--font-brand) !important;
+        letter-spacing: 0.02em;
       }
 
       .glass-card {
@@ -722,6 +739,7 @@ const translations = {
     notesEmpty: 'Nothing saved yet.',
     notesSaved: 'Note saved successfully',
     notesSaveError: 'Failed to save. Check your connection.',
+    dayHistoryTitle: 'Day History',
     landingHero: 'Balance in All Things',
     landingSubtitle: 'Your Islamic productivity companion — prayers, adhkar, Quran, focus and learning in one place.',
     landingStart: 'Get Started',
@@ -831,6 +849,7 @@ const translations = {
     notesEmpty: 'لا يوجد شيء محفوظ بعد.',
     notesSaved: 'تم الحفظ بنجاح',
     notesSaveError: 'فشل الحفظ. تحقق من اتصالك.',
+    dayHistoryTitle: 'تاريخ اليوم',
     landingHero: 'التوازن في كل شيء',
     landingSubtitle: 'رفيقك في الإنتاجية الإسلامية — الصلوات والأذكار والقرآن والتركيز والتعلم في مكان واحد.',
     landingStart: 'ابدأ الآن',

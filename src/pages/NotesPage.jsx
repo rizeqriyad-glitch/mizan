@@ -8,11 +8,12 @@ import { db } from '../firebase'
 const CATEGORIES = ['catGeneral', 'catQuran', 'catHadith', 'catFiqh', 'catReminder']
 
 const CAT_COLORS = {
-  catGeneral:  { color: 'var(--sapphire)',  bg: 'var(--sapphire-dim)'  },
-  catQuran:    { color: 'var(--gold)',       bg: 'var(--gold-dim)'      },
-  catHadith:   { color: 'var(--emerald)',    bg: 'var(--emerald-dim)'   },
-  catFiqh:     { color: 'var(--amber)',      bg: 'var(--amber-dim)'     },
-  catReminder: { color: 'var(--ruby)',       bg: 'var(--ruby-dim)'      },
+  // Tinted toward Mizan brand hue (Rule D: Color & Contrast)
+  catGeneral:  { color: 'var(--mizan-purple)', bg: 'rgba(108, 71, 255, 0.1)' },
+  catQuran:    { color: '#fbbf24',             bg: 'rgba(251, 191, 36, 0.1)' },
+  catHadith:   { color: '#10b981',             bg: 'rgba(16, 185, 129, 0.1)' },
+  catFiqh:     { color: 'var(--mizan-cyan)',   bg: 'rgba(0, 201, 255, 0.1)'  },
+  catReminder: { color: '#f87171',             bg: 'rgba(248, 113, 113, 0.1)' },
 }
 
 export default function NotesPage() {
@@ -111,6 +112,7 @@ export default function NotesPage() {
       direction: isAr ? 'rtl' : 'ltr',
     }}
     className="notes-padding"
+    data-reveal
     >
       {/* Page header */}
       <motion.div
@@ -356,7 +358,7 @@ export default function NotesPage() {
               <span>{month}</span>
               <span style={{
                 background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
+                border: '1px solid var(--v-glass-border)',
                 borderRadius: 'var(--radius-full)',
                 padding: '0.05rem 0.45rem',
                 fontSize: '0.65rem',
@@ -390,9 +392,10 @@ export default function NotesPage() {
                         overflow: 'hidden',
                         position: 'relative',
                         transition: 'border-color var(--transition)',
+                        fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = `${c.color}55`}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--mizan-purple)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--v-glass-border)'}
                     >
                       {/* Color top bar */}
                       <div style={{

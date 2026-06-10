@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { doc, onSnapshot, setDoc } from 'firebase/firestore'
@@ -501,14 +501,14 @@ export default function AdhkarSection() {
   const isDone    = adhkar ? current >= adhkar.count : false
 
   return (
-    <motion.div
+    <motion.div 
+      className="glass-card"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       style={{
-        borderRadius: '16px',
-        border: '1px solid var(--v-glass-border)',
-        overflow: 'hidden',
         marginTop: '1.5rem',
+        padding: '0',
+        overflow: 'hidden'
       }}
     >
       {/* Header */}
@@ -523,11 +523,11 @@ export default function AdhkarSection() {
         onClick={() => setExpanded(v => !v)}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{ fontSize: '1.1rem' }}>🤲</span>
+          <div className="glass-icon-mizan" style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>🤲</div>
           <span style={{
-            fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)',
+            fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)',
             letterSpacing: '0.06em', textTransform: 'uppercase',
-            fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
+            fontFamily: 'var(--font-brand)',
           }}>
             {t('adhkarTitle')}
           </span>

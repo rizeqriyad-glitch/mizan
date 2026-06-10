@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
+import Mizan3DScene from '../components/Mizan3DScene'
 
 const FEATURES = [
   { icon: '🕌', en: 'Prayer Tracker', ar: 'تتبع الصلوات',  desc: { en: 'Log all 5 daily prayers with one tap and track your consistency over time.', ar: 'سجّل صلواتك الخمس اليومية بنقرة واحدة وتابع انتظامك.' } },
@@ -24,6 +25,7 @@ export default function LandingPage() {
   const { language, changeLanguage, t } = useApp()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { completedToday } = useApp() // Get completedToday from context
   const isAr = language === 'ar'
 
   useEffect(() => {
@@ -54,6 +56,9 @@ export default function LandingPage() {
       <div style={{ position: 'fixed', bottom: '0', right: '-5%', width: '50vw', height: '50vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0, 201, 255, 0.08) 0%, transparent 70%)', filter: 'blur(100px)', pointerEvents: 'none', zIndex: 0 }} />
       <div style={{ position: 'fixed', top: '20%', right: '10%', width: '30vw', height: '30vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(108, 71, 255, 0.05) 0%, transparent 70%)', filter: 'blur(80px)', pointerEvents: 'none', zIndex: 0 }} />
 
+      {/* Refined 3D Mizan Background */}
+      <Mizan3DScene completedItems={completedToday} />
+
       {/* ── Nav ───────────────────────────────────────────────── */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
@@ -64,10 +69,18 @@ export default function LandingPage() {
         height: 72,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{ fontSize: '1.6rem', filter: 'drop-shadow(0 0 8px rgba(238, 193, 109, 0.4))' }}>⚖️</span>
+        <div className="btn-magnetic" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer' }}>
+          <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 10V90M10 40C10 40 25 35 50 35C75 35 90 40 90 40M20 40L15 70C15 70 20 75 30 75C40 75 45 70 45 70L40 40M80 40L85 70C85 70 80 75 70 75C60 75 55 70 55 70L60 40" 
+              stroke="url(#paint0_linear)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
+            <defs>
+              <linearGradient id="paint0_linear" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#6c47ff"/><stop offset="1" stopColor="#00c9ff"/>
+              </linearGradient>
+            </defs>
+          </svg>
           <span style={{
-            fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
+            fontFamily: 'var(--font-brand)',
             fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)',
             letterSpacing: '0.04em',
           }}>
@@ -112,6 +125,7 @@ export default function LandingPage() {
         position: 'relative', zIndex: 1,
         padding: '10rem 2rem 6rem',
         textAlign: 'center',
+        zIndex: 2,
       }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -135,22 +149,23 @@ export default function LandingPage() {
 
           {/* App name */}
           <h1 
-            data-reveal
+            data-reveal className="gradient-text"
             style={{
-            fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
-            fontSize: 'clamp(4rem, 12vw, 8rem)',
+            fontFamily: 'var(--font-brand)',
+            fontSize: 'clamp(5rem, 15vw, 10rem)',
             fontWeight: 900,
             color: 'var(--text-primary)',
             letterSpacing: '-0.04em',
             marginBottom: '0.5rem',
             lineHeight: 1.1,
-          }}>
-            {isAr ? <span className="gradient-text">ميزان</span> : <span className="gradient-text">Mizan</span>}
+          }}
+          >
+            {isAr ? 'ميزان' : 'Mizan'}
           </h1>
 
           {/* Tagline */}
           <p 
-            data-reveal
+            data-reveal className="gradient-text"
             style={{
             fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
             fontSize: 'clamp(1.2rem, 3.5vw, 1.8rem)',

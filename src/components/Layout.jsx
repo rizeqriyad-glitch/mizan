@@ -62,6 +62,7 @@ export default function Layout() {
     { to: '/dashboard',            icon: '◈', label: t('dashboard'),  exact: true },
     { to: '/dashboard/planner',    icon: '◧', label: t('planner') },
     { to: '/dashboard/notes',      icon: '◫', label: t('notes') },
+    { to: '/dashboard/history',    icon: '⏳', label: t('dayHistoryTitle') },
     { to: '/dashboard/analytics',  icon: '◉', label: t('analytics') },
     { to: '/dashboard/settings',   icon: '◎', label: t('settings') },
     { to: '/',                     icon: '◇', label: t('about') },

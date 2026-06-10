@@ -1,0 +1,25 @@
+{
+  "platform": "codex",
+  "project": "Mizan (ميزان) - High Performance Islamic Productivity",
+  "identity": {
+    "soul": "Precision in Achievement",
+    "theme": {
+      "primary": "#6c47ff",
+      "accent": "#00c9ff",
+      "dark": "#0f172a",
+      "fonts": ["Cairo", "Sora"]
+    }
+  },
+  "visualization_rules": {
+    "engine": "mermaid.js",
+    "tool": "graphifyy",
+    "output_format": "callflow-html",
+    "rtl_support": true,
+    "motion_interpolation": "spring(1, 80, 10)",
+    "mappings": {
+      "global_state": "src/contexts/AppContext.jsx",
+      "auth_layer": "src/contexts/AuthContext.jsx",
+      "prayer_engine": "src/utils/prayerTimes.js"
+    }
+  }
+}
