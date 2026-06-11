@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
+import MizanMark from '../components/MizanMark'
 
 export default function LoginPage() {
   const { user, signInWithGoogle } = useAuth()
@@ -112,10 +113,9 @@ export default function LoginPage() {
               alignItems: 'center',
               justifyContent: 'center',
               background: 'linear-gradient(135deg, rgba(108,71,255,0.2) 0%, rgba(0,201,255,0.08) 100%)',
-              fontSize: '2.5rem',
             }}
           >
-            ⚖️
+            <MizanMark size={54} />
           </motion.div>
 
           <motion.h1
@@ -265,9 +265,9 @@ export default function LoginPage() {
                 padding: '0.875rem 1.5rem',
                 borderRadius: '14px',
                 background: 'var(--mizan-gradient)',
-                color: 'var(--text-primary)',
+                color: '#ffffff',
                 fontSize: '0.95rem',
-                fontWeight: 500,
+                fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

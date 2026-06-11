@@ -1,0 +1,13 @@
+# Railway deployment config — Mizan (Vite + React SPA)
+# Build produces a static bundle in dist/; `serve` hosts it as an SPA on $PORT.
+# Railway injects $PORT at runtime — never hardcode a port.
+
+[build]
+builder = "nixpacks"
+buildCommand = "npm run build"
+
+[deploy]
+# npm run start = `npx serve -s dist -l $PORT`  (-s = SPA fallback to index.html)
+startCommand = "npm run start"
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 3

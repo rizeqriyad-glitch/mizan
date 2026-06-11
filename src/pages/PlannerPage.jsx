@@ -240,10 +240,13 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
 
   return (
     <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{ y: -4 }}
       style={{
         borderRadius: '16px',
+        background: 'var(--bg-card)',
         border: `1px solid ${goalDone ? 'rgba(0,201,255,0.2)' : 'var(--v-glass-border)'}`,
         borderTop: `3px solid ${goalDone ? 'var(--emerald)' : color.main}`,
+        boxShadow: '0 4px 18px rgba(0,0,0,0.10)',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
         opacity: goalDone ? 0.75 : 1,
       }}
@@ -1789,20 +1792,25 @@ export default function PlannerPage() {
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h1 style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)', fontSize: isAr ? '2rem' : '2.25rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+              <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--mizan-gradient)', boxShadow: '0 0 10px var(--accent-purple-glow)', flexShrink: 0 }} />
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-secondary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                {isAr ? 'المخطط' : 'Planner'}
+              </span>
+            </div>
+            <h1 className="gradient-text" style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)', fontSize: isAr ? '2rem' : '2.25rem', fontWeight: 600, marginBottom: '0.35rem', display: 'inline-block' }}>
               {isAr ? 'مخطط الأهداف' : 'Goal Planner'}
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
               {isAr ? 'حقق أهدافك الكبيرة خطوة بخطوة واكسب النقاط' : 'Break big goals into milestones — earn XP as you go'}
             </p>
           </div>
-          <button onClick={() => setShowAddGoal(true)}
-            style={{ padding: '0.6rem 1.25rem', borderRadius: '10px', border: '1px solid rgba(108,71,255,0.3)', background: 'rgba(108,71,255,0.1)', color: 'var(--mizan-purple)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all var(--transition)', whiteSpace: 'nowrap' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(212,175,106,0.2)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'var(--gold-dim)'}
+          <motion.button onClick={() => setShowAddGoal(true)}
+            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+            style={{ padding: '0.7rem 1.5rem', borderRadius: '12px', border: 'none', background: 'var(--mizan-gradient)', color: '#ffffff', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', whiteSpace: 'nowrap', boxShadow: '0 8px 20px rgba(108,71,255,0.3)' }}
           >
             {isAr ? '+ هدف جديد' : '+ New Goal'}
-          </button>
+          </motion.button>
         </div>
       </motion.div>
 
@@ -1904,8 +1912,8 @@ export default function PlannerPage() {
             {filter === 'all' && (
               <button onClick={() => setShowAddGoal(true)}
                 style={{ padding: '0.7rem 1.75rem', borderRadius: '10px', border: '1px solid rgba(108,71,255,0.3)', background: 'rgba(108,71,255,0.1)', color: 'var(--mizan-purple)', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all var(--transition)' }} // Mizan purple button
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(212,175,106,0.2)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'var(--gold-dim)'}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,71,255,0.2)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(108,71,255,0.1)'}
               >
                 {isAr ? '+ إضافة هدف' : '+ Add Your First Goal'}
               </button>
@@ -1953,7 +1961,7 @@ export default function PlannerPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 64, scale: 0.88 }}
             transition={{ type: 'spring', stiffness: 220, damping: 22 }} // This is a toast, fine.
-            style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: '0.9rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.875rem', boxShadow: '0 8px 32px rgba(212,175,106,0.35)', zIndex: 999, minWidth: 240, maxWidth: 360, direction: isAr ? 'rtl' : 'ltr', pointerEvents: 'none' }}
+            style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: '0.9rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.875rem', boxShadow: '0 8px 32px rgba(108,71,255,0.35)', zIndex: 999, minWidth: 240, maxWidth: 360, direction: isAr ? 'rtl' : 'ltr', pointerEvents: 'none' }}
           >
             <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.4 }} style={{ fontSize: '1.85rem', flexShrink: 0 }}>
               {toast.icon}

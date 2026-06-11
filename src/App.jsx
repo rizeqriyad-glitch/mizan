@@ -7,7 +7,9 @@ import SettingsPage from './pages/SettingsPage'
 import LandingPage from './pages/LandingPage'
 import NotesPage from './pages/NotesPage'
 import PlannerPage from './pages/PlannerPage'
+import DayHistoryPage from './pages/DayHistoryPage'
 import Layout from './components/Layout'
+import MizanMark from './components/MizanMark'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -18,33 +20,22 @@ function ProtectedRoute({ children }) {
 
 function LoadingScreen() {
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'var(--bg-base)',
-      flexDirection: 'column',
-      gap: '1.5rem',
-    }}>
-      <div style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: '2.5rem',
-        color: 'var(--gold)',
-        fontWeight: 600,
-        letterSpacing: '0.05em',
-      }}>
-        ميزان
-      </div>
-      <div style={{
-        width: 40,
-        height: 40,
-        border: '2px solid var(--border)',
-        borderTop: '2px solid var(--gold)',
-        borderRadius: '50%',
-        animation: 'spin 0.8s linear infinite',
-      }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div
+      role="status"
+      aria-live="polite"
+      aria-label="Loading Mizan"
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--bg-base)',
+        flexDirection: 'column',
+        gap: '1.25rem',
+      }}
+    >
+      <MizanMark size={88} state="loading" animateIn={false} showText />
+      <span className="sr-only">Loading…</span>
     </div>
   )
 }
@@ -65,6 +56,7 @@ export default function App() {
         <Route index element={<DashboardPage />} />
         <Route path="notes" element={<NotesPage />} />
         <Route path="planner" element={<PlannerPage />} />
+        <Route path="history" element={<DayHistoryPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>

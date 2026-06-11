@@ -4,6 +4,7 @@ import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
 import { useEffect, useRef } from 'react'
 import Mizan3DScene from '../components/Mizan3DScene'
+import MizanMark from '../components/MizanMark'
 
 const FEATURES = [
   { icon: '🕌', en: 'Prayer Tracker', ar: 'تتبع الصلوات',  desc: { en: 'Log all 5 daily prayers with one tap and track your consistency over time.', ar: 'سجّل صلواتك الخمس اليومية بنقرة واحدة وتابع انتظامك.' } },
@@ -70,19 +71,11 @@ export default function LandingPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div className="btn-magnetic" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer' }}>
-          <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M50 10V90M10 40C10 40 25 35 50 35C75 35 90 40 90 40M20 40L15 70C15 70 20 75 30 75C40 75 45 70 45 70L40 40M80 40L85 70C85 70 80 75 70 75C60 75 55 70 55 70L60 40" 
-              stroke="url(#paint0_linear)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
-            <defs>
-              <linearGradient id="paint0_linear" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#6c47ff"/><stop offset="1" stopColor="#00c9ff"/>
-              </linearGradient>
-            </defs>
-          </svg>
+          <MizanMark size={34} />
           <span style={{
-            fontFamily: 'var(--font-brand)',
+            fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
             fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)',
-            letterSpacing: '0.04em',
+            letterSpacing: isAr ? '0' : '0.02em',
           }}>
             {isAr ? 'ميزان' : 'Mizan'}
           </span>

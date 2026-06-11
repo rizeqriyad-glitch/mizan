@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
 import AdhanNotifier from './AdhanNotifier'
 import ReminderNotifier from './ReminderNotifier'
+import MizanMark from './MizanMark'
 
 function DigitalClock({ timeFormat, isAr }) {
   const [now, setNow] = useState(new Date())
@@ -124,16 +125,7 @@ export default function Layout() {
           borderBottom: '1px solid var(--border)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{
-              width: 36, height: 36,
-              borderRadius: '14px', // Mizan token for icons
-              background: 'rgba(108,71,255,0.1)', // Mizan purple background
-              border: '1px solid rgba(108,71,255,0.3)', // Mizan purple border
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1.2rem',
-            }}>
-              ⚖️
-            </div>
+            <MizanMark size={38} />
             <div>
               <div style={{
                 fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
@@ -212,7 +204,7 @@ export default function Layout() {
                 fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', // Keep font family
               })}
             >
-              <span style={{ fontSize: '1rem', opacity: 0.8 }}>{item.icon}</span>
+              <span aria-hidden="true" style={{ fontSize: '1rem', opacity: 0.8 }}>{item.icon}</span>
               {item.label}
             </NavLink>
           ))}
@@ -238,6 +230,7 @@ export default function Layout() {
           {/* Theme toggle */}
           <button
             onClick={() => changeTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label={theme === 'dark' ? t('lightMode') : t('darkMode')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -255,7 +248,7 @@ export default function Layout() {
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-card)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
+            <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
             <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
               {theme === 'dark' ? t('lightMode') : t('darkMode')}
             </span>
@@ -281,7 +274,7 @@ export default function Layout() {
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--ruby-dim)'; e.currentTarget.style.color = 'var(--ruby)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' }}
           >
-            <span>↩</span>
+            <span aria-hidden="true">↩</span>
             <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{t('signOut')}</span>
           </button>
 
@@ -321,13 +314,18 @@ export default function Layout() {
         }}>
           <button
             onClick={() => setSidebarOpen(true)}
+            aria-label={isAr ? 'فتح القائمة' : 'Open menu'}
+            aria-expanded={sidebarOpen}
             style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', background: 'none', border: 'none' }}
           >
-            ☰
+            <span aria-hidden="true">☰</span>
           </button>
-          <span style={{ fontFamily: 'var(--font-display)', color: 'var(--gold)', fontSize: '1.25rem', fontWeight: 600 }}>
-            {isAr ? 'ميزان' : 'Mizan'}
-          </span> {/* App name in mobile header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <MizanMark size={28} animateIn={false} />
+            <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)', color: 'var(--mizan-purple)', fontSize: '1.15rem', fontWeight: 700 }}>
+              {isAr ? 'ميزان' : 'Mizan'}
+            </span>
+          </div>
           <div style={{ width: 28 }} />
         </div>
 

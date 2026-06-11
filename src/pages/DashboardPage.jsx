@@ -10,6 +10,8 @@ import FocusTimer from '../components/FocusTimer'
 import StatsBar from '../components/StatsBar'
 import QuranReader from '../components/QuranReader'
 import AdhkarSection from '../components/AdhkarSection'
+import MizanMark from '../components/MizanMark'
+import { useScrollReveal } from '../hooks/useScrollReveal'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function localDateStr(d = new Date()) {
@@ -389,21 +391,21 @@ export default function DashboardPage() {
   const greeting = getGreeting(language)
   const firstName = user?.displayName?.split(' ')[0] || ''
 
+  // Activate [data-reveal] scroll entrances (reduced-motion safe; reveals once visible)
+  useScrollReveal(null, [loading])
+
   if (loading) {
     return (
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        minHeight: '60vh', color: 'var(--text-muted)',
-        flexDirection: 'column', gap: '1rem',
-      }}>
-        <div style={{
-          width: 32, height: 32,
-          border: '2px solid var(--border)',
-          borderTop: '2px solid var(--gold)',
-          borderRadius: '50%',
-          animation: 'spin 0.8s linear infinite',
-        }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <div
+        role="status"
+        aria-live="polite"
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          minHeight: '60vh', flexDirection: 'column', gap: '1rem',
+        }}
+      >
+        <MizanMark size={64} state="loading" animateIn={false} />
+        <span className="sr-only">{t('loadingPrayers')}</span>
       </div>
     )
   }
@@ -430,6 +432,12 @@ export default function DashboardPage() {
           gap: '0.5rem',
         }}>
           <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+              <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--mizan-gradient)', boxShadow: '0 0 10px var(--accent-purple-glow)', flexShrink: 0 }} />
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-secondary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
+                {t('today')}
+              </span>
+            </div>
             <h1 style={{
               fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
               fontSize: isAr ? '2rem' : '2.25rem',
@@ -438,7 +446,7 @@ export default function DashboardPage() {
               lineHeight: 1.2,
               marginBottom: '0.35rem',
             }}>
-              {greeting}{firstName ? `, ${firstName}` : ''}
+              {greeting}{firstName ? <span className="gradient-text">{`, ${firstName}`}</span> : ''}
             </h1>
             <p style={{
               color: 'var(--text-muted)',
@@ -572,10 +580,14 @@ export default function DashboardPage() {
       )}
 
       {/* Morning & Evening Adhkar */}
-      <AdhkarSection />
+      <div data-reveal>
+        <AdhkarSection />
+      </div>
 
       {/* Read Quran */}
-      <QuranReader />
+      <div data-reveal>
+        <QuranReader />
+      </div>
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
