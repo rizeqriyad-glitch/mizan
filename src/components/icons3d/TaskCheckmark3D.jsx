@@ -7,7 +7,7 @@ function createTaskCheckmarkGeometry(scene) {
   // Glass cube
   const cubeGeom = new THREE.BoxGeometry(0.8, 0.8, 0.8, 16, 16, 16)
   const cubeMat = new THREE.MeshPhysicalMaterial({
-    color: 0x6c47ff,
+    color: 0x339cff,
     transmission: 0.9,
     thickness: 0.5,
     roughness: 0.1,
@@ -36,7 +36,7 @@ function createTaskCheckmarkGeometry(scene) {
   // Glow sphere behind
   const glowGeom = new THREE.SphereGeometry(1.2, 32, 32)
   const glowMat = new THREE.MeshBasicMaterial({
-    color: 0x6c47ff,
+    color: 0x339cff,
     transparent: true,
     opacity: 0.1,
   })

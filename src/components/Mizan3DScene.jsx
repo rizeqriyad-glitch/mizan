@@ -40,6 +40,12 @@ class ParticleSystem {
   }
 
   update(dt) {
+    if (this.particles.length === 0) {
+      if (!this._idle) { this.geometry.setDrawRange(0, 0); this._idle = true }
+      return;
+    }
+    this._idle = false;
+    this.geometry.setDrawRange(0, Infinity);
     const positions = [];
     const colors = [];
     const sizes = []; // To update particle size
@@ -53,7 +59,8 @@ class ParticleSystem {
         p.size *= 1 + 0.5 * dt; // Grow slightly
 
         positions.push(p.position.x, p.position.y, p.position.z);
-        colors.push(p.color.r, p.color.g, p.color.b, p.alpha);
+        // additive blending: pre-multiplying by alpha IS the fade (PointsMaterial has no per-point alpha)
+        colors.push(p.color.r * p.alpha, p.color.g * p.alpha, p.color.b * p.alpha);
         sizes.push(p.size);
         return true;
       }
@@ -61,7 +68,7 @@ class ParticleSystem {
     });
 
     this.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    this.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 4));
+    this.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     this.geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1)); // Add size attribute
     this.geometry.attributes.position.needsUpdate = true;
     this.geometry.attributes.color.needsUpdate = true;
@@ -98,7 +105,7 @@ export default function Mizan3DScene({ completedItems = [], selectedDate = null 
       color: 0xffffff, metalness: 0.1, roughness: 0.05, 
       transmission: 0.95, thickness: 0.5, transparent: true, opacity: 0.4
     })
-    const glowMat = new THREE.MeshStandardMaterial({ color: 0x6c47ff, emissive: 0x00c9ff, emissiveIntensity: 2 })
+    const glowMat = new THREE.MeshStandardMaterial({ color: 0x0a1a2f, emissive: 0x339cff, emissiveIntensity: 2 })
 
     // Scale Structure
     const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.1, 5, 32), glassMat)
@@ -191,8 +198,8 @@ export default function Mizan3DScene({ completedItems = [], selectedDate = null 
     pansRef.current.right = createPan(2.7)
 
     // Lights
-    const p1 = new THREE.PointLight(0x6c47ff, 50); p1.position.set(5, 5, 5); scene.add(p1)
-    const p2 = new THREE.PointLight(0x00c9ff, 30); p2.position.set(-5, -5, 5); scene.add(p2)
+    const p1 = new THREE.PointLight(0x339cff, 50); p1.position.set(5, 5, 5); scene.add(p1)
+    const p2 = new THREE.PointLight(0x66b5ff, 30); p2.position.set(-5, -5, 5); scene.add(p2)
     scene.add(new THREE.AmbientLight(0xffffff, 0.5))
 
     camera.position.z = 9
@@ -250,6 +257,7 @@ export default function Mizan3DScene({ completedItems = [], selectedDate = null 
     window.addEventListener('click', onClick)
 
     const clock = new THREE.Clock()
+    let rafId = 0
     const animate = () => {
       const dt = clock.getDelta()
       const t = clock.getElapsedTime()
@@ -342,7 +350,7 @@ export default function Mizan3DScene({ completedItems = [], selectedDate = null 
       particleSystemRef.current.update(dt);
 
       renderer.render(scene, camera)
-      requestAnimationFrame(animate)
+      rafId = requestAnimationFrame(animate)
     }
     animate()
 
@@ -352,11 +360,13 @@ export default function Mizan3DScene({ completedItems = [], selectedDate = null 
       renderer.setSize(window.innerWidth, window.innerHeight)
     }
     window.addEventListener('resize', handleResize)
-    return () => { 
-      window.removeEventListener('mousemove', onMove); 
+    return () => {
+      window.removeEventListener('mousemove', onMove);
       window.removeEventListener('click', onClick);
       window.removeEventListener('resize', handleResize);
       if (window.mizanTooltipTimer) clearTimeout(window.mizanTooltipTimer)
+      cancelAnimationFrame(rafId)
+      renderer.dispose()
     }
   }, [])
 
@@ -379,9 +389,9 @@ export default function Mizan3DScene({ completedItems = [], selectedDate = null 
           geom = new THREE.BoxGeometry(0.8, 0.8, 0.8)
         }
 
-        const blockMat = new THREE.MeshPhysicalMaterial({ 
-          color: isLeft ? 0x6c47ff : 0x00c9ff, 
-          emissive: isLeft ? 0x6c47ff : 0x00c9ff, 
+        const blockMat = new THREE.MeshPhysicalMaterial({
+          color: isLeft ? 0x339cff : 0x66b5ff,
+          emissive: isLeft ? 0x339cff : 0x66b5ff,
           emissiveIntensity: 0.5,
           transmission: 0.8, 
           thickness: 1 
@@ -432,7 +442,7 @@ export default function Mizan3DScene({ completedItems = [], selectedDate = null 
               border: '1px solid var(--mizan-cyan)',
               borderRadius: '12px',
               padding: '0.75rem 1.25rem',
-              boxShadow: '0 15px 35px rgba(0,201,255,0.25), 0 0 20px rgba(108,71,255,0.1)',
+              boxShadow: '0 15px 35px rgba(102, 181, 255,0.25), 0 0 20px rgba(51, 156, 255,0.1)',
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-brand)',
               fontSize: '0.95rem',

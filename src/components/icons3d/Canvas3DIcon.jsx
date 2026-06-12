@@ -37,8 +37,8 @@ export function Canvas3DIcon({ createGeometry, className = '', size = 'md', inte
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.9)
-    const pointLight1 = new THREE.PointLight(0x6c47ff, 1.5)
-    const pointLight2 = new THREE.PointLight(0x00c9ff, 1)
+    const pointLight1 = new THREE.PointLight(0x339cff, 1.5)
+    const pointLight2 = new THREE.PointLight(0x66b5ff, 1)
     pointLight1.position.set(10, 10, 10)
     pointLight2.position.set(-10, -10, 10)
     scene.add(ambientLight, pointLight1, pointLight2)

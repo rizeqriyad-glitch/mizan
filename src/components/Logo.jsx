@@ -43,8 +43,8 @@ export function Logo({ size = 'md', showText = true }) {
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
-    const pointLight1 = new THREE.PointLight(0x6c47ff, 1.5)
-    const pointLight2 = new THREE.PointLight(0x00c9ff, 1)
+    const pointLight1 = new THREE.PointLight(0x339cff, 1.5)
+    const pointLight2 = new THREE.PointLight(0x66b5ff, 1)
     pointLight1.position.set(5, 5, 5)
     pointLight2.position.set(-5, -5, 5)
     scene.add(ambientLight, pointLight1, pointLight2)
@@ -56,7 +56,7 @@ export function Logo({ size = 'md', showText = true }) {
     // Center beam
     const beamGeom = new THREE.CylinderGeometry(0.05, 0.05, 0.4, 8)
     const beamMat = new THREE.MeshPhysicalMaterial({
-      color: 0x6c47ff,
+      color: 0x339cff,
       metalness: 0.8,
       roughness: 0.2,
       transmission: 0.3,
@@ -68,7 +68,7 @@ export function Logo({ size = 'md', showText = true }) {
     // Left pan (scale)
     const panGeom = new THREE.BoxGeometry(0.25, 0.08, 0.15)
     const panMatLeft = new THREE.MeshPhysicalMaterial({
-      color: 0x6c47ff,
+      color: 0x339cff,
       transmission: 0.6,
       thickness: 0.5,
       ior: 1.5,
@@ -81,7 +81,7 @@ export function Logo({ size = 'md', showText = true }) {
 
     // Right pan (scale)
     const panMatRight = new THREE.MeshPhysicalMaterial({
-      color: 0x00c9ff,
+      color: 0x66b5ff,
       transmission: 0.6,
       thickness: 0.5,
       ior: 1.5,
@@ -166,11 +166,11 @@ export function Logo({ size = 'md', showText = true }) {
           height: `${sizes.height}px`,
           borderRadius: `${sizes.radius}px`,
           background: theme === 'dark'
-            ? 'linear-gradient(135deg, rgba(108, 71, 255, 0.15), rgba(0, 201, 255, 0.08))'
-            : 'linear-gradient(135deg, rgba(108, 71, 255, 0.1), rgba(0, 201, 255, 0.05))',
+            ? 'linear-gradient(135deg, rgba(51, 156, 255, 0.15), rgba(102, 181, 255, 0.08))'
+            : 'linear-gradient(135deg, rgba(51, 156, 255, 0.1), rgba(102, 181, 255, 0.05))',
           backdropFilter: 'blur(20px) saturate(180%)',
-          border: '1px solid rgba(108, 71, 255, 0.25)',
-          boxShadow: '0 8px 32px rgba(108, 71, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+          border: '1px solid rgba(51, 156, 255, 0.25)',
+          boxShadow: '0 8px 32px rgba(51, 156, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
           position: 'relative',
           cursor: 'pointer',
           transition: 'all 0.3s ease',

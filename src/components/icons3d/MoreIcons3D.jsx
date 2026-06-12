@@ -26,7 +26,7 @@ function createBookReadGeometry(scene) {
   // Book spine
   const spineGeom = new THREE.BoxGeometry(0.08, 0.7, 0.1)
   const spineMat = new THREE.MeshPhysicalMaterial({
-    color: 0x6c47ff,
+    color: 0x339cff,
     metalness: 0.4,
     roughness: 0.3,
   })
@@ -58,7 +58,7 @@ function createAnalyticsGeometry(scene) {
 
   // Create 3D bar chart
   const barGeom = new THREE.BoxGeometry(0.15, 1, 0.15)
-  const colors = [0x6c47ff, 0x00c9ff, 0x4ade80]
+  const colors = [0x339cff, 0x66b5ff, 0x4ade80]
   const heights = [0.5, 0.8, 0.6]
 
   for (let i = 0; i < 3; i++) {
@@ -94,7 +94,7 @@ function createFocusTimerGeometry(scene) {
   // Outer torus (timer ring)
   const torusGeom = new THREE.TorusGeometry(0.5, 0.08, 16, 32)
   const torusMat = new THREE.MeshPhysicalMaterial({
-    color: 0x6c47ff,
+    color: 0x339cff,
     metalness: 0.7,
     roughness: 0.2,
     transmission: 0.6,
@@ -105,7 +105,7 @@ function createFocusTimerGeometry(scene) {
   // Progress ring (partial)
   const progressGeom = new THREE.TorusGeometry(0.5, 0.04, 16, 128, 0, Math.PI * 1.5)
   const progressMat = new THREE.MeshPhysicalMaterial({
-    color: 0x00c9ff,
+    color: 0x66b5ff,
     metalness: 0.8,
     roughness: 0.1,
     transmission: 0.8,
@@ -117,7 +117,7 @@ function createFocusTimerGeometry(scene) {
   // Center circle
   const centerGeom = new THREE.SphereGeometry(0.2, 32, 32)
   const centerMat = new THREE.MeshPhysicalMaterial({
-    color: 0x6c47ff,
+    color: 0x339cff,
     transmission: 0.4,
     roughness: 0.15,
   })

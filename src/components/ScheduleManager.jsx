@@ -115,7 +115,7 @@ export default function ScheduleManager() {
             <span style={{
               fontSize: '0.67rem', padding: '0.1rem 0.42rem',
               borderRadius: 'var(--radius-full)',
-            background: 'rgba(0,201,255,0.1)', color: 'var(--mizan-cyan)', // Mizan cyan
+            background: 'rgba(102, 181, 255,0.1)', color: 'var(--mizan-cyan)', // Mizan cyan
               fontWeight: 600,
             }}>
               {scheduleBlocks.length}
@@ -147,7 +147,7 @@ export default function ScheduleManager() {
           onMouseEnter={e => {
             e.currentTarget.style.borderColor = 'var(--mizan-purple)' // Mizan purple
             e.currentTarget.style.color = 'var(--mizan-purple)' // Mizan purple
-            e.currentTarget.style.background = 'rgba(108,71,255,0.1)' // Mizan purple dim
+            e.currentTarget.style.background = 'rgba(51, 156, 255,0.1)' // Mizan purple dim
           }}
           onMouseLeave={e => {
             e.currentTarget.style.borderColor = 'var(--border-strong)'

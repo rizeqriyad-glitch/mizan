@@ -10,13 +10,13 @@ function createPrayerBeadsGeometry(scene) {
 
   const beadGeom = new THREE.SphereGeometry(beadRadius, 16, 16)
   const beadMatPurple = new THREE.MeshPhysicalMaterial({
-    color: 0x6c47ff,
+    color: 0x339cff,
     metalness: 0.6,
     roughness: 0.3,
     transmission: 0.5,
   })
   const beadMatCyan = new THREE.MeshPhysicalMaterial({
-    color: 0x00c9ff,
+    color: 0x66b5ff,
     metalness: 0.6,
     roughness: 0.3,
     transmission: 0.5,
@@ -56,7 +56,7 @@ function createPrayerBeadsGeometry(scene) {
   // Center sphere
   const centerGeom = new THREE.SphereGeometry(0.15, 16, 16)
   const centerMat = new THREE.MeshPhysicalMaterial({
-    color: 0x6c47ff,
+    color: 0x339cff,
     metalness: 0.8,
     roughness: 0.2,
     transmission: 0.7,

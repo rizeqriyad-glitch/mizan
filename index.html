@@ -1,14 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl" data-theme="dark">
   <head>
+    <!-- ══ PROJECT MEMORY · do not delete ════════════════════════════
+    brand    : ميزان (Mizan) — Islamic productivity around the 5 prayers
+    lang     : ar primary (rtl) · en secondary · lang/dir synced by AppContext
+    palette  : "Midnight Fajr" — jet-black surfaces · prussian structure ·
+               azure primary (dawn light) · crimson-carrot accent ≤10% (ember)
+    fonts    : wordmark+AR display ≥28px = Palestine · AR body/UI = Al Jazeera
+               (300/400/700, local woff-less TTF, subset = follow-up) ·
+               EN display = Noto Serif · EN UI = Inter · Quran = Amiri
+    theme    : dark default + light toggle · no-flash boot script below
+    logo     : AI concept B "Minaret Pillar" (Higgsfield job 8848707d) →
+               hand-cleaned SVG in src/components/MizanMark.jsx · currentColor
+    effects  : hero = MizanHero (GLSL aurora + glass scale, data-driven tilt)
+               ambient = the aurora itself · CSS .aurora = fallback ladder
+    3d       : medium budget — shader quad + ≤40k tris scale · DPR ≤2 ·
+               pauses off-screen/hidden tab · dispose wired · mobile = aurora only
+    legacy   : old token names (--mizan-*, --gold, --accent-purple…) bridged to
+               new semantic tokens in globals.css — dashboard reskins via bridge
+    decisions: 2026-06-12 client approved logo B + Midnight Fajr + Living Mizan
+    ═══════════════════════════════════════════════════════════════ -->
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/mizan-icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mizan — Islamic Productivity Platform</title>
-    <meta name="description" content="Premium Islamic productivity and life management platform built around the 5 daily prayers." />
+    <meta name="theme-color" content="#0e1015" />
+    <title>ميزان — Mizan | Productivity Around the Five Prayers</title>
+    <meta name="description" content="ميزان — Islamic productivity built around the five daily prayers: salah tracking, morning and evening adhkar, Quran reading and deep-work focus, with a streak that holds." />
+    <meta property="og:title" content="ميزان — Mizan" />
+    <meta property="og:description" content="A day built around the five prayers — salah, adhkar, Quran and deep work." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mizan" />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- Theme + language boot: runs before CSS so there is no wrong-theme/wrong-direction flash -->
+    <script>
+      (function () {
+        var t = 'dark', l = 'ar';
+        try {
+          t = localStorage.getItem('mizan.theme') || 'dark';
+          l = localStorage.getItem('mizan.lang') || 'ar';
+        } catch (e) {}
+        var d = document.documentElement;
+        d.dataset.theme = t === 'light' ? 'light' : 'dark';
+        d.setAttribute('lang', l === 'en' ? 'en' : 'ar');
+        d.setAttribute('dir', l === 'en' ? 'ltr' : 'rtl');
+      })();
+    </script>
+
+    <!-- Brand fonts (local) — loaded before app CSS. Subsetting to woff2 is a logged follow-up. -->
+    <link rel="preload" as="font" type="font/otf" href="/fonts/palestine.otf" crossorigin />
+    <link rel="preload" as="font" type="font/ttf" href="/fonts/aljazeera-regular.ttf" crossorigin />
+    <style>
+      @font-face {
+        font-family: 'Palestine';
+        src: url('/fonts/palestine.otf') format('opentype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+        unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF, U+0660-0669, U+060C, U+061B, U+061F;
+      }
+      @font-face {
+        font-family: 'Al Jazeera';
+        src: url('/fonts/aljazeera-light.ttf') format('truetype');
+        font-weight: 300;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Al Jazeera';
+        src: url('/fonts/aljazeera-regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Al Jazeera';
+        src: url('/fonts/aljazeera-bold.ttf') format('truetype');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&family=Noto+Naskh+Arabic:wght@400;500;600&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif:wght@500;600;700&family=Amiri:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="root"></div>

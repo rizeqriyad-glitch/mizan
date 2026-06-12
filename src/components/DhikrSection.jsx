@@ -170,9 +170,9 @@ export default function DhikrSection() {
           </span>
           <span style={{
             fontSize: '0.7rem',
-            background: totalDone === DHIKR_LIST.length ? 'rgba(0,201,255,0.1)' : 'rgba(108,71,255,0.1)',
+            background: totalDone === DHIKR_LIST.length ? 'rgba(102, 181, 255,0.1)' : 'rgba(51, 156, 255,0.1)',
             color: totalDone === DHIKR_LIST.length ? 'var(--mizan-cyan)' : 'var(--mizan-purple)',
-            border: `1px solid ${totalDone === DHIKR_LIST.length ? 'rgba(0,201,255,0.2)' : 'rgba(108,71,255,0.2)'}`,
+            border: `1px solid ${totalDone === DHIKR_LIST.length ? 'rgba(102, 181, 255,0.2)' : 'rgba(51, 156, 255,0.2)'}`,
             borderRadius: 'var(--radius-full)',
             padding: '0.1rem 0.5rem',
           }}>

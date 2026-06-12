@@ -1,176 +1,151 @@
 import { useId } from 'react'
 
 /**
- * MizanMark — interactive SVG logo for ميزان (M7 Letterform Mutation family).
+ * MizanMark — the Mizan brand mark (concept B "Minaret Pillar",
+ * AI-generated via Higgsfield, vectorized via Adobe, hand-cleaned here).
  *
- * The mark is the literal meaning of the word: a balance scale. The signature
- * motion is the beam *settling into equilibrium* (a gentle sway at idle, a
- * decisive level on hover) — never a bounce, matching Mizan's calm-precise DNA.
+ * A balance scale whose central pillar is a minaret-like girih column:
+ * prayer and balance fused in one silhouette. 48×48 grid, single stroke
+ * weight, currentColor — it inherits text color and accents via CSS.
+ * Raster source of record: /public/brand/mizan-logo-vectorized.svg.
  *
- * Ships all 4 motion states:
- *   - idle      : slow ±2° sway of the beam (alive, ignorable)
- *   - hover     : beam levels + pans lift, faster settle (<200ms)
- *   - entrance  : strokes draw on (stroke-dashoffset)
- *   - loading   : the mark IS the spinner (continuous beam tilt wave)
+ * Motion states (all respect prefers-reduced-motion):
+ *   entrance : strokes draw on (pathLength dash)
+ *   idle     : beam + pans sway ±1.8° — alive, ignorable
+ *   hover    : (via .brand:hover or own hover) beam settles level, accent color
+ *   loading  : continuous seek of equilibrium — the mark IS the spinner
  *
- * Content is visible by default; animation only enhances. prefers-reduced-motion
- * freezes every state to the level, fully-drawn mark.
- *
- * Props:
- *   size      number  px of the square mark (default 64)
- *   showText  bool    render the Mizan / ميزان lockup (default false)
- *   state     string  'idle' | 'loading'  (default 'idle')
- *   animateIn bool    play the draw-on entrance (default true)
- *   color/color2      gradient stops (default Mizan purple → cyan)
+ * Props (back-compatible with v1):
+ *   size      px square (default 64)
+ *   showText  render the ميزان lockup (default false)
+ *   state     'idle' | 'loading'
+ *   animateIn play the draw-on entrance (default true)
+ *   color     optional override; defaults to currentColor inheritance
  */
 export default function MizanMark({
   size = 64,
   showText = false,
   state = 'idle',
   animateIn = true,
-  color = '#6c47ff',
-  color2 = '#00c9ff',
+  color,
+  color2, // accepted for v1 compatibility; single-color marks ignore it
   className = '',
   ...rest
 }) {
-  const uid = useId().replace(/:/g, '')
-  const gradId = `mizan-grad-${uid}`
-  const rootClass = `mizan-mark-${uid}`
+  const uid = useId().replace(/[:]/g, '')
+  const root = `mzmk-${uid}`
 
   return (
     <span
-      className={`${rootClass} ${className}`}
+      className={`${root} ${className}`}
       data-state={state}
-      data-animate-in={animateIn ? 'true' : 'false'}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6em', lineHeight: 1 }}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.6em',
+        lineHeight: 1,
+        color: color || 'inherit',
+      }}
       {...rest}
     >
       <svg
+        className="brand__mark"
         width={size}
         height={size}
-        viewBox="0 0 100 100"
+        viewBox="0 0 48 48"
         role="img"
-        aria-label="Mizan"
+        aria-label="ميزان"
         fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         style={{ overflow: 'visible', flexShrink: 0 }}
       >
-        <defs>
-          <linearGradient id={gradId} x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stopColor={color} />
-            <stop offset="1" stopColor={color2} />
-          </linearGradient>
-        </defs>
-
-        {/* Static stand: top hook, vertical post, base foot */}
-        <g
-          className="mizan-post"
-          stroke={`url(#${gradId})`}
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="50" cy="16" r="4.5" />
-          <path d="M50 20.5 V74" />
-          <path d="M36 80 H64" />
-          <path d="M50 74 L40 80 M50 74 L60 80" strokeWidth="4" />
+        {/* Static: minaret column, finial star, base */}
+        <g className="mz-post">
+          {/* finial: diamond + node (girih star, simplified) */}
+          <path pathLength="1" d="M24 4.5 L29.5 10 L24 15.5 L18.5 10 Z" />
+          <circle pathLength="1" cx="24" cy="10" r="1.6" strokeWidth="2.4" />
+          {/* column rails */}
+          <path pathLength="1" d="M21.6 17.5 V37.5" strokeWidth="2.6" />
+          <path pathLength="1" d="M26.4 17.5 V37.5" strokeWidth="2.6" />
+          {/* lattice */}
+          <path pathLength="1" d="M21.6 21 L26.4 26 M26.4 21 L21.6 26" strokeWidth="2.2" />
+          <circle pathLength="1" cx="24" cy="30.5" r="2" strokeWidth="2.2" />
+          <path pathLength="1" d="M21.6 34 L24 36.4 L26.4 34" strokeWidth="2.2" />
+          {/* base */}
+          <path pathLength="1" d="M16.5 37.5 L14 42.5 M31.5 37.5 L34 42.5" strokeWidth="2.6" />
+          <path pathLength="1" d="M13 42.5 H35" />
         </g>
 
-        {/* The balance beam + two hanging pans — this group is what moves */}
+        {/* Moving: beam + the two teardrop pans (sways as one body) */}
         <g
-          className="mizan-beam"
-          stroke={`url(#${gradId})`}
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ transformOrigin: '50px 30px', transformBox: 'view-box' }}
+          className="mz-beam"
+          style={{ transformOrigin: '24px 15.5px', transformBox: 'view-box' }}
         >
-          {/* beam */}
-          <path d="M22 30 H78" />
-          {/* chains */}
-          <path d="M24 30 V44" strokeWidth="3" />
-          <path d="M76 30 V44" strokeWidth="3" />
-          {/* left pan (purple-leaning) */}
-          <path className="mizan-pan" d="M15 44 Q24 56 33 44" />
-          {/* right pan (cyan-leaning) */}
-          <path className="mizan-pan" d="M67 44 Q76 56 85 44" />
+          <path pathLength="1" d="M7 15.5 H41" />
+          <path pathLength="1" className="mz-pan" d="M10 15.5 L3.5 24.5 A6.5 6.5 0 0 0 16.5 24.5 Z" />
+          <path pathLength="1" className="mz-pan" d="M38 15.5 L31.5 24.5 A6.5 6.5 0 0 0 44.5 24.5 Z" />
         </g>
       </svg>
 
       {showText && (
-        <span className="mizan-lockup" style={{ display: 'inline-flex', flexDirection: 'column' }}>
-          <span style={{
-            fontFamily: 'var(--font-display)',
-            fontWeight: 800,
-            fontSize: `${size * 0.34}px`,
-            letterSpacing: '-0.01em',
-            background: `linear-gradient(135deg, ${color}, ${color2})`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            lineHeight: 1.05,
-          }}>Mizan</span>
-          <span style={{
-            fontFamily: 'var(--font-arabic)',
-            fontWeight: 700,
-            fontSize: `${size * 0.26}px`,
-            color: 'var(--text-secondary)',
-            lineHeight: 1.1,
-          }}>ميزان</span>
+        <span
+          className="brand__name"
+          data-wipe={animateIn ? 'true' : undefined}
+          style={{ fontSize: size * 0.42 }}
+        >
+          ميزان
         </span>
       )}
 
       <style>{`
-        .${rootClass} svg { cursor: pointer; }
-
-        /* idle — gentle sway, the scale never fully at rest */
-        .${rootClass}[data-state="idle"] .mizan-beam {
-          animation: mizanSway-${uid} 6s ease-in-out infinite;
+        .${root} .mz-beam {
+          animation: mzSway-${uid} 7s ease-in-out infinite;
         }
-        @keyframes mizanSway-${uid} {
-          0%, 100% { transform: rotate(-2.2deg); }
-          50%      { transform: rotate(2.2deg); }
+        .${root}[data-state="loading"] .mz-beam {
+          animation: mzSeek-${uid} 1.6s ease-in-out infinite;
         }
-
-        /* hover — settle to level, decisive and quick */
-        .${rootClass} svg:hover .mizan-beam,
-        .${rootClass}:hover .mizan-beam {
+        .${root}:hover .mz-beam,
+        .brand:hover .${root} .mz-beam,
+        .brand:focus-visible .${root} .mz-beam {
           animation: none;
           transform: rotate(0deg);
-          transition: transform .35s cubic-bezier(.16,1,.3,1);
-        }
-        .${rootClass} svg:hover .mizan-pan {
           transition: transform .35s cubic-bezier(.34,1.56,.64,1);
         }
-
-        /* loading — the mark is the spinner: continuous tilt wave */
-        .${rootClass}[data-state="loading"] .mizan-beam {
-          animation: mizanLoad-${uid} 1.2s ease-in-out infinite;
+        @keyframes mzSway-${uid} {
+          0%, 100% { transform: rotate(1.8deg); }
+          50%      { transform: rotate(-1.8deg); }
         }
-        @keyframes mizanLoad-${uid} {
-          0%   { transform: rotate(-9deg); }
-          50%  { transform: rotate(9deg); }
-          100% { transform: rotate(-9deg); }
+        @keyframes mzSeek-${uid} {
+          0%, 100% { transform: rotate(7deg); }
+          50%      { transform: rotate(-7deg); }
         }
-
-        /* entrance — strokes draw on, then beam settles to level */
-        .${rootClass}[data-animate-in="true"] .mizan-post path,
-        .${rootClass}[data-animate-in="true"] .mizan-post circle,
-        .${rootClass}[data-animate-in="true"] .mizan-beam path {
-          stroke-dasharray: 120;
-          stroke-dashoffset: 120;
-          animation: mizanDraw-${uid} .7s cubic-bezier(.16,1,.3,1) forwards;
+        ${animateIn ? `
+        .${root} svg path, .${root} svg circle {
+          stroke-dasharray: 1;
+          stroke-dashoffset: 1;
+          animation: mzDraw-${uid} .7s cubic-bezier(.22,1,.36,1) forwards;
         }
-        .${rootClass}[data-animate-in="true"] .mizan-beam path:nth-child(1) { animation-delay: .15s; }
-        .${rootClass}[data-animate-in="true"] .mizan-pan { animation-delay: .35s; }
-        @keyframes mizanDraw-${uid} { to { stroke-dashoffset: 0; } }
-
+        .${root} svg .mz-post path:nth-of-type(1) { animation-delay: 0ms; }
+        .${root} svg .mz-post path:nth-of-type(2) { animation-delay: 60ms; }
+        .${root} svg .mz-post path:nth-of-type(3) { animation-delay: 120ms; }
+        .${root} svg .mz-post path:nth-of-type(4) { animation-delay: 160ms; }
+        .${root} svg .mz-post path:nth-of-type(5) { animation-delay: 200ms; }
+        .${root} svg .mz-post path:nth-of-type(6) { animation-delay: 240ms; }
+        .${root} svg .mz-post path:nth-of-type(7) { animation-delay: 280ms; }
+        .${root} svg circle { animation-delay: 100ms; }
+        .${root} svg .mz-beam path:nth-of-type(1) { animation-delay: 320ms; }
+        .${root} svg .mz-beam path:nth-of-type(2) { animation-delay: 400ms; }
+        .${root} svg .mz-beam path:nth-of-type(3) { animation-delay: 460ms; }
+        @keyframes mzDraw-${uid} { to { stroke-dashoffset: 0; } }
+        ` : ''}
         @media (prefers-reduced-motion: reduce) {
-          .${rootClass} .mizan-beam,
-          .${rootClass} .mizan-pan,
-          .${rootClass} .mizan-post path,
-          .${rootClass} .mizan-post circle {
+          .${root} .mz-beam { animation: none !important; transform: none !important; }
+          .${root} svg path, .${root} svg circle {
             animation: none !important;
-            transform: none !important;
+            stroke-dasharray: none !important;
             stroke-dashoffset: 0 !important;
           }
         }

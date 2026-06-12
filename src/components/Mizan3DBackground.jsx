@@ -98,7 +98,7 @@ export default function Mizan3DBackground() {
       color: 0xffffff, metalness: 0.1, roughness: 0.05, 
       transmission: 0.95, thickness: 0.5, transparent: true, opacity: 0.4
     })
-    const glowMat = new THREE.MeshStandardMaterial({ color: 0x6c47ff, emissive: 0x00c9ff, emissiveIntensity: 2 })
+    const glowMat = new THREE.MeshStandardMaterial({ color: 0x339cff, emissive: 0x66b5ff, emissiveIntensity: 2 })
 
     // Scale Structure
     const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.1, 5, 32), glassMat)
@@ -129,8 +129,8 @@ export default function Mizan3DBackground() {
     pansRef.current.right = createPan(2.7)
 
     // Lights
-    const p1 = new THREE.PointLight(0x6c47ff, 50); p1.position.set(5, 5, 5); scene.add(p1)
-    const p2 = new THREE.PointLight(0x00c9ff, 30); p2.position.set(-5, -5, 5); scene.add(p2)
+    const p1 = new THREE.PointLight(0x339cff, 50); p1.position.set(5, 5, 5); scene.add(p1)
+    const p2 = new THREE.PointLight(0x66b5ff, 30); p2.position.set(-5, -5, 5); scene.add(p2)
     scene.add(new THREE.AmbientLight(0xffffff, 0.5))
 
     camera.position.z = 9
@@ -318,8 +318,8 @@ export default function Mizan3DBackground() {
         }
 
         const blockMat = new THREE.MeshPhysicalMaterial({ 
-          color: isLeft ? 0x6c47ff : 0x00c9ff, 
-          emissive: isLeft ? 0x6c47ff : 0x00c9ff, 
+          color: isLeft ? 0x339cff : 0x66b5ff, 
+          emissive: isLeft ? 0x339cff : 0x66b5ff, 
           emissiveIntensity: 0.5,
           transmission: 0.8, 
           thickness: 1 
@@ -370,7 +370,7 @@ export default function Mizan3DBackground() {
               border: '1px solid var(--mizan-cyan)',
               borderRadius: '12px',
               padding: '0.75rem 1.25rem',
-              boxShadow: '0 15px 35px rgba(0,201,255,0.25), 0 0 20px rgba(108,71,255,0.1)',
+              boxShadow: '0 15px 35px rgba(102, 181, 255,0.25), 0 0 20px rgba(51, 156, 255,0.1)',
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-brand)',
               fontSize: '0.95rem',

@@ -69,10 +69,10 @@ export default function LoginPage() {
           <rect width="100%" height="100%" fill="url(#islamic)"/>
         </svg>
 
-        {/* Gold gradient orb */}
+        {/* Dawn-light orb */}
         <div style={{
           position: 'absolute', width: 500, height: 500, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(108, 71, 255, 0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, color-mix(in oklab, var(--primary) 16%, transparent) 0%, transparent 70%)',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
@@ -112,26 +112,26 @@ export default function LoginPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'linear-gradient(135deg, rgba(108,71,255,0.2) 0%, rgba(0,201,255,0.08) 100%)',
             }}
           >
-            <MizanMark size={54} />
+            <MizanMark size={54} animateIn={false} />
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
+            lang="ar"
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-brand)',
               fontSize: '3.5rem',
-              fontWeight: 800,
+              fontWeight: 400,
               color: 'var(--text-primary)',
               marginBottom: '0.5rem',
-              letterSpacing: '0.05em',
+              lineHeight: 1.4,
             }}
           >
-            Mizan
+            ميزان
           </motion.h1>
 
           <motion.div
@@ -139,14 +139,14 @@ export default function LoginPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
             style={{
-              fontFamily: 'var(--font-arabic)',
-              fontSize: '1.6rem',
+              fontFamily: 'var(--font-latin)',
+              fontSize: '0.85rem',
+              letterSpacing: '0.3em',
               color: 'var(--text-secondary)',
-              direction: 'rtl',
               marginBottom: '3rem',
             }}
           >
-            ميزان
+            MIZAN
           </motion.div>
 
           {/* Feature list */}

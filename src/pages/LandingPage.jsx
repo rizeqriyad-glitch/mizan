@@ -1,402 +1,273 @@
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from 'motion/react'
+import {
+  CheckCircle, Sparkles, BookOpen, Repeat, Timer, PenLine,
+  Sun, Moon, ArrowLeft, ArrowRight,
+} from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
 import { useAuth } from '../contexts/AuthContext'
-import { useEffect, useRef } from 'react'
-import Mizan3DScene from '../components/Mizan3DScene'
+import MizanHero from '../components/MizanHero'
 import MizanMark from '../components/MizanMark'
 
-const FEATURES = [
-  { icon: '🕌', en: 'Prayer Tracker', ar: 'تتبع الصلوات',  desc: { en: 'Log all 5 daily prayers with one tap and track your consistency over time.', ar: 'سجّل صلواتك الخمس اليومية بنقرة واحدة وتابع انتظامك.' } },
-  { icon: '🤲', en: 'Morning & Evening Adhkar', ar: 'أذكار الصباح والمساء', desc: { en: 'Authentic supplications from Hisn al-Muslim with source references and checkmarks.', ar: 'أذكار صحيحة من حصن المسلم مع مراجعها وإمكانية التأشير.' } },
-  { icon: '📖', en: 'Quran Reader', ar: 'قارئ القرآن', desc: { en: 'Read the Quran in the Uthmanic script with Sahih International translation.', ar: 'اقرأ القرآن بالرسم العثماني مع ترجمة موثوقة.' } },
-  { icon: '📿', en: 'Daily Dhikr', ar: 'أذكار يومية', desc: { en: 'Count your daily remembrance with progress tracking that resets each morning.', ar: 'عدّ أذكارك اليومية مع تتبع التقدم الذي يُعاد صفره كل صباح.' } },
-  { icon: '⏱', en: 'Focus Timer', ar: 'مؤقت التركيز', desc: { en: 'Pomodoro-style deep work sessions to boost your productivity between prayers.', ar: 'جلسات عمل عميق على نمط بومودورو لتعزيز إنتاجيتك.' } },
-  { icon: '📝', en: 'Notes & Learnings', ar: 'ملاحظات وفوائد', desc: { en: 'Record Quranic insights, hadiths and anything you want to remember forever.', ar: 'سجّل الفوائد والآيات والأحاديث وكل ما تريد تذكّره.' } },
+/* Featured pair gets card treatment; the rest are compact rows (no cloned grids). */
+const FEATURED = [
+  {
+    Icon: CheckCircle,
+    en: 'Prayer tracking', ar: 'تتبع الصلوات الخمس',
+    desc: {
+      en: 'Log each prayer with one tap and watch your scale settle as the day completes.',
+      ar: 'سجّل كل صلاة بنقرة واحدة، وشاهد ميزانك يعتدل كلما اكتمل يومك.',
+    },
+  },
+  {
+    Icon: Sparkles,
+    en: 'Morning & evening adhkar', ar: 'أذكار الصباح والمساء',
+    desc: {
+      en: '23 authentic adhkar from Hisn al-Muslim, with their sources, checked off as you go.',
+      ar: '٢٣ ذكرًا صحيحًا من حصن المسلم، بمصادرها، تُعلَّم عند الإتمام.',
+    },
+  },
+]
+
+const FEATURE_ROWS = [
+  {
+    Icon: BookOpen,
+    en: 'Daily Quran', ar: 'وردك اليومي',
+    desc: { en: 'Read in the Uthmanic script with a trusted translation.', ar: 'اقرأ بالرسم العثماني مع ترجمة موثوقة.' },
+  },
+  {
+    Icon: Repeat,
+    en: 'Dhikr counter', ar: 'عدّاد الذكر',
+    desc: { en: 'Resets at Fajr, keeps your progress.', ar: 'يُصفَّر كل فجر ويحفظ تقدمك.' },
+  },
+  {
+    Icon: Timer,
+    en: 'Focus sessions', ar: 'جلسات تركيز',
+    desc: { en: 'Deep work between the adhans, Pomodoro style.', ar: 'عمل عميق بين الأذانين بنمط بومودورو.' },
+  },
+  {
+    Icon: PenLine,
+    en: 'Notes & learnings', ar: 'فوائد وملاحظات',
+    desc: { en: 'Capture verses, hadiths and what you learn.', ar: 'قيّد الآيات والأحاديث وما تتعلمه.' },
+  },
 ]
 
 const STATS = [
-  { value: '5',   label: { en: 'Daily Prayers', ar: 'صلوات يومية' } },
-  { value: '23',  label: { en: 'Morning Adhkar', ar: 'ذكر صباحي' } },
-  { value: '114', label: { en: 'Quran Surahs', ar: 'سورة قرآنية' } },
-  { value: '∞',   label: { en: 'Rewards', ar: 'أجر لا يُحصى' } },
+  { value: 5, label: { en: 'daily prayers', ar: 'صلوات يومية' } },
+  { value: 23, label: { en: 'morning adhkar', ar: 'ذكرًا صباحيًا' } },
+  { value: 114, label: { en: 'Quran surahs', ar: 'سورة قرآنية' } },
 ]
 
+const wrap = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.15 } },
+}
+const item = {
+  hidden: { opacity: 0, y: 24, filter: 'blur(6px)' },
+  show: {
+    opacity: 1, y: 0, filter: 'blur(0px)',
+    transition: { type: 'spring', stiffness: 200, damping: 26 },
+  },
+}
+
 export default function LandingPage() {
-  const { language, changeLanguage, t } = useApp()
+  const { language, changeLanguage, theme, changeTheme, t, completedToday } = useApp()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { completedToday } = useApp() // Get completedToday from context
   const isAr = language === 'ar'
+  const Forward = isAr ? ArrowLeft : ArrowRight
+  const nf = new Intl.NumberFormat(isAr ? 'ar-EG' : 'en-US')
 
+  // Gate the entrance on fonts (FOUT-proof) but never longer than 800ms.
+  const [ready, setReady] = useState(false)
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('revealed');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+    let on = true
+    const tm = setTimeout(() => on && setReady(true), 800)
+    document.fonts?.ready?.then(() => on && setReady(true))
+    return () => { on = false; clearTimeout(tm) }
+  }, [])
 
-    document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+  // Scroll reveal for below-the-fold sections
+  useEffect(() => {
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('revealed'); io.unobserve(e.target) }
+    }), { threshold: 0.15, rootMargin: '0px 0px -60px 0px' })
+    document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [language])
+
+  // Magnetic primary CTA — pointer devices, motion allowed
+  const ctaRef = useRef(null)
+  useEffect(() => {
+    const el = ctaRef.current
+    if (!el || !matchMedia('(hover:hover) and (prefers-reduced-motion: no-preference)').matches) return
+    const move = (e) => {
+      const r = el.getBoundingClientRect()
+      el.style.translate =
+        `${(e.clientX - r.x - r.width / 2) * 0.22}px ${(e.clientY - r.y - r.height / 2) * 0.22}px`
+    }
+    const leave = () => { el.style.translate = '0px 0px' }
+    el.addEventListener('pointermove', move)
+    el.addEventListener('pointerleave', leave)
+    return () => { el.removeEventListener('pointermove', move); el.removeEventListener('pointerleave', leave) }
+  }, [])
+
+  const goStart = () => navigate(user ? '/dashboard' : '/login')
+
+  const toggleTheme = () => {
+    document.documentElement.classList.add('theming')
+    changeTheme(theme === 'dark' ? 'light' : 'dark')
+    setTimeout(() => document.documentElement.classList.remove('theming'), 300)
+  }
+
+  const onBrandClick = (e) => {
+    e.preventDefault()
+    const a = e.currentTarget
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      a.classList.add('is-pressed')
+      setTimeout(() => a.classList.remove('is-pressed'), 300)
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--bg-base)',
-      color: 'var(--text-primary)',
-      direction: isAr ? 'rtl' : 'ltr',
-      overflowX: 'hidden',
-      position: 'relative',
-    }}>
-      {/* ── Volumetric Background Elements ─────────────────────── */}
-      <div style={{ position: 'fixed', top: '-10%', left: '-5%', width: '60vw', height: '60vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(108, 71, 255, 0.12) 0%, transparent 70%)', filter: 'blur(100px)', pointerEvents: 'none', zIndex: 0 }} />
-      <div style={{ position: 'fixed', bottom: '0', right: '-5%', width: '50vw', height: '50vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0, 201, 255, 0.08) 0%, transparent 70%)', filter: 'blur(100px)', pointerEvents: 'none', zIndex: 0 }} />
-      <div style={{ position: 'fixed', top: '20%', right: '10%', width: '30vw', height: '30vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(108, 71, 255, 0.05) 0%, transparent 70%)', filter: 'blur(80px)', pointerEvents: 'none', zIndex: 0 }} />
+    <MotionConfig reducedMotion="user">
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
+        <a href="#main" className="skip-link">
+          {isAr ? 'تجاوز إلى المحتوى' : 'Skip to content'}
+        </a>
 
-      {/* Refined 3D Mizan Background */}
-      <Mizan3DScene completedItems={completedToday} />
-
-      {/* ── Nav ───────────────────────────────────────────────── */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        borderBottom: '1px solid var(--v-glass-border)',
-        background: 'rgba(15, 23, 42, 0.4)',
-        backdropFilter: 'blur(30px)',
-        padding: '0 2rem',
-        height: 72,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <div className="btn-magnetic" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer' }}>
-          <MizanMark size={34} />
-          <span style={{
-            fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
-            fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)',
-            letterSpacing: isAr ? '0' : '0.02em',
-          }}>
-            {isAr ? 'ميزان' : 'Mizan'}
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button
-            onClick={() => changeLanguage(isAr ? 'en' : 'ar')}
-            style={{
-              padding: '0.35rem 0.85rem',
-              borderRadius: 'var(--radius-full)',
-              border: '1px solid var(--v-glass-border)',
-              background: 'rgba(255,255,255,0.05)',
-              color: 'var(--text-primary)',
-              fontSize: '0.75rem', cursor: 'pointer',
-              fontWeight: 500,
-            }}
-          >
-            {isAr ? 'English' : 'العربية'}
-          </button>
-          <button
-            onClick={() => navigate(user ? '/dashboard' : '/login')}
-            style={{
-              padding: '0.6rem 1.4rem',
-              borderRadius: '12px',
-              background: 'var(--mizan-gradient)',
-              border: 'none',
-              color: '#ffffff', fontSize: '0.85rem', cursor: 'pointer',
-              fontWeight: 700,
-              fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-              boxShadow: '0 10px 20px rgba(108, 71, 255, 0.3)',
-            }}>
-            {user ? (isAr ? 'لوحة التحكم' : 'Dashboard') : t('landingStart')}
-          </button>
-        </div>
-      </nav>
-
-      {/* ── Hero ──────────────────────────────────────────────── */}
-      <section style={{
-        position: 'relative',
-        padding: '10rem 2rem 6rem',
-        textAlign: 'center',
-        zIndex: 2,
-      }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          {/* Bismillah */}
-          <p 
-            data-reveal
-            style={{
-            fontFamily: 'var(--font-arabic)',
-            fontSize: '1.8rem',
-            color: 'var(--mizan-purple)',
-            marginBottom: '2rem',
-            letterSpacing: '0.1em',
-            opacity: 0.9,
-            filter: 'drop-shadow(0 0 10px rgba(108, 71, 255, 0.3))',
-          }}>
-            بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيمِ
-          </p>
-
-          {/* App name */}
-          <h1 
-            data-reveal className="gradient-text"
-            style={{
-            fontFamily: 'var(--font-brand)',
-            fontSize: 'clamp(5rem, 15vw, 10rem)',
-            fontWeight: 900,
-            color: 'var(--text-primary)',
-            letterSpacing: '-0.04em',
-            marginBottom: '0.5rem',
-            lineHeight: 1.1,
-          }}
-          >
-            {isAr ? 'ميزان' : 'Mizan'}
-          </h1>
-
-          {/* Tagline */}
-          <p 
-            data-reveal className="gradient-text"
-            style={{
-            fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
-            fontSize: 'clamp(1.2rem, 3.5vw, 1.8rem)',
-            color: 'var(--mizan-cyan)',
-            marginBottom: '1.5rem',
-            fontWeight: 700,
-          }}>
-            {t('landingHero')}
-          </p>
-
-          {/* Description */}
-          <p style={{
-            color: 'var(--text-secondary)',
-            fontSize: 'clamp(1rem, 2vw, 1.15rem)',
-            maxWidth: 620, margin: '0 auto 3rem',
-            lineHeight: 1.75,
-            fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-          }}>
-            {t('landingSubtitle')}
-          </p>
-
-          {/* CTA */}
-          <div data-reveal style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        {/* ── Nav ─────────────────────────────────────────── */}
+        <nav className="ld-nav" aria-label={isAr ? 'الرئيسية' : 'Primary'}>
+          <div className="ld-nav-inner">
+            <a href="/" className="brand" aria-label="ميزان — الصفحة الرئيسية" onClick={onBrandClick}>
+              <MizanMark size={30} animateIn={false} />
+              <span className="brand__name">ميزان</span>
+            </a>
+            <div className="ld-nav-actions">
               <button
-                className="btn-magnetic"
-                onClick={() => navigate(user ? '/dashboard' : '/login')}
-                style={{
-                  padding: '1rem 2.5rem',
-                  borderRadius: '16px',
-                  background: 'var(--mizan-gradient)',
-                  color: '#ffffff',
-                  fontWeight: 700, fontSize: '1rem',
-                  border: 'none', cursor: 'pointer',
-                  fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-                  boxShadow: '0 20px 40px rgba(108, 71, 255, 0.4)',
-                }}>
-                {t('landingStart')} →
+                type="button"
+                className="btn-ui"
+                onClick={toggleTheme}
+                aria-label={theme === 'dark'
+                  ? (isAr ? 'الوضع الفاتح' : 'Switch to light theme')
+                  : (isAr ? 'الوضع الداكن' : 'Switch to dark theme')}
+              >
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
               </button>
-            </motion.div>
+              <button type="button" className="btn-ui" onClick={() => changeLanguage(isAr ? 'en' : 'ar')}>
+                {isAr ? 'EN' : 'عربي'}
+              </button>
+              <button type="button" className="btn-cta btn-cta--sm" onClick={goStart}>
+                {user ? (isAr ? 'لوحة التحكم' : 'Dashboard') : t('landingStart')}
+              </button>
+            </div>
           </div>
-        </motion.div>
-      </section>
+        </nav>
 
-      {/* ── Stats bar ─────────────────────────────────────────── */}
-      <section data-reveal className="glass-card" style={{
-        margin: '0 2rem',
-        padding: '2.5rem 2rem',
-        borderRadius: '24px',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '2rem',
-        textAlign: 'center',
-      }}>
-        {STATS.map((s, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.08 }}
-          >
-            <div style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '3rem', fontWeight: 800,
-              color: 'var(--mizan-purple)', lineHeight: 1,
-              marginBottom: '0.3rem',
-              filter: 'drop-shadow(0 0 12px rgba(108, 71, 255, 0.2))',
-            }}>
-              {s.value}
-            </div>
-            <div style={{
-              fontSize: '0.8rem', color: 'var(--text-muted)',
-              fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-            }}>
-              {s.label[language] || s.label.en}
-            </div>
-          </motion.div>
-        ))}
-      </section>
-
-      {/* ── Features grid ─────────────────────────────────────── */}
-      <section style={{ padding: '8rem 2rem', maxWidth: 1200, margin: '0 auto' }}>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          style={{ textAlign: 'center', marginBottom: '3rem' }}
-        >
-          <h2 data-reveal style={{
-            fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
-            fontSize: 'clamp(1.6rem, 4vw, 2.5rem)',
-            fontWeight: 700,
-            color: 'var(--text-primary)',
-            marginBottom: '0.5rem',
-          }}>
-            {t('landingFeatures')}
-          </h2>
-          <div style={{ width: 60, height: 3, background: 'var(--mizan-purple)', margin: '0 auto', borderRadius: 99, opacity: 0.8 }} />
-        </motion.div>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-          gap: '1.25rem',
-        }}>
-          {FEATURES.map((f, i) => (
+        <main id="main">
+          {/* ── Hero ──────────────────────────────────────── */}
+          <section className="ld-hero">
+            <MizanHero completed={completedToday?.length ?? 0} total={5} />
             <motion.div
-              data-reveal
-              key={i}
-              style={{
-                padding: '2rem',
-                borderRadius: '24px',
-              }}
-              className="glass-card"
+              className="ld-hero-content"
+              variants={wrap}
+              initial="hidden"
+              animate={ready ? 'show' : 'hidden'}
             >
-              <div 
-                className="glass-icon-mizan"
-                style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', marginBottom: '1.25rem' }}>
-                {f.icon}
-              </div>
-              <h3 style={{
-                fontSize: '1.1rem', fontWeight: 700,
-                color: 'var(--text-primary)',
-                marginBottom: '0.4rem',
-                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-              }}>
-                {isAr ? f.ar : f.en}
-              </h3>
-              <p style={{
-                fontSize: '0.9rem', color: 'var(--text-secondary)',
-                lineHeight: 1.8, margin: 0,
-                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-              }}>
-                {f.desc[language] || f.desc.en}
-              </p>
+              <motion.p variants={item} className="ld-bismillah" lang="ar" dir="rtl">
+                بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيمِ
+              </motion.p>
+              <motion.h1 variants={item} className="ld-h1">
+                <span className="ld-h1-name" lang="ar">ميزان</span>
+                <span className="ld-h1-tag">{t('landingHero')}</span>
+              </motion.h1>
+              <motion.p variants={item} className="ld-sub">
+                {t('landingSubtitle')}
+              </motion.p>
+              <motion.div variants={item} className="ld-cta-row">
+                <button type="button" ref={ctaRef} className="btn-cta" onClick={goStart}
+                  style={{ transition: 'translate .35s var(--ease-spring)' }}>
+                  {t('landingStart')}
+                  <Forward size={18} aria-hidden="true" />
+                </button>
+                <a className="btn-ghost" href="#features">{t('landingSeeFeatures')}</a>
+              </motion.div>
             </motion.div>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      {/* ── CTA Banner ────────────────────────────────────────── */}
-      <section data-reveal className="glass-card" style={{
-        margin: '0 2rem 4rem',
-        padding: '6rem 2rem',
-        textAlign: 'center',
-        borderRadius: '40px',
-        background: 'rgba(108, 71, 255, 0.03)',
-      }}>
-        <div>
-          <p style={{
-            fontFamily: 'var(--font-arabic)',
-            fontSize: '1.8rem',
-            color: 'var(--mizan-purple)',
-            marginBottom: '0.5rem',
-            direction: 'rtl',
-            opacity: 0.9,
-          }}>
-            وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ
-          </p>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '2.5rem' }}>
-            الذاريات: ٥٦
-          </p>
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} style={{ display: 'inline-block' }}>
-            <button
-              onClick={() => navigate(user ? '/dashboard' : '/login')}
-              style={{
-                padding: '1.2rem 3.5rem',
-                borderRadius: '18px',
-                background: 'var(--mizan-gradient)',
-                color: '#ffffff',
-                fontWeight: 700, fontSize: '1.1rem',
-                border: 'none', cursor: 'pointer',
-                fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-              }}>
+          {/* ── Stats ─────────────────────────────────────── */}
+          <div className="ld-stats" data-reveal>
+            {STATS.map((s, i) => (
+              <div className="ld-stat" key={i}>
+                <div className="ld-stat-num">{nf.format(s.value)}</div>
+                <div className="ld-stat-label">{s.label[language] || s.label.en}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Features ──────────────────────────────────── */}
+          <section id="features" className="ld-section" aria-labelledby="features-h">
+            <div className="ld-section-head" data-reveal>
+              <h2 id="features-h">{t('landingFeatures')}</h2>
+              <p>{t('landingFeaturesSub')}</p>
+            </div>
+
+            <div className="ld-feature-grid">
+              {FEATURED.map((f, i) => (
+                <article className="ld-feature-card" data-reveal key={i}>
+                  <span className="ld-icon"><f.Icon size={20} aria-hidden="true" /></span>
+                  <h3>{isAr ? f.ar : f.en}</h3>
+                  <p>{f.desc[language] || f.desc.en}</p>
+                </article>
+              ))}
+            </div>
+
+            <div className="ld-feature-list">
+              {FEATURE_ROWS.map((f, i) => (
+                <div className="ld-feature-row" data-reveal key={i}>
+                  <span className="ld-icon"><f.Icon size={18} aria-hidden="true" /></span>
+                  <div className="ld-row-text">
+                    <h3>{isAr ? f.ar : f.en}</h3>
+                    <p>{f.desc[language] || f.desc.en}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── Verse + final CTA ─────────────────────────── */}
+          <section className="ld-verse" data-reveal>
+            <p className="ld-verse-text" lang="ar">
+              وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ
+            </p>
+            <p className="ld-verse-source">{isAr ? 'الذاريات: ٥٦' : 'Adh-Dhariyat 51:56'}</p>
+            <button type="button" className="btn-cta" onClick={goStart}>
               {t('landingStart')}
+              <Forward size={18} aria-hidden="true" />
             </button>
-          </motion.div>
-        </div>
-      </section>
+          </section>
+        </main>
 
-      {/* ── Footer ────────────────────────────────────────────── */}
-      <footer style={{
-        padding: '3rem 2rem',
-        borderTop: '1px solid var(--v-glass-border)',
-        display: 'grid',
-        gridTemplateColumns: '1fr auto 1fr',
-        alignItems: 'center', zIndex: 1, position: 'relative',
-        gap: '0.5rem',
-      }}>
-        <span style={{
-          fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
-          color: 'var(--mizan-purple)', fontSize: '1.2rem', fontWeight: 800,
-          textAlign: isAr ? 'right' : 'left',
-        }}>
-          {isAr ? 'ميزان' : 'Mizan'}
-        </span>
-        <span style={{
-          fontSize: '0.72rem', color: 'var(--text-muted)',
-          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', fontWeight: 600,
-          textAlign: 'center',
-        }}>
-          {isAr
-            ? '© ١٤٤٦ هـ / ٢٠٢٥ م · ميزان · جميع الحقوق محفوظة'
-            : '© 2025 Mizan · All rights reserved'}
-        </span>
-        <span style={{
-          fontSize: '0.75rem', color: 'var(--text-muted)',
-          fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
-          textAlign: isAr ? 'left' : 'right', fontWeight: 500,
-        }}>
-          {isAr ? 'التوازن في كل شيء' : 'Balance in All Things'}
-        </span>
-      </footer>
-
-      <style>{`
-        @media (max-width: 600px) {
-          div[style*="gridTemplateColumns: repeat(4, 1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
-          div[style*="gridTemplateColumns: repeat(auto-fill, minmax(340px, 1fr))"] { grid-template-columns: 1fr !important; }
-        }
-        .glass-card:hover {
-          border-color: rgba(108, 71, 255, 0.4) !important;
-          transform: translateY(-5px);
-          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-        }
-        .btn-magnetic {
-          transition: transform 0.2s var(--ease-spring);
-        }
-        .btn-magnetic:hover {
-          transform: scale(1.05);
-        }
-        .gradient-text {
-          background: var(--mizan-gradient);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          filter: drop-shadow(0 10px 20px rgba(108, 71, 255, 0.2));
-        }
-        * {
-          -webkit-font-smoothing: antialiased;
-        }
-      `}</style>
-    </div>
+        {/* ── Footer ──────────────────────────────────────── */}
+        <footer className="ld-footer">
+          <div className="ld-footer-inner">
+            <span className="brand" style={{ gap: '.45rem' }}>
+              <MizanMark size={22} animateIn={false} />
+              <span className="brand__name" style={{ fontSize: '1.15rem' }}>ميزان</span>
+            </span>
+            <span className="ld-footer-copy">
+              {isAr
+                ? '© ١٤٤٧ هـ / ٢٠٢٦ م · ميزان · جميع الحقوق محفوظة'
+                : '© 2026 Mizan · All rights reserved'}
+            </span>
+            <span className="ld-footer-tag">
+              {isAr ? 'التوازن في كل شيء' : 'Mizan — Balance in All Things'}
+            </span>
+          </div>
+        </footer>
+      </div>
+    </MotionConfig>
   )
 }

@@ -17,28 +17,28 @@ export default function StatsBar() {
       value: stats.streak || 0,
       label: t('streak'),
       color: 'var(--mizan-purple)',
-      dim: 'rgba(108,71,255,0.1)',
+      dim: 'rgba(51, 156, 255,0.1)',
     },
     {
       icon: '⭐',
       value: stats.points || 0,
       label: t('points'),
       color: 'var(--mizan-purple)',
-      dim: 'rgba(108,71,255,0.1)',
+      dim: 'rgba(51, 156, 255,0.1)',
     },
     {
       icon: '🕌',
       value: `${prayersDone}/5`,
       label: t('prayersDone'),
       color: 'var(--mizan-cyan)',
-      dim: 'rgba(0,201,255,0.1)',
+      dim: 'rgba(102, 181, 255,0.1)',
     },
     {
       icon: '📊',
       value: `${score}%`,
       label: t('productivity'),
       color: score >= 70 ? 'var(--mizan-cyan)' : score >= 40 ? 'var(--mizan-purple)' : 'var(--ruby)', // Ruby is still used for low score, which is fine.
-      dim: score >= 70 ? 'rgba(0,201,255,0.1)' : score >= 40 ? 'rgba(108,71,255,0.1)' : 'var(--ruby-dim)', // Ruby dim is fine.
+      dim: score >= 70 ? 'rgba(102, 181, 255,0.1)' : score >= 40 ? 'rgba(51, 156, 255,0.1)' : 'var(--ruby-dim)', // Ruby dim is fine.
       progress: score,
     },
   ]

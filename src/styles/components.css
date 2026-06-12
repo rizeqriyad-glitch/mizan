@@ -15,18 +15,18 @@
   cursor: pointer;
   border: none;
   transition: all var(--dur-fast) ease;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
 }
 
 .btn-primary {
   background: var(--mizan-gradient);
   color: white;
-  box-shadow: 0 8px 20px rgba(108, 71, 255, 0.3);
+  box-shadow: 0 8px 20px rgba(51, 156, 255, 0.3);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(108, 71, 255, 0.5);
+  box-shadow: 0 12px 30px rgba(51, 156, 255, 0.5);
 }
 
 .btn-primary:active {
@@ -199,7 +199,7 @@
 }
 
 .text-heading-2 {
-  font-family: var(--font-display);
+  font-family: var(--font-display-sm);
   font-size: clamp(1.5rem, 4vw, 2.5rem);
   font-weight: 600;
   line-height: 1.2;
@@ -207,14 +207,14 @@
 }
 
 .text-heading-3 {
-  font-family: var(--font-display);
+  font-family: var(--font-display-sm);
   font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.3;
 }
 
 .text-heading-4 {
-  font-family: var(--font-display);
+  font-family: var(--font-display-sm);
   font-size: 1.1rem;
   font-weight: 600;
   line-height: 1.4;

@@ -9,10 +9,10 @@ const CATEGORIES = ['catGeneral', 'catQuran', 'catHadith', 'catFiqh', 'catRemind
 
 const CAT_COLORS = {
   // Tinted toward Mizan brand hue (Rule D: Color & Contrast)
-  catGeneral:  { color: 'var(--mizan-purple)', bg: 'rgba(108, 71, 255, 0.1)' },
+  catGeneral:  { color: 'var(--mizan-purple)', bg: 'rgba(51, 156, 255, 0.1)' },
   catQuran:    { color: '#fbbf24',             bg: 'rgba(251, 191, 36, 0.1)' },
   catHadith:   { color: '#10b981',             bg: 'rgba(16, 185, 129, 0.1)' },
-  catFiqh:     { color: 'var(--mizan-cyan)',   bg: 'rgba(0, 201, 255, 0.1)'  },
+  catFiqh:     { color: 'var(--mizan-cyan)',   bg: 'rgba(102, 181, 255, 0.1)'  },
   catReminder: { color: '#f87171',             bg: 'rgba(248, 113, 113, 0.1)' },
 }
 
@@ -297,7 +297,7 @@ export default function NotesPage() {
                 fontSize: '0.72rem', padding: '0.25rem 0.65rem',
                 borderRadius: 'var(--radius-full)',
                 border: `1px solid ${filterCat === 'all' ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`,
-                background: filterCat === 'all' ? 'rgba(108,71,255,0.1)' : 'transparent',
+                background: filterCat === 'all' ? 'rgba(51, 156, 255,0.1)' : 'transparent',
                 color: filterCat === 'all' ? 'var(--text-primary)' : 'var(--text-muted)',
                 cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
               }}

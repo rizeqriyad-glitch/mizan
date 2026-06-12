@@ -24,8 +24,8 @@ export const FIXED_SECTIONS = [
 export const AppProvider = ({ children }) => {
   const { user, userProfile, updateProfile } = useAuth()
 
-  const [language, setLanguage]         = useState('en')
-  const [theme, setTheme]               = useState('dark')
+  const [language, setLanguage]         = useState(() => { try { return localStorage.getItem('mizan.lang') || 'ar' } catch { return 'ar' } })
+  const [theme, setTheme]               = useState(() => { try { return localStorage.getItem('mizan.theme') || 'dark' } catch { return 'dark' } })
   const [timeFormat, setTimeFormat]     = useState('12h')
   const [prayerNotifications, setPrayerNotifications] = useState(true)
   const [scheduleType, setScheduleTypeState]           = useState('prayer')  // 'prayer' | 'custom'
@@ -55,7 +55,7 @@ export const AppProvider = ({ children }) => {
   // Sync settings from profile
   useEffect(() => {
     if (userProfile) {
-      setLanguage(userProfile.language || 'en')
+      setLanguage(userProfile.language || 'ar')
       setTheme(userProfile.theme || 'dark')
       setTimeFormat(userProfile.timeFormat || '12h')
       setPrayerNotifications(userProfile.prayerNotifications !== false) // default true
@@ -70,36 +70,16 @@ export const AppProvider = ({ children }) => {
   // Apply theme to DOM
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-
-    // Inject Palestine Font and cleanup styles
-    const styleId = 'v-os-tokens';
-    let styleTag = document.getElementById(styleId);
-
-    if (!styleTag) {
-      styleTag = document.createElement('style');
-      styleTag.id = styleId;
-      document.head.appendChild(styleTag);
-    }
-
-    styleTag.innerHTML = `
-      @font-face {
-        font-family: 'Palestine';
-        src: url('/Palestine-Regular.otf') format('opentype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      h1, h2, h3, .brand-logo, .text-brand {
-        font-family: var(--font-brand) !important;
-      }
-    `;
+    // fonts now load via index.html @font-face; drop the legacy runtime injection
+    document.getElementById('v-os-tokens')?.remove()
+    try { localStorage.setItem('mizan.theme', theme) } catch (e) { /* private mode */ }
   }, [theme])
 
   // Apply language/RTL to DOM
   useEffect(() => {
     document.documentElement.setAttribute('lang', language)
     document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr')
+    try { localStorage.setItem('mizan.lang', language) } catch (e) { /* private mode */ }
   }, [language])
 
   // Resolve the best calculation method for a location.
@@ -262,12 +242,12 @@ export const AppProvider = ({ children }) => {
 
   const changeLanguage = async (lang) => {
     setLanguage(lang)
-    await updateProfile({ language: lang })
+    if (user) await updateProfile({ language: lang })
   }
 
   const changeTheme = async (t) => {
     setTheme(t)
-    await updateProfile({ theme: t })
+    if (user) await updateProfile({ theme: t })
   }
 
   const changeTimeFormat = async (fmt) => {
@@ -642,9 +622,11 @@ const translations = {
     notesSaveError: 'Failed to save. Check your connection.',
     dayHistoryTitle: 'Day History',
     landingHero: 'Balance in All Things',
-    landingSubtitle: 'Your Islamic productivity companion — prayers, adhkar, Quran, focus and learning in one place.',
-    landingStart: 'Get Started',
-    landingFeatures: 'Everything you need',
+    landingSubtitle: 'A day built around the five prayers: salah, adhkar, Quran and deep work, with a streak that holds.',
+    landingStart: 'Start your balanced day',
+    landingFeatures: 'A whole day around your salah',
+    landingFeaturesSub: 'Six tools, one rhythm: worship anchors the day, work fills the space between.',
+    landingSeeFeatures: 'See the features',
     landingAbout: 'About',
     startTask: 'Start Task',
     stopTask: 'Stop',
@@ -752,9 +734,11 @@ const translations = {
     notesSaveError: 'فشل الحفظ. تحقق من اتصالك.',
     dayHistoryTitle: 'تاريخ اليوم',
     landingHero: 'التوازن في كل شيء',
-    landingSubtitle: 'رفيقك في الإنتاجية الإسلامية — الصلوات والأذكار والقرآن والتركيز والتعلم في مكان واحد.',
-    landingStart: 'ابدأ الآن',
-    landingFeatures: 'كل ما تحتاجه',
+    landingSubtitle: 'يومك يُبنى حول الصلوات الخمس: صلاة، وذكر، وقرآن، وعمل عميق، وثباتٌ محفوظ يومًا بعد يوم.',
+    landingStart: 'ابدأ يومك المتزن',
+    landingFeatures: 'يومٌ كامل حول صلاتك',
+    landingFeaturesSub: 'ست أدوات بإيقاع واحد: العبادة تثبّت اليوم، والعمل يملأ ما بينها.',
+    landingSeeFeatures: 'استعرض المزايا',
     landingAbout: 'عن التطبيق',
     startTask: 'ابدأ المهمة',
     stopTask: 'إيقاف',

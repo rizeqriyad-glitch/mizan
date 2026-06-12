@@ -110,9 +110,9 @@ export default function AnalyticsPage() {
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }} className="analytics-grid">
         {[
-          { label: isAr ? 'المهام المكتملة' : 'Tasks Completed', value: totalDone, icon: '✅', color: 'var(--mizan-cyan)', dim: 'rgba(0,201,255,0.1)' },
-          { label: t('streak'), value: `${stats.streak || 0} ${isAr ? 'يوم' : 'days'}`, icon: '🔥', color: 'var(--mizan-purple)', dim: 'rgba(108,71,255,0.1)' },
-          { label: t('points'), value: stats.points || 0, icon: '⭐', color: 'var(--mizan-purple)', dim: 'rgba(108,71,255,0.1)' },
+          { label: isAr ? 'المهام المكتملة' : 'Tasks Completed', value: totalDone, icon: '✅', color: 'var(--mizan-cyan)', dim: 'rgba(102, 181, 255,0.1)' },
+          { label: t('streak'), value: `${stats.streak || 0} ${isAr ? 'يوم' : 'days'}`, icon: '🔥', color: 'var(--mizan-purple)', dim: 'rgba(51, 156, 255,0.1)' },
+          { label: t('points'), value: stats.points || 0, icon: '⭐', color: 'var(--mizan-purple)', dim: 'rgba(51, 156, 255,0.1)' },
         ].map((card, i) => (
           <motion.div
             key={card.label}
@@ -291,7 +291,7 @@ export default function AnalyticsPage() {
                         <div style={{
                           width: 28, height: 28,
                           borderRadius: '8px',
-                          background: done ? 'rgba(0,201,255,0.1)' : 'rgba(255,255,255,0.05)',
+                          background: done ? 'rgba(102, 181, 255,0.1)' : 'rgba(255,255,255,0.05)',
                           border: done ? '1px solid rgba(74,222,128,0.25)' : '1px solid var(--border)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           margin: '0 auto',
