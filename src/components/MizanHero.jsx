@@ -18,7 +18,10 @@ import { useEffect, useRef, useState } from 'react'
  *   - fallback ladder: reduced-motion / WebGL-fail / import-fail → CSS .aurora
  */
 
-const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js'
+/* Same URL as Mizan3DScene's static import — the module cache dedupes,
+   so only ONE three.js instance ever loads (no duplicate ~600KB, no
+   "Multiple instances of Three.js" warning). */
+const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js'
 const MAX_PARTICLES = 240
 
 const prefersReduce = () =>
@@ -140,7 +143,7 @@ export default function MizanHero({ completed = 0, total = 5 }) {
 
         const glass = new THREE.MeshPhysicalMaterial({
           color: 0xdfeaff, metalness: 0.05, roughness: 0.14,
-          transmission: 0.92, thickness: 0.5, transparent: true, opacity: 0.9,
+          transmission: 0.92, thickness: 0.5, transparent: true, opacity: 0.5,
         })
         const rimMatProto = new THREE.MeshStandardMaterial({
           color: 0x0a1a2f, emissive: 0x339cff, emissiveIntensity: 1.3,
@@ -190,7 +193,10 @@ export default function MizanHero({ completed = 0, total = 5 }) {
         panL = makePan(-2.35)
         panR = makePan(2.35)
         scaleGroup.add(beamGroup)
-        scaleGroup.position.y = -0.15
+        /* staging: the wordmark is the focal point — the scale sits behind it,
+           smaller and deeper into the fog, as a presence rather than a subject */
+        scaleGroup.position.set(0, -0.15, -1.4)
+        scaleGroup.scale.setScalar(0.82)
         scene.add(scaleGroup)
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.45))
@@ -273,7 +279,7 @@ export default function MizanHero({ completed = 0, total = 5 }) {
           const glowTarget = settled ? 2.6 : 1.3
           for (const m of rimMats) m.emissiveIntensity = damp(m.emissiveIntensity, glowTarget, 2.5, dt)
 
-          scaleGroup.position.y = -0.15 + Math.sin(t * 0.8) * 0.06
+          scaleGroup.position.y = -0.15 + Math.sin(t * 0.8) * 0.05
           finial.rotation.y += dt * 0.5
 
           camera.position.x = damp(camera.position.x, mouse.x * 0.55, 3, dt)

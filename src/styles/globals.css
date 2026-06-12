@@ -450,6 +450,7 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
 
 .btn-cta {
   display:inline-flex; align-items:center; justify-content:center; gap:.6rem;
+  white-space:nowrap;
   padding:.95rem 2.2rem;
   border-radius:var(--radius-md);
   background:var(--primary);
@@ -607,6 +608,10 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
   .ld-stat { flex-basis:50%; }
   .ld-stat:nth-child(3) { border-inline-start:none; }
   .ld-section { padding:3.5rem 1.25rem; }
+}
+@media (max-width: 560px) {
+  /* hero CTA is one scroll away; a wrapping nav CTA breaks the bar */
+  .ld-nav .btn-cta--sm { display:none; }
 }
 @media (max-width: 480px) {
   .ld-nav-inner { padding-inline:1rem; }
