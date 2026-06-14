@@ -8,6 +8,7 @@ import {
 import { useI18n } from '../contexts/I18nContext'
 import { useAuth } from '../contexts/AuthContext'
 import MizanMark from '../components/MizanMark'
+import LogoReveal from '../components/logo/LogoReveal'
 
 /* Featured pair gets card treatment; the rest are compact rows (no cloned grids). */
 const FEATURED = [
@@ -135,8 +136,7 @@ export default function LandingPage() {
         <nav className="ld-nav" aria-label={isAr ? 'الرئيسية' : 'Primary'}>
           <div className="ld-nav-inner">
             <a href="/" className="brand" aria-label="ميزان — الصفحة الرئيسية" onClick={onBrandClick}>
-              <MizanMark size={30} animateIn={false} />
-              <span className="brand__name">ميزان</span>
+              <LogoReveal scale={0.75} />
             </a>
             <div className="ld-nav-actions">
               <button type="button" className="btn-ui" onClick={() => changeLanguage(isAr ? 'en' : 'ar')}>

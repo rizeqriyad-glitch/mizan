@@ -705,6 +705,21 @@ export default function AdhkarSection() {
                     {adhkar.arabic}
                   </p>
 
+                  {/* Source / verse reference */}
+                  {adhkar.source && (
+                    <p style={{
+                      fontSize: '12px',
+                      color: 'var(--text-muted)',
+                      fontFamily: "'Palestine', sans-serif",
+                      marginTop: '4px',
+                      marginBottom: '0.75rem',
+                      direction: 'rtl',
+                      textAlign: 'right',
+                    }}>
+                      {adhkar.source}
+                    </p>
+                  )}
+
                   {/* English translation */}
                   {language === 'en' && (
                     <p style={{

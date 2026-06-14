@@ -36,7 +36,7 @@ export default function QuranReader() {
   const { language, t } = useI18n()
   const isAr = language === 'ar'
 
-  const [expanded,    setExpanded]    = useState(false)
+  const [expanded,    setExpanded]    = useState(true)
   const [page,        setPage]        = useState(loadPage)
   const [jumpInput,   setJumpInput]   = useState('')
   const [arabicAyahs, setArabicAyahs] = useState([])

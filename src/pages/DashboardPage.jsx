@@ -129,7 +129,7 @@ const PRAYER_COLS_DB = [
   { id: 'fajr',    icon: prayerGlyph('fajr'),    en: 'Fajr',    ar: 'الفجر',   color: 'var(--sapphire)' },
   { id: 'dhuhr',   icon: prayerGlyph('dhuhr'),   en: 'Dhuhr',   ar: 'الظهر',   color: 'var(--gold)'     },
   { id: 'asr',     icon: prayerGlyph('asr'),     en: 'Asr',     ar: 'العصر',   color: 'var(--emerald)'  },
-  { id: 'maghrib', icon: prayerGlyph('maghrib'), en: 'Maghrib',  ar: 'المغرب',  color: 'var(--ruby)'     },
+  { id: 'maghrib', icon: prayerGlyph('maghrib'), en: 'Maghrib',  ar: 'المغرب',  color: 'var(--primary-300)'  },
   { id: 'isha',    icon: prayerGlyph('isha'),    en: 'Isha',    ar: 'العشاء',  color: 'var(--sapphire)' },
 ]
 const FULL_DAYS_DB = [
@@ -141,7 +141,7 @@ const FULL_DAYS_DB = [
   { key: 'fri', en: 'Friday',    ar: 'الجمعة'    },
   { key: 'sat', en: 'Saturday',  ar: 'السبت'     },
 ]
-const COLOR_MAP_DB = { gold: 'var(--gold)', emerald: 'var(--emerald)', sapphire: 'var(--sapphire)', ruby: 'var(--ruby)' }
+const COLOR_MAP_DB = { gold: 'var(--gold)', emerald: 'var(--emerald)', sapphire: 'var(--sapphire)', ruby: 'var(--primary-500)' }
 
 // ── SavedScheduleSection ──────────────────────────────────────────────────────
 function SavedScheduleSection() {
