@@ -483,7 +483,7 @@ function AddGoalModal({ onClose, onAdd, isAr }) {
             </label>
             <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} // Input field
               min={todayStr()}
-              style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', border: `1px solid ${deadline ? c.main + '80' : 'var(--border)'}`, borderRadius: 'var(--radius-md)', padding: '0.55rem 0.875rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', colorScheme: 'dark', transition: 'border-color 0.2s' }}
+              style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', border: `1px solid ${deadline ? c.main + '80' : 'var(--border)'}`, borderRadius: 'var(--radius-md)', padding: '0.55rem 0.875rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', colorScheme: 'light', transition: 'border-color 0.2s' }}
             />
           </div>
 

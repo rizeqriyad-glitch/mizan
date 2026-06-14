@@ -1,9 +1,9 @@
 /* ============================================================
-   MIZAN — Global Design System · "Jet Black" (dark only)
+   MIZAN — Global Design System · "Prussian Blue" (light only)
    ------------------------------------------------------------
-   Palette: jet 50→950. Background 950 · surfaces 900/800 ·
-   borders rgba(white,0.07/0.13) · muted text 400 · body 50 ·
-   primary accent 300 (hover 200). Dark mode only, no toggle.
+   Palette: prussian 50→950. Background #fff · surfaces f5f6fa/ededf5 ·
+   borders rgba(black,0.08/0.18) · muted text #8a8aaa · body #0a0a12 ·
+   primary accent prussian-500 (hover prussian-400). Light mode only, no toggle.
 
    Legacy bridge: every old token name (--mizan-*, --bg-*,
    --accent-purple*, --gold/--ruby/… , --v-*) is aliased to the
@@ -75,47 +75,77 @@
   --transition:.2s cubic-bezier(.4,0,.2,1);
   --transition-slow:.4s cubic-bezier(.4,0,.2,1);
 
-  /* ══ Semantic tokens — JET BLACK DARK ══════════════════ */
-  --bg:        var(--jet-950);
-  --surface:   var(--jet-900);
-  --surface-2: var(--jet-800);
-  --text:      var(--jet-50);
-  --text-2:    var(--jet-200);
-  --text-3:    var(--jet-400);
-  --border:    rgba(255,255,255,0.07);
-  --border-2:  rgba(255,255,255,0.13);
-  --primary:   var(--jet-300);
-  --primary-300: var(--jet-300);
-  --primary-500: var(--jet-500);
-  --primary-contrast: var(--jet-950);
-  --primary-hover: var(--jet-200);
-  --accent:    var(--jet-500);
-  --ring:      var(--jet-400);
-  --info:      var(--jet-300);
-  --grid-line: rgba(255,255,255,0.05);
+  /* ══ Prussian Blue palette ═════════════════════════════ */
+  --primary-50:  #eeeff6;
+  --primary-100: #dde0ee;
+  --primary-200: #bbc1dd;
+  --primary-300: #99a2cc;
+  --primary-400: #7783bb;
+  --primary-500: #5563aa;
+  --primary-600: #445088;
+  --primary-700: #333c66;
+  --primary-800: #222844;
+  --primary-900: #111422;
+  --primary-950: #0c0e18;
+  --primary-rgb: 85, 99, 170;
+  --gradient-primary: linear-gradient(135deg, #7783bb, #333c66);
+  --gradient-text:    linear-gradient(135deg, #99a2cc, #5563aa);
+  --gradient-glow:    radial-gradient(ellipse at 50% 50%, #5563aa 0%, transparent 70%);
+  --focus-ring:       0 0 0 3px rgba(85, 99, 170, 0.3);
+
+  /* ══ Semantic tokens — PRUSSIAN BLUE LIGHT ═══════════════ */
+  --bg:        #ffffff;
+  --surface:   #f5f6fa;
+  --surface-2: #ededf5;
+  --text:      #0a0a12;
+  --text-2:    #4a4a6a;
+  --text-3:    #8a8aaa;
+  --border:    rgba(0,0,0,0.08);
+  --border-2:  rgba(0,0,0,0.18);
+  --primary:   var(--primary-500);
+  --primary-hover: var(--primary-400);
+  --primary-contrast: #ffffff;
+  --accent:    var(--primary-500);
+  --ring:      var(--primary-400);
+  --info:      var(--primary-400);
+  --grid-line: rgba(0,0,0,0.05);
   --success: #22c55e; --success-dim: rgba(34,197,94,0.13);
   --warning: #f59e0b; --warning-dim: rgba(245,158,11,0.13);
   --error:   #ef4444; --error-dim: rgba(239,68,68,0.13);
-  --info-dim: rgba(164,169,193,0.13);
-  color-scheme: dark;
+  --info-dim: rgba(85,99,170,0.13);
+  color-scheme: light;
+
+  /* light-mode extra tokens */
+  --bg-canvas:    #ffffff;
+  --bg-primary:   #ffffff;
+  --bg-secondary: #f5f6fa;
+  --bg-tertiary:  #ededf5;
+  --bg-elevated:  #ffffff;
+  --text-disabled: #c0c0d0;
+  --hover-bg:   rgba(0,0,0,0.04);
+  --active-bg:  rgba(0,0,0,0.08);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow:    0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.12);
+  --shadow-xl: 0 32px 64px rgba(0,0,0,0.16);
 
   /* ══ Legacy bridge (do not use in new code) ════════════ */
   --mizan-purple:   var(--primary);
   --mizan-cyan:     var(--info);
-  --mizan-gradient: linear-gradient(135deg, var(--jet-400), var(--jet-200));
-  --mizan-dark:     var(--jet-950);
+  --mizan-gradient: var(--gradient-primary);
+  --mizan-dark:     var(--primary-950);
   --mizan-surface:  var(--surface);
   --mizan-base:     var(--bg);
 
   --bg-base:var(--bg); --bg-surface:var(--surface); --bg-card:var(--surface);
-  --bg-card-hover:var(--surface-2); --bg-input:var(--surface-2);
-  --bg-overlay:color-mix(in oklab, var(--bg) 88%, transparent);
+  --bg-card-hover:var(--surface-2); --bg-input:var(--bg-secondary);
+  --bg-overlay:rgba(0,0,0,0.5);
 
   --border-strong:var(--border-2);
   --border-focus:var(--ring);
 
-  --text-primary:var(--text); --text-secondary:var(--text-2);
-  --text-muted:var(--text-3); --text-inverse:var(--primary-contrast);
+  --text-primary:#0a0a12; --text-secondary:#4a4a6a;
+  --text-muted:#8a8aaa; --text-inverse:#ffffff;
 
   --accent-purple:var(--primary);
   --accent-purple-light:var(--ring);
@@ -131,16 +161,16 @@
   --sapphire:var(--info);      --sapphire-dim:var(--info-dim);
   --amber:var(--warning);      --amber-dim:var(--warning-dim);
 
-  --glass-bg: rgba(255,255,255,0.04);
-  --glass-border: rgba(255,255,255,0.08);
+  --glass-bg: rgba(255,255,255,0.7);
+  --glass-border: rgba(0,0,0,0.06);
   --glass-blur: blur(20px) saturate(180%);
-  --glass-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+  --glass-shadow: 0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
   --v-glass-bg:var(--glass-bg); --v-glass-border:var(--glass-border);
   --v-shadow:var(--glass-shadow);
 }
 
-/* Dark is the only theme */
-[data-theme="dark"] { color-scheme: dark; }
+/* Light is the only theme */
+[data-theme="light"] { color-scheme: light; }
 
 /* ── Language-resolved font roles ───────────────────────── */
 html[lang="ar"] {
@@ -210,7 +240,7 @@ html[lang="ar"] :is(h1,h2,h3) { font-family:var(--font-brand); font-weight:400; 
 .text-purple { color:var(--primary); }
 .text-cyan   { color:var(--info); }
 .text-gradient, .gradient-text {
-  background: linear-gradient(135deg, var(--jet-100), var(--jet-400));
+  background: var(--gradient-text);
   -webkit-background-clip:text; background-clip:text;
   -webkit-text-fill-color:transparent;
 }
@@ -224,6 +254,7 @@ html[lang="ar"] :is(h1,h2,h3) { font-family:var(--font-brand); font-weight:400; 
   backdrop-filter:var(--glass-blur);
   -webkit-backdrop-filter:var(--glass-blur);
   border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow);
 }
 .glass-card {
   background:var(--glass-bg);
@@ -238,8 +269,8 @@ html[lang="ar"] :is(h1,h2,h3) { font-family:var(--font-brand); font-weight:400; 
 }
 .glass-card:hover {
   transform:translateY(-3px);
-  border-color: rgba(164,169,193,0.2);
-  box-shadow: 0 10px 32px rgba(103,112,152,0.2), 0 0 0 1px rgba(164,169,193,0.1);
+  border-color: rgba(153,162,204,0.3);
+  box-shadow: 0 10px 32px rgba(85,99,170,0.15), 0 0 0 1px rgba(153,162,204,0.15);
 }
 
 .glass-icon-mizan {
@@ -254,7 +285,7 @@ html[lang="ar"] :is(h1,h2,h3) { font-family:var(--font-brand); font-weight:400; 
 }
 .glass-icon-mizan:hover {
   transform:translateY(-3px);
-  border-color: rgba(164,169,193,0.3);
+  border-color: rgba(153,162,204,0.4);
 }
 
 /* ── RTL helpers (legacy names) ─────────────────────────── */
@@ -376,9 +407,9 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
   position:absolute; inset:-20%;
   filter:blur(64px); opacity:.35; pointer-events:none;
   background:
-    radial-gradient(35% 45% at 24% 28%, color-mix(in oklab, var(--jet-600) 45%, transparent), transparent 70%),
-    radial-gradient(40% 50% at 76% 22%, color-mix(in oklab, var(--jet-700) 35%, transparent), transparent 70%),
-    radial-gradient(45% 55% at 50% 84%, color-mix(in oklab, var(--jet-500) 55%, transparent), transparent 72%);
+    radial-gradient(35% 45% at 24% 28%, color-mix(in oklab, var(--primary-300) 45%, transparent), transparent 70%),
+    radial-gradient(40% 50% at 76% 22%, color-mix(in oklab, var(--primary-200) 35%, transparent), transparent 70%),
+    radial-gradient(45% 55% at 50% 84%, color-mix(in oklab, var(--primary-400) 55%, transparent), transparent 72%);
   animation:aurora 18s var(--ease-in-out) infinite alternate;
 }
 @keyframes aurora { to { transform:rotate(6deg) scale(1.12) translateY(-4%); } }
@@ -597,15 +628,15 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
 .crimson-hero-bg { position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
 .crimson-hero-bg::before {
   content:''; position:absolute; inset:0;
-  background: linear-gradient(135deg, var(--jet-950) 0%, var(--jet-900) 55%, var(--jet-800) 100%);
+  background: linear-gradient(135deg, var(--bg) 0%, var(--surface) 55%, var(--surface-2) 100%);
 }
 .crimson-hero-bg::after {
   content:''; position:absolute; inset:0;
-  background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(103,112,152,0.07) 0%, transparent 70%);
+  background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(85,99,170,0.07) 0%, transparent 70%);
 }
 .crimson-blob {
   position:absolute; border-radius:50%;
-  background: radial-gradient(circle, rgba(103,112,152,0.09) 0%, rgba(103,112,152,0) 70%);
+  background: radial-gradient(circle, rgba(85,99,170,0.09) 0%, rgba(85,99,170,0) 70%);
   filter:blur(40px);
   will-change:transform;
 }
@@ -623,7 +654,7 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
 .mizan-table-wrap {
   border-radius:16px;
   border:1px solid var(--border-2);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
   overflow:auto;
   max-height:560px;
   -webkit-overflow-scrolling:touch;
@@ -632,7 +663,7 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
 .mizan-table { width:100%; border-collapse:separate; border-spacing:0; }
 .mizan-table th {
   position:sticky; top:0; z-index:2;
-  background: var(--jet-700); color: var(--text);
+  background: var(--primary-700); color: var(--text-inverse);
   font-family:var(--font-brand); font-weight:400;
   font-size:1.02rem;
   padding:14px 20px;
@@ -642,7 +673,7 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
 .mizan-table tbody tr:nth-child(odd)  td { background: var(--surface); }
 .mizan-table tbody tr:nth-child(even) td { background: var(--surface-2); }
 .mizan-table tbody tr { transition:background 200ms var(--ease-out); }
-.mizan-table tbody tr:hover td { background: var(--jet-700); }
+.mizan-table tbody tr:hover td { background: var(--primary-100); }
 
 /* ════════════════════════════════════════════════════════
    SLIDE-DOWN PANEL (notes editor · calendar day log)

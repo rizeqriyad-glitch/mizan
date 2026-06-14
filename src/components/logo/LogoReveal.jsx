@@ -36,7 +36,7 @@ export default function LogoReveal({ scale = 1 }) {
           ) : (
             <motion.path
               key={i} d={p.d}
-              stroke="var(--primary-500)" strokeWidth="2.5"
+              stroke="var(--primary-600)" strokeWidth="2.5"
               initial={{ pathLength: 0, opacity: 0 }}
               animate={{ pathLength: 1, opacity: 1 }}
               transition={{

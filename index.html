@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="dark" class="dark">
+<html lang="ar" dir="rtl" data-theme="light">
   <head>
     <!-- ══ PROJECT MEMORY · do not delete ════════════════════════════
     brand    : ميزان (Mizan) — Islamic productivity around the 5 prayers
     lang     : ar primary (rtl) · en secondary · lang/dir synced by AppContext
-    palette  : "Crimson Dawn" — crimson-carrot only, LIGHT ONLY (no toggle):
-               bg 50 #ffece6 · surface 100 #fedacd · border 200 #fdb59b ·
-               text 900/#320e01 + 700/#972a02 · CTA 500 #fb4604 hover 600
+    palette  : "Prussian Blue" — light only, no toggle:
+               bg #ffffff · surface #f5f6fa · border rgba(0,0,0,0.08) ·
+               text #0a0a12 · primary #5563aa (prussian-500) hover #7783bb
     fonts    : wordmark + AR h1–h3 = Palestine · AR body/UI = Al Jazeera
                (300/400/700) — all subset woff2 via scripts/subset-fonts.mjs
                (harfbuzz keeps GSUB/GPOS = Arabic joining) · EN display =
@@ -26,7 +26,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/mizan-icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0e1015" />
+    <meta name="theme-color" content="#ffffff" />
     <title>ميزان — Mizan | Productivity Around the Five Prayers</title>
     <meta name="description" content="ميزان — Islamic productivity built around the five daily prayers: salah tracking, morning and evening adhkar, Quran reading and deep-work focus, with a streak that holds." />
     <meta property="og:title" content="ميزان — Mizan" />
@@ -42,8 +42,7 @@
         var l = 'ar';
         try { l = localStorage.getItem('mizan.lang') || 'ar'; } catch (e) {}
         var d = document.documentElement;
-        d.dataset.theme = 'dark';
-        d.classList.add('dark');
+        d.dataset.theme = 'light';
         d.setAttribute('lang', l === 'en' ? 'en' : 'ar');
         d.setAttribute('dir', l === 'en' ? 'ltr' : 'rtl');
       })();
