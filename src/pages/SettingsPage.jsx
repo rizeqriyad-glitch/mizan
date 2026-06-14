@@ -232,7 +232,7 @@ export default function SettingsPage() {
           ) : (
             <div className="glass-icon-mizan" style={{
               width: 48, height: 48, borderRadius: '50%',
-              background: 'rgba(251, 70, 4,0.1)',
+              background: 'rgba(164, 169, 193,0.1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'var(--mizan-purple)', fontWeight: 600,
             }}>
@@ -249,8 +249,8 @@ export default function SettingsPage() {
             <div style={{
               padding: '0.25rem 0.75rem',
               borderRadius: '9999px', // Mizan token for full-pill
-              background: 'rgba(201, 56, 3,0.1)',
-              border: '1px solid rgba(201, 56, 3,0.2)',
+              background: 'rgba(103, 112, 152,0.1)',
+              border: '1px solid rgba(103, 112, 152,0.2)',
               color: 'var(--emerald)',
               fontSize: '0.72rem',
             }}>
@@ -403,7 +403,7 @@ export default function SettingsPage() {
             <div style={{
               width: 48, height: 48,
               borderRadius: '14px',
-              background: 'rgba(251, 70, 4,0.1)',
+              background: 'rgba(164, 169, 193,0.1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '1.6rem',
               color: 'var(--primary)',

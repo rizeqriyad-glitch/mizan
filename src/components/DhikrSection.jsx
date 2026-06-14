@@ -171,9 +171,9 @@ export default function DhikrSection() {
           </span>
           <span style={{
             fontSize: '0.7rem',
-            background: totalDone === DHIKR_LIST.length ? 'rgba(201, 56, 3,0.1)' : 'rgba(251, 70, 4,0.1)',
+            background: totalDone === DHIKR_LIST.length ? 'rgba(103, 112, 152,0.1)' : 'rgba(164, 169, 193,0.1)',
             color: totalDone === DHIKR_LIST.length ? 'var(--mizan-cyan)' : 'var(--mizan-purple)',
-            border: `1px solid ${totalDone === DHIKR_LIST.length ? 'rgba(201, 56, 3,0.2)' : 'rgba(251, 70, 4,0.2)'}`,
+            border: `1px solid ${totalDone === DHIKR_LIST.length ? 'rgba(103, 112, 152,0.2)' : 'rgba(164, 169, 193,0.2)'}`,
             borderRadius: 'var(--radius-full)',
             padding: '0.1rem 0.5rem',
           }}>

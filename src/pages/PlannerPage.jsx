@@ -111,7 +111,7 @@ function XPBar({ gamification, isAr }) {
       {/* Level badge */}
       <div style={{
         width: 56, height: 56, borderRadius: '50%',
-        background: 'rgba(251, 70, 4,0.1)', border: '2px solid var(--mizan-purple)',
+        background: 'rgba(164, 169, 193,0.1)', border: '2px solid var(--mizan-purple)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
       }}>
@@ -148,15 +148,15 @@ function XPBar({ gamification, isAr }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0.4rem',
         padding: '0.4rem 0.875rem',
-        background: streak > 0 ? 'rgba(251, 70, 4,0.1)' : 'var(--bg-input)',
+        background: streak > 0 ? 'rgba(164, 169, 193,0.1)' : 'var(--bg-input)',
         borderRadius: 'var(--radius-full)',
-        border: `1px solid ${streak > 0 ? 'rgba(251,146,60,0.35)' : 'var(--border)'}`,
+        border: `1px solid ${streak > 0 ? 'rgba(134, 141, 172,0.35)' : 'var(--border)'}`,
         flexShrink: 0,
       }}>
         <span style={{ fontSize: '1rem', color: 'var(--primary)' }}>{streak > 0 ? glyph('streak') : glyph('moon')}</span>
         <div style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
           <span style={{ fontSize: '0.88rem', fontWeight: 700, color: streak > 0 ? 'rgb(251,146,60)' : 'var(--text-muted)' }}>{streak}</span>
-          <span style={{ fontSize: '0.72rem', color: streak > 0 ? 'rgba(251,146,60,0.8)' : 'var(--text-muted)', marginLeft: '0.3rem' }}>
+          <span style={{ fontSize: '0.72rem', color: streak > 0 ? 'rgba(134, 141, 172,0.8)' : 'var(--text-muted)', marginLeft: '0.3rem' }}>
             {isAr ? 'يوم' : streak === 1 ? 'day' : 'days'}
           </span>
         </div>
@@ -247,7 +247,7 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
       style={{
         borderRadius: '16px',
         background: 'var(--bg-card)',
-        border: `1px solid ${goalDone ? 'rgba(201, 56, 3,0.2)' : 'var(--v-glass-border)'}`,
+        border: `1px solid ${goalDone ? 'rgba(103, 112, 152,0.2)' : 'var(--v-glass-border)'}`,
         borderTop: `3px solid ${goalDone ? 'var(--emerald)' : color.main}`,
         boxShadow: '0 4px 18px rgba(0,0,0,0.10)',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -706,7 +706,7 @@ function SectionCard({ section, tasks, dayStr, isAr, language, accentColor, pray
                 {(task.reminderTime || task.duration > 0) && !task.completed && (
                   <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
                     {task.reminderTime && ( // Reminder badge
-                      <span style={{ fontSize: '0.62rem', color: 'var(--mizan-cyan)', background: 'rgba(201, 56, 3,0.1)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>{glyph('bell', 11)}{fmt12h(task.reminderTime)}</span> // Mizan cyan
+                      <span style={{ fontSize: '0.62rem', color: 'var(--mizan-cyan)', background: 'rgba(103, 112, 152,0.1)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>{glyph('bell', 11)}{fmt12h(task.reminderTime)}</span> // Mizan cyan
                     )}
                     {task.duration > 0 && ( // Duration badge
                       <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>{glyph('timer', 11)}{fmtDur(task.duration)}</span> // Glass background
@@ -1092,7 +1092,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
     const c = done ? 'var(--emerald)' : accent
     return (
       <div onClick={() => toggleItem(item)}
-        style={{ display: 'flex', alignItems: 'center', gap: compact ? '0.25rem' : '0.35rem', padding: compact ? '0.25rem 0.35rem' : '0.3rem 0.4rem', background: done ? 'rgba(201, 56, 3,0.1)' : c + '10', borderLeft: `2px solid ${c}`, borderRadius: compact ? 6 : 7, marginBottom: compact ? '0.25rem' : '0.3rem', cursor: 'pointer', transition: 'all 0.18s', userSelect: 'none' }}
+        style={{ display: 'flex', alignItems: 'center', gap: compact ? '0.25rem' : '0.35rem', padding: compact ? '0.25rem 0.35rem' : '0.3rem 0.4rem', background: done ? 'rgba(103, 112, 152,0.1)' : c + '10', borderLeft: `2px solid ${c}`, borderRadius: compact ? 6 : 7, marginBottom: compact ? '0.25rem' : '0.3rem', cursor: 'pointer', transition: 'all 0.18s', userSelect: 'none' }}
         onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
         onMouseLeave={e => e.currentTarget.style.opacity = '1'}
       >
@@ -1166,7 +1166,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
       )}
 
       {type === 'custom-daily' && (
-        <div className="glass-card" style={{ maxWidth: 560, margin: '0 auto', borderRadius: '16px', border: '1px solid rgba(201, 56, 3,0.25)', overflow: 'hidden' }}>
+        <div className="glass-card" style={{ maxWidth: 560, margin: '0 auto', borderRadius: '16px', border: '1px solid rgba(103, 112, 152,0.25)', overflow: 'hidden' }}>
           <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(74,222,128,0.12)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontSize: '0.85rem' }}>{glyph('calendarDays', 13)}</span>
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', flex: 1 }}>
@@ -1545,7 +1545,7 @@ function DailyCustomView({ isAr, language, onBack }) {
 
       {/* Single column */}
       <div style={{ maxWidth: 560, margin: '0 auto' }}>
-        <div className="glass-card" style={{ borderRadius: '18px', border: '1px solid rgba(201, 56, 3,0.25)', borderTop: '3px solid var(--emerald)', overflow: 'hidden', boxShadow: '0 6px 24px rgba(201, 56, 3,0.08)' }}> // Mizan cyan
+        <div className="glass-card" style={{ borderRadius: '18px', border: '1px solid rgba(103, 112, 152,0.25)', borderTop: '3px solid var(--emerald)', overflow: 'hidden', boxShadow: '0 6px 24px rgba(103, 112, 152,0.08)' }}> // Mizan cyan
           <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(74,222,128,0.12)', background: 'linear-gradient(135deg, rgba(74,222,128,0.08) 0%, transparent 100%)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0, color: 'var(--emerald)' }}>{glyph('calendarDays')}</div>
             <div style={{ flex: 1 }}>
@@ -1810,7 +1810,7 @@ export default function PlannerPage() {
           </div>
           <motion.button onClick={() => setShowAddGoal(true)}
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-            style={{ padding: '0.7rem 1.5rem', borderRadius: '12px', border: 'none', background: 'var(--mizan-gradient)', color: '#ffffff', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', whiteSpace: 'nowrap', boxShadow: '0 8px 20px rgba(251, 70, 4,0.3)' }}
+            style={{ padding: '0.7rem 1.5rem', borderRadius: '12px', border: 'none', background: 'var(--mizan-gradient)', color: '#ffffff', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', whiteSpace: 'nowrap', boxShadow: '0 8px 20px rgba(164, 169, 193,0.3)' }}
           >
             {isAr ? '+ هدف جديد' : '+ New Goal'}
           </motion.button>
@@ -1830,7 +1830,7 @@ export default function PlannerPage() {
                 display: 'flex', alignItems: 'center', gap: '0.4rem',
                 padding: '0.55rem 1.25rem', borderRadius: '9999px',
                 border: `1px solid ${active ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`,
-                background: active ? 'rgba(251, 70, 4,0.1)' : 'transparent', // Mizan purple background
+                background: active ? 'rgba(164, 169, 193,0.1)' : 'transparent', // Mizan purple background
                 color: active ? 'var(--gold)' : 'var(--text-muted)',
                 fontSize: '0.85rem', fontWeight: active ? 600 : 400,
                 cursor: 'pointer', transition: 'all var(--transition)',
@@ -1863,7 +1863,7 @@ export default function PlannerPage() {
               style={{
                 padding: '0.45rem 1rem', borderRadius: 'var(--radius-full)',
                 border: `1px solid ${active ? (isOverdue ? 'var(--mizan-cyan)' : 'var(--mizan-purple)') : 'var(--v-glass-border)'}`,
-                background: active ? (isOverdue ? 'rgba(201, 56, 3,0.1)' : 'rgba(251, 70, 4,0.1)') : 'transparent',
+                background: active ? (isOverdue ? 'rgba(103, 112, 152,0.1)' : 'rgba(164, 169, 193,0.1)') : 'transparent',
                 color: active ? (isOverdue ? 'var(--mizan-cyan)' : 'var(--mizan-purple)') : 'var(--text-muted)',
                 fontSize: '0.82rem', fontWeight: active ? 600 : 400,
                 cursor: 'pointer', transition: 'all var(--transition)',
@@ -1914,9 +1914,9 @@ export default function PlannerPage() {
             </div>
             {filter === 'all' && (
               <button onClick={() => setShowAddGoal(true)}
-                style={{ padding: '0.7rem 1.75rem', borderRadius: '10px', border: '1px solid rgba(251, 70, 4,0.3)', background: 'rgba(251, 70, 4,0.1)', color: 'var(--mizan-purple)', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all var(--transition)' }} // Mizan purple button
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(251, 70, 4,0.2)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(251, 70, 4,0.1)'}
+                style={{ padding: '0.7rem 1.75rem', borderRadius: '10px', border: '1px solid rgba(164, 169, 193,0.3)', background: 'rgba(164, 169, 193,0.1)', color: 'var(--mizan-purple)', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all var(--transition)' }} // Mizan purple button
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(164, 169, 193,0.2)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(164, 169, 193,0.1)'}
               >
                 {isAr ? '+ إضافة هدف' : '+ Add Your First Goal'}
               </button>
@@ -1937,7 +1937,7 @@ export default function PlannerPage() {
             {BADGES_DEF.map(b => {
               const earned = (gamification.badges || []).includes(b.id)
               return (
-                <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.875rem', borderRadius: '10px', border: `1px solid ${earned ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`, background: earned ? 'rgba(251, 70, 4,0.1)' : 'var(--bg-input)', opacity: earned ? 1 : 0.4, transition: 'all 0.3s' }}>
+                <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.875rem', borderRadius: '10px', border: `1px solid ${earned ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`, background: earned ? 'rgba(164, 169, 193,0.1)' : 'var(--bg-input)', opacity: earned ? 1 : 0.4, transition: 'all 0.3s' }}>
                   <span style={{ fontSize: '1.1rem' }}>{b.icon}</span>
                   <span style={{ fontSize: '0.8rem', fontWeight: earned ? 600 : 400, color: earned ? 'var(--gold)' : 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                     {isAr ? b.ar : b.en}
@@ -1964,7 +1964,7 @@ export default function PlannerPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 64, scale: 0.88 }}
             transition={{ type: 'spring', stiffness: 220, damping: 22 }} // This is a toast, fine.
-            style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: '0.9rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.875rem', boxShadow: '0 8px 32px rgba(251, 70, 4,0.35)', zIndex: 999, minWidth: 240, maxWidth: 360, direction: isAr ? 'rtl' : 'ltr', pointerEvents: 'none' }}
+            style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: '0.9rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.875rem', boxShadow: '0 8px 32px rgba(164, 169, 193,0.35)', zIndex: 999, minWidth: 240, maxWidth: 360, direction: isAr ? 'rtl' : 'ltr', pointerEvents: 'none' }}
           >
             <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.4 }} style={{ fontSize: '1.85rem', flexShrink: 0 }}>
               {toast.icon}

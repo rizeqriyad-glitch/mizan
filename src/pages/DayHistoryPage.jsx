@@ -18,10 +18,10 @@ const WD_EN = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 // crimson-carrot heat ramp by activity count
 function heat(n) {
   if (!n) return 'var(--surface)'
-  if (n <= 1) return 'rgba(251,70,4,0.20)'
-  if (n <= 2) return 'rgba(251,70,4,0.40)'
-  if (n <= 4) return 'rgba(251,70,4,0.62)'
-  return 'rgba(251,70,4,0.88)'
+  if (n <= 1) return 'rgba(164, 169, 193,0.20)'
+  if (n <= 2) return 'rgba(164, 169, 193,0.40)'
+  if (n <= 4) return 'rgba(164, 169, 193,0.62)'
+  return 'rgba(164, 169, 193,0.88)'
 }
 const heatText = n => (n >= 3 ? '#fff' : 'var(--text)')
 

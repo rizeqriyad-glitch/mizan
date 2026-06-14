@@ -152,7 +152,7 @@ export default function Layout() {
             ) : (
               <div style={{
                 width: 34, height: 34, borderRadius: '50%',
-                background: 'rgba(251, 70, 4,0.1)', display: 'flex', // Mizan purple background
+                background: 'rgba(164, 169, 193,0.1)', display: 'flex', // Mizan purple background
                 alignItems: 'center', justifyContent: 'center',
                 color: 'var(--mizan-purple)', fontWeight: 600, fontSize: '0.85rem', // Mizan purple color
               }}> {/* User initial icon */}
@@ -196,7 +196,7 @@ export default function Layout() {
                 fontWeight: 500,
                 color: isActive ? 'var(--gold)' : 'var(--text-secondary)',
                 background: isActive ? 'var(--gold-dim)' : 'transparent',
-                border: isActive ? '1px solid rgba(251, 70, 4,0.15)' : '1px solid transparent', // Mizan purple border
+                border: isActive ? '1px solid rgba(164, 169, 193,0.15)' : '1px solid transparent', // Mizan purple border
                 transition: 'all var(--transition)',
                 fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', // Keep font family
               })}

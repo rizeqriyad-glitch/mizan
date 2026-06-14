@@ -21,12 +21,12 @@
 .btn-primary {
   background: var(--mizan-gradient);
   color: white;
-  box-shadow: 0 8px 20px rgba(251, 70, 4, 0.3);
+  box-shadow: 0 8px 20px rgba(164, 169, 193, 0.2);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(251, 70, 4, 0.5);
+  box-shadow: 0 12px 30px rgba(164, 169, 193, 0.35);
 }
 
 .btn-primary:active {

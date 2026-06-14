@@ -370,7 +370,7 @@ export default function Mizan3DBackground() {
               border: '1px solid var(--mizan-cyan)',
               borderRadius: '12px',
               padding: '0.75rem 1.25rem',
-              boxShadow: '0 15px 35px rgba(201, 56, 3,0.25), 0 0 20px rgba(251, 70, 4,0.1)',
+              boxShadow: '0 15px 35px rgba(103, 112, 152,0.25), 0 0 20px rgba(164, 169, 193,0.1)',
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-brand)',
               fontSize: '0.95rem',

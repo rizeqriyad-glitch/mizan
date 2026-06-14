@@ -113,9 +113,9 @@ export default function AnalyticsPage() {
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }} className="analytics-grid">
         {[
-          { label: isAr ? 'المهام المكتملة' : 'Tasks Completed', value: totalDone, icon: glyph('tasks'), color: 'var(--mizan-cyan)', dim: 'rgba(201, 56, 3,0.1)' },
-          { label: t('streak'), value: `${stats.streak || 0} ${isAr ? 'يوم' : 'days'}`, icon: glyph('streak'), color: 'var(--mizan-purple)', dim: 'rgba(251, 70, 4,0.1)' },
-          { label: t('points'), value: stats.points || 0, icon: glyph('points'), color: 'var(--mizan-purple)', dim: 'rgba(251, 70, 4,0.1)' },
+          { label: isAr ? 'المهام المكتملة' : 'Tasks Completed', value: totalDone, icon: glyph('tasks'), color: 'var(--mizan-cyan)', dim: 'rgba(103, 112, 152,0.1)' },
+          { label: t('streak'), value: `${stats.streak || 0} ${isAr ? 'يوم' : 'days'}`, icon: glyph('streak'), color: 'var(--mizan-purple)', dim: 'rgba(164, 169, 193,0.1)' },
+          { label: t('points'), value: stats.points || 0, icon: glyph('points'), color: 'var(--mizan-purple)', dim: 'rgba(164, 169, 193,0.1)' },
         ].map((card, i) => (
           <motion.div
             key={card.label}
@@ -295,7 +295,7 @@ export default function AnalyticsPage() {
                         <div style={{
                           width: 28, height: 28,
                           borderRadius: '8px',
-                          background: done ? 'rgba(201, 56, 3,0.1)' : 'rgba(255,255,255,0.05)',
+                          background: done ? 'rgba(103, 112, 152,0.1)' : 'rgba(255,255,255,0.05)',
                           border: done ? '1px solid rgba(74,222,128,0.25)' : '1px solid var(--border)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           margin: '0 auto',
