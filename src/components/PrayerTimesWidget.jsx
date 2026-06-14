@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { motion } from 'motion/react'
 import { useApp } from '../contexts/AppContext'
 import { useI18n } from '../contexts/I18nContext'
@@ -89,10 +89,10 @@ export default function PrayerTimesWidget() {
           <div style={{
             fontSize: '0.75rem',
             color: 'var(--mizan-purple)',
-            background: 'rgba(164, 169, 193,0.1)',
+            background: 'rgba(29, 127, 226,0.1)',
             padding: '0.2rem 0.6rem',
             borderRadius: '9999px', // Mizan token for full-pill
-            border: '1px solid rgba(164, 169, 193,0.2)',
+            border: '1px solid rgba(29, 127, 226,0.2)',
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}>
             {isAr ? 'القادمة' : 'Next'}: {nextPrayer.minutesUntil}m
@@ -119,7 +119,7 @@ export default function PrayerTimesWidget() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '0.6rem 1.25rem',
-                background: isNext ? 'rgba(164, 169, 193,0.08)' : 'transparent',
+                background: isNext ? 'rgba(29, 127, 226,0.08)' : 'transparent',
                 borderLeft: (!isAr && isCurrent) ? '2px solid var(--mizan-purple)' : (!isAr ? '2px solid transparent' : 'none'),
                 borderRight: (isAr && isCurrent) ? '2px solid var(--mizan-purple)' : (isAr ? '2px solid transparent' : 'none'),
                 transition: 'background var(--transition)',
@@ -192,7 +192,7 @@ export default function PrayerTimesWidget() {
                     width: 30, height: 30,
                     borderRadius: '50%', // Mizan token for icons
                     border: isDone ? '1.5px solid var(--mizan-cyan)' : '1.5px solid var(--v-glass-border)',
-                    background: isDone ? 'rgba(103, 112, 152,0.1)' : 'transparent',
+                    background: isDone ? 'rgba(23, 102, 181,0.1)' : 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer',
                     color: isDone ? 'var(--mizan-cyan)' : 'var(--text-muted)',
@@ -204,7 +204,7 @@ export default function PrayerTimesWidget() {
                     if (isDone) {
                       e.currentTarget.style.borderColor = 'var(--mizan-purple)'
                       e.currentTarget.style.color = 'var(--mizan-purple)'
-                      e.currentTarget.style.background = 'rgba(164, 169, 193,0.1)'
+                      e.currentTarget.style.background = 'rgba(29, 127, 226,0.1)'
                     } else {
                       e.currentTarget.style.borderColor = 'var(--mizan-cyan)'
                     }
@@ -212,7 +212,7 @@ export default function PrayerTimesWidget() {
                   onMouseLeave={e => {
                     e.currentTarget.style.borderColor = isDone ? 'var(--mizan-cyan)' : 'var(--v-glass-border)'
                     e.currentTarget.style.color = isDone ? 'var(--mizan-cyan)' : 'var(--text-muted)'
-                    e.currentTarget.style.background = isDone ? 'rgba(103, 112, 152,0.1)' : 'transparent'
+                    e.currentTarget.style.background = isDone ? 'rgba(23, 102, 181,0.1)' : 'transparent'
                   }}
                 >
                   {isDone ? '✓' : '○'}

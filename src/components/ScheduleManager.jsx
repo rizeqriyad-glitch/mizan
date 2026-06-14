@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { motion, AnimatePresence, Reorder } from 'motion/react'
 import { useApp } from '../contexts/AppContext'
 import { useI18n } from '../contexts/I18nContext'
@@ -116,7 +116,7 @@ export default function ScheduleManager() {
             <span style={{
               fontSize: '0.67rem', padding: '0.1rem 0.42rem',
               borderRadius: 'var(--radius-full)',
-            background: 'rgba(103, 112, 152,0.1)', color: 'var(--mizan-cyan)', // Mizan cyan
+            background: 'rgba(23, 102, 181,0.1)', color: 'var(--mizan-cyan)', // Mizan cyan
               fontWeight: 600,
             }}>
               {scheduleBlocks.length}
@@ -148,7 +148,7 @@ export default function ScheduleManager() {
           onMouseEnter={e => {
             e.currentTarget.style.borderColor = 'var(--mizan-purple)' // Mizan purple
             e.currentTarget.style.color = 'var(--mizan-purple)' // Mizan purple
-            e.currentTarget.style.background = 'rgba(164, 169, 193,0.1)' // Mizan purple dim
+            e.currentTarget.style.background = 'rgba(29, 127, 226,0.1)' // Mizan purple dim
           }}
           onMouseLeave={e => {
             e.currentTarget.style.borderColor = 'var(--border-strong)'

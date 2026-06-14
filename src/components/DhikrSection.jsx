@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useI18n } from '../contexts/I18nContext'
 import { glyph } from './glyphs'
@@ -171,9 +171,9 @@ export default function DhikrSection() {
           </span>
           <span style={{
             fontSize: '0.7rem',
-            background: totalDone === DHIKR_LIST.length ? 'rgba(103, 112, 152,0.1)' : 'rgba(164, 169, 193,0.1)',
+            background: totalDone === DHIKR_LIST.length ? 'rgba(23, 102, 181,0.1)' : 'rgba(29, 127, 226,0.1)',
             color: totalDone === DHIKR_LIST.length ? 'var(--mizan-cyan)' : 'var(--mizan-purple)',
-            border: `1px solid ${totalDone === DHIKR_LIST.length ? 'rgba(103, 112, 152,0.2)' : 'rgba(164, 169, 193,0.2)'}`,
+            border: `1px solid ${totalDone === DHIKR_LIST.length ? 'rgba(23, 102, 181,0.2)' : 'rgba(29, 127, 226,0.2)'}`,
             borderRadius: 'var(--radius-full)',
             padding: '0.1rem 0.5rem',
           }}>

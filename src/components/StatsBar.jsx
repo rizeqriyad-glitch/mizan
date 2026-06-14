@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+﻿import { motion } from 'motion/react'
 import { useApp } from '../contexts/AppContext'
 import { useI18n } from '../contexts/I18nContext'
 import { glyph } from './glyphs'
@@ -20,28 +20,28 @@ export default function StatsBar() {
       value: stats.streak || 0,
       label: t('streak'),
       color: 'var(--mizan-purple)',
-      dim: 'rgba(164, 169, 193,0.1)',
+      dim: 'rgba(29, 127, 226,0.1)',
     },
     {
       icon: glyph('points'),
       value: stats.points || 0,
       label: t('points'),
       color: 'var(--mizan-purple)',
-      dim: 'rgba(164, 169, 193,0.1)',
+      dim: 'rgba(29, 127, 226,0.1)',
     },
     {
       icon: glyph('mosque'),
       value: `${prayersDone}/5`,
       label: t('prayersDone'),
       color: 'var(--mizan-cyan)',
-      dim: 'rgba(103, 112, 152,0.1)',
+      dim: 'rgba(23, 102, 181,0.1)',
     },
     {
       icon: glyph('productivity'),
       value: `${score}%`,
       label: t('productivity'),
       color: score >= 70 ? 'var(--mizan-cyan)' : score >= 40 ? 'var(--mizan-purple)' : 'var(--ruby)', // Ruby is still used for low score, which is fine.
-      dim: score >= 70 ? 'rgba(103, 112, 152,0.1)' : score >= 40 ? 'rgba(164, 169, 193,0.1)' : 'var(--ruby-dim)', // Ruby dim is fine.
+      dim: score >= 70 ? 'rgba(23, 102, 181,0.1)' : score >= 40 ? 'rgba(29, 127, 226,0.1)' : 'var(--ruby-dim)', // Ruby dim is fine.
       progress: score,
     },
   ]

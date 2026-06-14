@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js'
 import { useApp } from '../contexts/AppContext'
@@ -442,7 +442,7 @@ export default function Mizan3DScene({ completedItems = [], selectedDate = null 
               border: '1px solid var(--mizan-cyan)',
               borderRadius: '12px',
               padding: '0.75rem 1.25rem',
-              boxShadow: '0 15px 35px rgba(103, 112, 152,0.25), 0 0 20px rgba(164, 169, 193,0.1)',
+              boxShadow: '0 15px 35px rgba(23, 102, 181,0.25), 0 0 20px rgba(29, 127, 226,0.1)',
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-brand)',
               fontSize: '0.95rem',

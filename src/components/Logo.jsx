@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+﻿import { useEffect, useRef } from 'react'
 import { useApp } from '../contexts/AppContext'
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js'
 
@@ -166,11 +166,11 @@ export function Logo({ size = 'md', showText = true }) {
           height: `${sizes.height}px`,
           borderRadius: `${sizes.radius}px`,
           background: theme === 'dark'
-            ? 'linear-gradient(135deg, rgba(164, 169, 193, 0.15), rgba(103, 112, 152, 0.08))'
-            : 'linear-gradient(135deg, rgba(164, 169, 193, 0.1), rgba(103, 112, 152, 0.05))',
+            ? 'linear-gradient(135deg, rgba(29, 127, 226, 0.15), rgba(23, 102, 181, 0.08))'
+            : 'linear-gradient(135deg, rgba(29, 127, 226, 0.1), rgba(23, 102, 181, 0.05))',
           backdropFilter: 'blur(20px) saturate(180%)',
-          border: '1px solid rgba(164, 169, 193, 0.25)',
-          boxShadow: '0 8px 32px rgba(164, 169, 193, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+          border: '1px solid rgba(29, 127, 226, 0.25)',
+          boxShadow: '0 8px 32px rgba(29, 127, 226, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
           position: 'relative',
           cursor: 'pointer',
           transition: 'all 0.3s ease',

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useI18n } from '../contexts/I18nContext'
 import { glyph } from '../components/glyphs'
@@ -11,11 +11,11 @@ const CATEGORIES = ['catGeneral', 'catQuran', 'catHadith', 'catFiqh', 'catRemind
 const CAT_COLORS = {
   // Crimson-carrot ONLY — no off-palette hues. Categories read by their label;
   // deep shades (600–800) add subtle variety while keeping AA contrast on the tint.
-  catGeneral:  { color: 'var(--jet-300)', bg: 'rgba(164, 169, 193, 0.10)' },
-  catQuran:    { color: 'var(--jet-400)', bg: 'rgba(164, 169, 193, 0.10)' },
-  catHadith:   { color: 'var(--jet-300)', bg: 'rgba(164, 169, 193, 0.10)' },
-  catFiqh:     { color: 'var(--jet-300)', bg: 'rgba(103, 112, 152, 0.12)' },
-  catReminder: { color: 'var(--jet-400)', bg: 'rgba(164, 169, 193, 0.10)' },
+  catGeneral:  { color: 'var(--jet-300)', bg: 'rgba(29, 127, 226, 0.10)' },
+  catQuran:    { color: 'var(--jet-400)', bg: 'rgba(29, 127, 226, 0.10)' },
+  catHadith:   { color: 'var(--jet-300)', bg: 'rgba(29, 127, 226, 0.10)' },
+  catFiqh:     { color: 'var(--jet-300)', bg: 'rgba(23, 102, 181, 0.12)' },
+  catReminder: { color: 'var(--jet-400)', bg: 'rgba(29, 127, 226, 0.10)' },
 }
 
 export default function NotesPage() {
@@ -299,7 +299,7 @@ export default function NotesPage() {
                 fontSize: '0.72rem', padding: '0.25rem 0.65rem',
                 borderRadius: 'var(--radius-full)',
                 border: `1px solid ${filterCat === 'all' ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`,
-                background: filterCat === 'all' ? 'rgba(164, 169, 193,0.1)' : 'transparent',
+                background: filterCat === 'all' ? 'rgba(29, 127, 226,0.1)' : 'transparent',
                 color: filterCat === 'all' ? 'var(--text-primary)' : 'var(--text-muted)',
                 cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
               }}

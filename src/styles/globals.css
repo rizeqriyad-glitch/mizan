@@ -1,7 +1,7 @@
 /* ============================================================
-   MIZAN — Global Design System · "Prussian Blue" (light only)
+   MIZAN — Global Design System · "Bright Ocean" (light only)
    ------------------------------------------------------------
-   Palette: prussian 50→950. Background #fff · surfaces f5f6fa/ededf5 ·
+   Palette: ocean 50→950. Background #fff · surfaces f5f6fa/ededf5 ·
    borders rgba(black,0.08/0.18) · muted text #8a8aaa · body #0a0a12 ·
    primary accent prussian-500 (hover prussian-400). Light mode only, no toggle.
 
@@ -75,23 +75,23 @@
   --transition:.2s cubic-bezier(.4,0,.2,1);
   --transition-slow:.4s cubic-bezier(.4,0,.2,1);
 
-  /* ══ Prussian Blue palette ═════════════════════════════ */
-  --primary-50:  #eeeff6;
-  --primary-100: #dde0ee;
-  --primary-200: #bbc1dd;
-  --primary-300: #99a2cc;
-  --primary-400: #7783bb;
-  --primary-500: #5563aa;
-  --primary-600: #445088;
-  --primary-700: #333c66;
-  --primary-800: #222844;
-  --primary-900: #111422;
-  --primary-950: #0c0e18;
-  --primary-rgb: 85, 99, 170;
-  --gradient-primary: linear-gradient(135deg, #7783bb, #333c66);
-  --gradient-text:    linear-gradient(135deg, #99a2cc, #5563aa);
-  --gradient-glow:    radial-gradient(ellipse at 50% 50%, #5563aa 0%, transparent 70%);
-  --focus-ring:       0 0 0 3px rgba(85, 99, 170, 0.3);
+  /* ══ Bright Ocean palette ══════════════════════════════ */
+  --primary-50:  #e8f2fc;
+  --primary-100: #d2e5f9;
+  --primary-200: #a5ccf3;
+  --primary-300: #78b2ed;
+  --primary-400: #4a99e8;
+  --primary-500: #1d7fe2;
+  --primary-600: #1766b5;
+  --primary-700: #124c87;
+  --primary-800: #0c335a;
+  --primary-900: #06192d;
+  --primary-950: #041220;
+  --primary-rgb: 29, 127, 226;
+  --gradient-primary: linear-gradient(135deg, #4a99e8, #124c87);
+  --gradient-text:    linear-gradient(135deg, #78b2ed, #1d7fe2);
+  --gradient-glow:    radial-gradient(ellipse at 50% 50%, #1d7fe2 0%, transparent 70%);
+  --focus-ring:       0 0 0 3px rgba(29, 127, 226, 0.3);
 
   /* ══ Semantic tokens — PRUSSIAN BLUE LIGHT ═══════════════ */
   --bg:        #ffffff;
@@ -112,7 +112,7 @@
   --success: #22c55e; --success-dim: rgba(34,197,94,0.13);
   --warning: #f59e0b; --warning-dim: rgba(245,158,11,0.13);
   --error:   #ef4444; --error-dim: rgba(239,68,68,0.13);
-  --info-dim: rgba(85,99,170,0.13);
+  --info-dim: rgba(29,127,226,0.13);
   color-scheme: light;
 
   /* light-mode extra tokens */
@@ -269,8 +269,8 @@ html[lang="ar"] :is(h1,h2,h3) { font-family:var(--font-brand); font-weight:400; 
 }
 .glass-card:hover {
   transform:translateY(-3px);
-  border-color: rgba(153,162,204,0.3);
-  box-shadow: 0 10px 32px rgba(85,99,170,0.15), 0 0 0 1px rgba(153,162,204,0.15);
+  border-color: rgba(120,178,237,0.3);
+  box-shadow: 0 10px 32px rgba(29,127,226,0.15), 0 0 0 1px rgba(120,178,237,0.15);
 }
 
 .glass-icon-mizan {
@@ -285,7 +285,7 @@ html[lang="ar"] :is(h1,h2,h3) { font-family:var(--font-brand); font-weight:400; 
 }
 .glass-icon-mizan:hover {
   transform:translateY(-3px);
-  border-color: rgba(153,162,204,0.4);
+  border-color: rgba(120,178,237,0.4);
 }
 
 /* ── RTL helpers (legacy names) ─────────────────────────── */
@@ -632,11 +632,11 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
 }
 .crimson-hero-bg::after {
   content:''; position:absolute; inset:0;
-  background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(85,99,170,0.07) 0%, transparent 70%);
+  background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(29,127,226,0.07) 0%, transparent 70%);
 }
 .crimson-blob {
   position:absolute; border-radius:50%;
-  background: radial-gradient(circle, rgba(85,99,170,0.09) 0%, rgba(85,99,170,0) 70%);
+  background: radial-gradient(circle, rgba(29,127,226,0.09) 0%, rgba(29,127,226,0) 70%);
   filter:blur(40px);
   will-change:transform;
 }
