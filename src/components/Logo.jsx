@@ -166,11 +166,11 @@ export function Logo({ size = 'md', showText = true }) {
           height: `${sizes.height}px`,
           borderRadius: `${sizes.radius}px`,
           background: theme === 'dark'
-            ? 'linear-gradient(135deg, rgba(51, 156, 255, 0.15), rgba(102, 181, 255, 0.08))'
-            : 'linear-gradient(135deg, rgba(51, 156, 255, 0.1), rgba(102, 181, 255, 0.05))',
+            ? 'linear-gradient(135deg, rgba(251, 70, 4, 0.15), rgba(201, 56, 3, 0.08))'
+            : 'linear-gradient(135deg, rgba(251, 70, 4, 0.1), rgba(201, 56, 3, 0.05))',
           backdropFilter: 'blur(20px) saturate(180%)',
-          border: '1px solid rgba(51, 156, 255, 0.25)',
-          boxShadow: '0 8px 32px rgba(51, 156, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+          border: '1px solid rgba(251, 70, 4, 0.25)',
+          boxShadow: '0 8px 32px rgba(251, 70, 4, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
           position: 'relative',
           cursor: 'pointer',
           transition: 'all 0.3s ease',

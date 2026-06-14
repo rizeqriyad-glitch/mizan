@@ -1,25 +1,29 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 /**
- * MizanMark — the Mizan brand mark (concept B "Minaret Pillar",
- * AI-generated via Higgsfield, vectorized via Adobe, hand-cleaned here).
+ * MizanMark — the Mizan brand mark, concept B «محراب التوازن».
  *
- * A balance scale whose central pillar is a minaret-like girih column:
- * prayer and balance fused in one silhouette. 48×48 grid, single stroke
- * weight, currentColor — it inherits text color and accents via CSS.
- * Raster source of record: /public/brand/mizan-logo-vectorized.svg.
+ * A balance scale living inside a mihrab arch: the negative space carries
+ * the Islamic meaning, the scale carries the name. 48×48 grid, stroke-only,
+ * currentColor — inherits text color and accents via CSS.
  *
- * Motion states (all respect prefers-reduced-motion):
- *   entrance : strokes draw on (pathLength dash)
- *   idle     : beam + pans sway ±1.8° — alive, ignorable
- *   hover    : (via .brand:hover or own hover) beam settles level, accent color
- *   loading  : continuous seek of equilibrium — the mark IS the spinner
+ * Entrance choreography (client-specified, respects prefers-reduced-motion):
+ *   Phase A 0–900ms   : stroke-draw, cubic-bezier(.16,1,.3,1)
+ *   Phase B 1000ms    : pans swing — left dips 8°, right rises — damped
+ *                       spring settle, then ±3° sway every 3s (alternate)
+ *   Phase C 1400ms    : wordmark «ميزان» clip-wipe reveal (RTL-aware,
+ *                       never letter-split — Arabic shaping stays intact)
  *
- * Props (back-compatible with v1):
+ * Click (when linkTo is set): press-pop scale .94→1 over 300ms, then
+ * navigate — never delaying navigation beyond ~150ms.
+ *
+ * Props (back-compatible):
  *   size      px square (default 64)
  *   showText  render the ميزان lockup (default false)
- *   state     'idle' | 'loading'
- *   animateIn play the draw-on entrance (default true)
+ *   state     'idle' | 'loading'  (loading = the mark seeks equilibrium)
+ *   animateIn play the full entrance (default true)
+ *   linkTo    wrap in an <a> that navigates there with press-pop
  *   color     optional override; defaults to currentColor inheritance
  */
 export default function MizanMark({
@@ -27,6 +31,7 @@ export default function MizanMark({
   showText = false,
   state = 'idle',
   animateIn = true,
+  linkTo,
   color,
   color2, // accepted for v1 compatibility; single-color marks ignore it
   className = '',
@@ -34,20 +39,23 @@ export default function MizanMark({
 }) {
   const uid = useId().replace(/[:]/g, '')
   const root = `mzmk-${uid}`
+  const navigate = useNavigate()
+  const [popped, setPopped] = useState(false)
 
-  return (
-    <span
-      className={`${root} ${className}`}
-      data-state={state}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.6em',
-        lineHeight: 1,
-        color: color || 'inherit',
-      }}
-      {...rest}
-    >
+  const handleClick = (e) => {
+    if (!linkTo) return
+    e.preventDefault()
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      navigate(linkTo)
+      return
+    }
+    setPopped(true)
+    setTimeout(() => navigate(linkTo), 150)
+    setTimeout(() => setPopped(false), 320)
+  }
+
+  const body = (
+    <>
       <svg
         className="brand__mark"
         width={size}
@@ -57,36 +65,32 @@ export default function MizanMark({
         aria-label="ميزان"
         fill="none"
         stroke="currentColor"
-        strokeWidth="3"
+        strokeWidth="2.6"
         strokeLinecap="round"
         strokeLinejoin="round"
         style={{ overflow: 'visible', flexShrink: 0 }}
       >
-        {/* Static: minaret column, finial star, base */}
-        <g className="mz-post">
-          {/* finial: diamond + node (girih star, simplified) */}
-          <path pathLength="1" d="M24 4.5 L29.5 10 L24 15.5 L18.5 10 Z" />
-          <circle pathLength="1" cx="24" cy="10" r="1.6" strokeWidth="2.4" />
-          {/* column rails */}
-          <path pathLength="1" d="M21.6 17.5 V37.5" strokeWidth="2.6" />
-          <path pathLength="1" d="M26.4 17.5 V37.5" strokeWidth="2.6" />
-          {/* lattice */}
-          <path pathLength="1" d="M21.6 21 L26.4 26 M26.4 21 L21.6 26" strokeWidth="2.2" />
-          <circle pathLength="1" cx="24" cy="30.5" r="2" strokeWidth="2.2" />
-          <path pathLength="1" d="M21.6 34 L24 36.4 L26.4 34" strokeWidth="2.2" />
-          {/* base */}
-          <path pathLength="1" d="M16.5 37.5 L14 42.5 M31.5 37.5 L34 42.5" strokeWidth="2.6" />
-          <path pathLength="1" d="M13 42.5 H35" />
+        {/* Static: pointed mihrab niche, stepped base, central post */}
+        <g className="mz-static">
+          <path pathLength="1" className="mz-arch" d="M9.5 41 V19 C9.5 12 16 8.5 24 6 C32 8.5 38.5 12 38.5 19 V41" />
+          <path pathLength="1" className="mz-base mz-fill" d="M20 40.5 H28 L26.6 37 H21.4 Z" />
+          <path pathLength="1" className="mz-post" d="M24 37 V18.9" strokeWidth="2.4" />
         </g>
 
-        {/* Moving: beam + the two teardrop pans (sways as one body) */}
-        <g
-          className="mz-beam"
-          style={{ transformOrigin: '24px 15.5px', transformBox: 'view-box' }}
-        >
-          <path pathLength="1" d="M7 15.5 H41" />
-          <path pathLength="1" className="mz-pan" d="M10 15.5 L3.5 24.5 A6.5 6.5 0 0 0 16.5 24.5 Z" />
-          <path pathLength="1" className="mz-pan" d="M38 15.5 L31.5 24.5 A6.5 6.5 0 0 0 44.5 24.5 Z" />
+        {/* Moving: beam pivots at centre; each pan counter-swings at its hanger
+            so the bowls hang like pendulums. Centre ring = the balance point
+            (concept «محراب التوازن»). Bowls fill toward equilibrium. */}
+        <g className="mz-beam" style={{ transformOrigin: '24px 18.5px', transformBox: 'view-box' }}>
+          <path pathLength="1" d="M17 18.5 H31" />
+          <circle className="mz-ring" cx="24" cy="15.2" r="1.7" />
+          <g className="mz-pan" style={{ transformOrigin: '17px 18.5px', transformBox: 'view-box' }}>
+            <path pathLength="1" d="M17 18.5 L13.7 24 M17 18.5 L20.3 24" strokeWidth="1.7" />
+            <path pathLength="1" className="mz-bowl mz-fill" d="M13.5 23.6 Q17 29.6 20.5 23.6 Z" />
+          </g>
+          <g className="mz-pan" style={{ transformOrigin: '31px 18.5px', transformBox: 'view-box' }}>
+            <path pathLength="1" d="M31 18.5 L27.7 24 M31 18.5 L34.3 24" strokeWidth="1.7" />
+            <path pathLength="1" className="mz-bowl mz-fill" d="M27.5 23.6 Q31 29.6 34.5 23.6 Z" />
+          </g>
         </g>
       </svg>
 
@@ -94,62 +98,135 @@ export default function MizanMark({
         <span
           className="brand__name"
           data-wipe={animateIn ? 'true' : undefined}
-          style={{ fontSize: size * 0.42 }}
+          style={{
+            fontSize: size * 0.45,
+            ...(animateIn ? { animationDelay: '1.4s' } : {}),
+          }}
         >
           ميزان
         </span>
       )}
 
       <style>{`
+        /* Option-B mark: bowls + base solid, niche quieter, balance ring open */
+        .${root} .mz-fill { fill: currentColor; }
+        .${root} .mz-arch { opacity: .42; }
+        .${root} .mz-ring { fill: none; }
+        /* Phase B — equilibrium life. With entrance: damped settle at 1s
+           (left pan dips 8°, springs back), blending into the ±3° sway. */
+        ${animateIn ? `
         .${root} .mz-beam {
-          animation: mzSway-${uid} 7s ease-in-out infinite;
+          animation: mzSettle-${uid} 1.05s cubic-bezier(.34,1.56,.64,1) 1s both,
+                     mzSway-${uid} 3s ease-in-out 2.05s infinite alternate;
         }
+        .${root} .mz-pan {
+          animation: mzSettlePan-${uid} 1.05s cubic-bezier(.34,1.56,.64,1) 1s both,
+                     mzSwayPan-${uid} 3s ease-in-out 2.05s infinite alternate;
+        }
+        ` : `
+        .${root} .mz-beam { animation: mzSway-${uid} 3s ease-in-out infinite alternate; }
+        .${root} .mz-pan  { animation: mzSwayPan-${uid} 3s ease-in-out infinite alternate; }
+        `}
+        @keyframes mzSettle-${uid} {
+          0%   { transform: rotate(0deg); }
+          30%  { transform: rotate(-8deg); }
+          55%  { transform: rotate(2.6deg); }
+          75%  { transform: rotate(-1.2deg); }
+          100% { transform: rotate(-3deg); }
+        }
+        @keyframes mzSettlePan-${uid} {
+          0%   { transform: rotate(0deg); }
+          30%  { transform: rotate(6deg); }
+          55%  { transform: rotate(-2deg); }
+          75%  { transform: rotate(0.9deg); }
+          100% { transform: rotate(2.25deg); }
+        }
+        @keyframes mzSway-${uid}    { from { transform: rotate(-3deg); }    to { transform: rotate(3deg); } }
+        @keyframes mzSwayPan-${uid} { from { transform: rotate(2.25deg); }  to { transform: rotate(-2.25deg); } }
+
+        /* Loading — the mark IS the spinner: it keeps seeking equilibrium */
         .${root}[data-state="loading"] .mz-beam {
-          animation: mzSeek-${uid} 1.6s ease-in-out infinite;
+          animation: mzSeek-${uid} 1.6s ease-in-out infinite alternate;
         }
-        .${root}:hover .mz-beam,
-        .brand:hover .${root} .mz-beam,
-        .brand:focus-visible .${root} .mz-beam {
+        .${root}[data-state="loading"] .mz-pan {
+          animation: mzSeekPan-${uid} 1.6s ease-in-out infinite alternate;
+        }
+        @keyframes mzSeek-${uid}    { from { transform: rotate(-7deg); }   to { transform: rotate(7deg); } }
+        @keyframes mzSeekPan-${uid} { from { transform: rotate(5.25deg); } to { transform: rotate(-5.25deg); } }
+
+        /* Hover/focus — the scale settles perfectly level */
+        .${root}:hover .mz-beam, .${root}:hover .mz-pan,
+        .brand:hover .${root} .mz-beam, .brand:hover .${root} .mz-pan,
+        .brand:focus-visible .${root} .mz-beam, .brand:focus-visible .${root} .mz-pan,
+        a.${root}:focus-visible .mz-beam, a.${root}:focus-visible .mz-pan {
           animation: none;
           transform: rotate(0deg);
           transition: transform .35s cubic-bezier(.34,1.56,.64,1);
         }
-        @keyframes mzSway-${uid} {
-          0%, 100% { transform: rotate(1.8deg); }
-          50%      { transform: rotate(-1.8deg); }
-        }
-        @keyframes mzSeek-${uid} {
-          0%, 100% { transform: rotate(7deg); }
-          50%      { transform: rotate(-7deg); }
-        }
+
+        /* Press-pop (click → home) */
+        .${root}.is-pop svg { animation: mzPop-${uid} .3s cubic-bezier(.34,1.56,.64,1); }
+        @keyframes mzPop-${uid} { from { transform: scale(.94); } to { transform: scale(1); } }
+
         ${animateIn ? `
-        .${root} svg path, .${root} svg circle {
+        /* Phase A — stroke-draw, 900ms envelope */
+        .${root} svg path {
           stroke-dasharray: 1;
           stroke-dashoffset: 1;
-          animation: mzDraw-${uid} .7s cubic-bezier(.22,1,.36,1) forwards;
+          animation: mzDraw-${uid} .55s cubic-bezier(.16,1,.3,1) forwards;
         }
-        .${root} svg .mz-post path:nth-of-type(1) { animation-delay: 0ms; }
-        .${root} svg .mz-post path:nth-of-type(2) { animation-delay: 60ms; }
-        .${root} svg .mz-post path:nth-of-type(3) { animation-delay: 120ms; }
-        .${root} svg .mz-post path:nth-of-type(4) { animation-delay: 160ms; }
-        .${root} svg .mz-post path:nth-of-type(5) { animation-delay: 200ms; }
-        .${root} svg .mz-post path:nth-of-type(6) { animation-delay: 240ms; }
-        .${root} svg .mz-post path:nth-of-type(7) { animation-delay: 280ms; }
-        .${root} svg circle { animation-delay: 100ms; }
-        .${root} svg .mz-beam path:nth-of-type(1) { animation-delay: 320ms; }
-        .${root} svg .mz-beam path:nth-of-type(2) { animation-delay: 400ms; }
-        .${root} svg .mz-beam path:nth-of-type(3) { animation-delay: 460ms; }
+        .${root} .mz-arch { animation-duration: .7s; animation-delay: 0ms; }
+        .${root} .mz-base { animation-delay: 150ms; }
+        .${root} .mz-post { animation-delay: 250ms; }
+        .${root} .mz-beam > path { animation-delay: 330ms; }
+        .${root} .mz-pan path:nth-of-type(1) { animation-delay: 420ms; }
+        .${root} .mz-pan path:nth-of-type(2) { animation-delay: 500ms; }
         @keyframes mzDraw-${uid} { to { stroke-dashoffset: 0; } }
         ` : ''}
+
         @media (prefers-reduced-motion: reduce) {
-          .${root} .mz-beam { animation: none !important; transform: none !important; }
-          .${root} svg path, .${root} svg circle {
+          .${root} .mz-beam, .${root} .mz-pan {
+            animation: none !important;
+            transform: none !important;
+          }
+          .${root} svg path {
             animation: none !important;
             stroke-dasharray: none !important;
             stroke-dashoffset: 0 !important;
           }
+          .${root}.is-pop svg { animation: none !important; }
         }
       `}</style>
+    </>
+  )
+
+  const baseStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.6em',
+    lineHeight: 1,
+    color: color || 'inherit',
+  }
+
+  if (linkTo) {
+    return (
+      <a
+        href={linkTo}
+        onClick={handleClick}
+        className={`brand ${root} ${popped ? 'is-pop' : ''} ${className}`}
+        data-state={state}
+        aria-label="ميزان — الصفحة الرئيسية"
+        style={{ ...baseStyle, textDecoration: 'none' }}
+        {...rest}
+      >
+        {body}
+      </a>
+    )
+  }
+
+  return (
+    <span className={`${root} ${className}`} data-state={state} style={baseStyle} {...rest}>
+      {body}
     </span>
   )
 }

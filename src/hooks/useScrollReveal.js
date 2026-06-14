@@ -32,7 +32,8 @@ export function useScrollReveal(scopeRef = null, deps = []) {
       }),
       { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
     )
-    els.forEach(el => ob.observe(el))
+    // .armed cancels the CSS failsafe — only for elements actually being watched
+    els.forEach(el => { el.classList.add('armed'); ob.observe(el) })
     return () => ob.disconnect()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)

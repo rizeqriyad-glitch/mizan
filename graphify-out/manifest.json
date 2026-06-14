@@ -1,0 +1,702 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1778897169.0175056,
+    "ast_hash": "377914cd8773e005ab21380eabac18e0",
+    "semantic_hash": ""
+  },
+  ".claude/settings.local.json": {
+    "mtime": 1781401557.641964,
+    "ast_hash": "4e9d22e0337228631e409d7292ff2a9f",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1781335735.1916366,
+    "ast_hash": "8fecba9e6f8b8b9ca1ea86886eac7740",
+    "semantic_hash": ""
+  },
+  "platform-codex.json": {
+    "mtime": 1781115471.7290447,
+    "ast_hash": "43a236f6f9fb1480b6b786f8e1e36910",
+    "semantic_hash": ""
+  },
+  "platform-gemini.json": {
+    "mtime": 1781115410.9293582,
+    "ast_hash": "aef136ab889e7e8f393c2c8ee7f6d55c",
+    "semantic_hash": ""
+  },
+  "scripts/subset-fonts.mjs": {
+    "mtime": 1781302200.5136542,
+    "ast_hash": "2d8be9cae3afbb2c2d68a4218e5be056",
+    "semantic_hash": ""
+  },
+  "skills-lock.json": {
+    "mtime": 1781263463.9813404,
+    "ast_hash": "6ff1f347b90d511c2d164194d3c88b4a",
+    "semantic_hash": ""
+  },
+  "src/App.jsx": {
+    "mtime": 1781335721.9741237,
+    "ast_hash": "0da574bcdd16d0dcf2ad0364baa8fc15",
+    "semantic_hash": ""
+  },
+  "src/components/AdhanNotifier.jsx": {
+    "mtime": 1781371706.7561984,
+    "ast_hash": "63474f2ad54533dbccd84096d8fe095c",
+    "semantic_hash": ""
+  },
+  "src/components/AdhkarSection.jsx": {
+    "mtime": 1781370289.2827923,
+    "ast_hash": "a3c5b561fa0148ae7bce645607826987",
+    "semantic_hash": ""
+  },
+  "src/components/DhikrSection.jsx": {
+    "mtime": 1781370291.7378244,
+    "ast_hash": "dcff3a67217a9e6833b1b4e693bc9b41",
+    "semantic_hash": ""
+  },
+  "src/components/FocusTimer.jsx": {
+    "mtime": 1781371693.243095,
+    "ast_hash": "f2aad36d57f39f7b1a3792c62a0468e4",
+    "semantic_hash": ""
+  },
+  "src/components/Layout.jsx": {
+    "mtime": 1781337547.6224892,
+    "ast_hash": "6cbf40cffdb1c289682e0aae538c7758",
+    "semantic_hash": ""
+  },
+  "src/components/Logo.jsx": {
+    "mtime": 1781335722.2932556,
+    "ast_hash": "4487c10f0752ad407a88de98052df691",
+    "semantic_hash": ""
+  },
+  "src/components/Mizan3DBackground.jsx": {
+    "mtime": 1781335722.301665,
+    "ast_hash": "a4ff336ad49e776aa6a68485678c6862",
+    "semantic_hash": ""
+  },
+  "src/components/Mizan3DScene.jsx": {
+    "mtime": 1781335722.3695774,
+    "ast_hash": "715eff18daeee3c723bb2457b3c90ad5",
+    "semantic_hash": ""
+  },
+  "src/components/MizanHero.jsx": {
+    "mtime": 1781335722.428696,
+    "ast_hash": "dafbc48d7360dcf1d98e9d728a16d13c",
+    "semantic_hash": ""
+  },
+  "src/components/MizanMark.jsx": {
+    "mtime": 1781352939.2803562,
+    "ast_hash": "801eb9a262ba629210f26c09c5bfaaba",
+    "semantic_hash": ""
+  },
+  "src/components/MizanMosque.jsx": {
+    "mtime": 1781357531.1416006,
+    "ast_hash": "4f1ce867b27b656769ce2c19ed7c6faf",
+    "semantic_hash": ""
+  },
+  "src/components/NotesSection.jsx": {
+    "mtime": 1781371780.1521082,
+    "ast_hash": "d484654a5e616d756aa082d8e8233f53",
+    "semantic_hash": ""
+  },
+  "src/components/PrayerTimesWidget.jsx": {
+    "mtime": 1781337256.6907895,
+    "ast_hash": "8d13a0930aa6ec968c2e3c9d6f36f003",
+    "semantic_hash": ""
+  },
+  "src/components/QuranReader.jsx": {
+    "mtime": 1781371768.0169773,
+    "ast_hash": "724ab96b0541b58ca718e68615dcd494",
+    "semantic_hash": ""
+  },
+  "src/components/ReminderNotifier.jsx": {
+    "mtime": 1781335722.6710258,
+    "ast_hash": "f8d24ca363a20bc0299427d24618c94b",
+    "semantic_hash": ""
+  },
+  "src/components/ScheduleManager.jsx": {
+    "mtime": 1781335722.7141716,
+    "ast_hash": "16ef52e9390074059043074e0fc84d70",
+    "semantic_hash": ""
+  },
+  "src/components/StatsBar.jsx": {
+    "mtime": 1781357687.3764992,
+    "ast_hash": "1f6d7f5676a92361ae4fc898d269b958",
+    "semantic_hash": ""
+  },
+  "src/components/TaskSection.jsx": {
+    "mtime": 1781371885.852291,
+    "ast_hash": "fc17a8715a1a52897cdf9540c39b7592",
+    "semantic_hash": ""
+  },
+  "src/components/TodaySchedule.jsx": {
+    "mtime": 1781371887.7261243,
+    "ast_hash": "f45fe8fa0c23b263db98e96b6155cc5a",
+    "semantic_hash": ""
+  },
+  "src/components/glyphs.jsx": {
+    "mtime": 1781359147.241671,
+    "ast_hash": "6d43021cc17e419baca17b38ad02b13a",
+    "semantic_hash": ""
+  },
+  "src/components/icons3d/Canvas3DIcon.jsx": {
+    "mtime": 1781335722.163286,
+    "ast_hash": "6e950bccba06144e67c9db6f87a97ed2",
+    "semantic_hash": ""
+  },
+  "src/components/icons3d/MoreIcons3D.jsx": {
+    "mtime": 1781335722.2174742,
+    "ast_hash": "e8a7fe2b95a74594b557dd18f32f9bbe",
+    "semantic_hash": ""
+  },
+  "src/components/icons3d/PrayerBeads3D.jsx": {
+    "mtime": 1781335722.2257557,
+    "ast_hash": "b2358b0c20aa3eddfec48fe7b6c66adb",
+    "semantic_hash": ""
+  },
+  "src/components/icons3d/TaskCheckmark3D.jsx": {
+    "mtime": 1781335722.235288,
+    "ast_hash": "2037c3f18c2cd5556b73b16f253f8d9b",
+    "semantic_hash": ""
+  },
+  "src/components/icons3d/index.js": {
+    "mtime": 1781335722.2081785,
+    "ast_hash": "d40bafe4b3774bc3eab43bf0e5bcc493",
+    "semantic_hash": ""
+  },
+  "src/components/prayerIcons.jsx": {
+    "mtime": 1781337137.2663956,
+    "ast_hash": "65fbc8235e8e4205d3d86234e796ffec",
+    "semantic_hash": ""
+  },
+  "src/contexts/AppContext.jsx": {
+    "mtime": 1781337248.1410873,
+    "ast_hash": "4c80d06d87a6f84be2fe99b4df603b0c",
+    "semantic_hash": ""
+  },
+  "src/contexts/AuthContext.jsx": {
+    "mtime": 1781335722.8951807,
+    "ast_hash": "b5bc6352f3d7d6d8b7254e0a737ca8db",
+    "semantic_hash": ""
+  },
+  "src/firebase.js": {
+    "mtime": 1781335722.9041984,
+    "ast_hash": "fe474a4d8fe8d6d78a6dcbde1daaecf5",
+    "semantic_hash": ""
+  },
+  "src/hooks/useLookAt.js": {
+    "mtime": 1781335722.9107168,
+    "ast_hash": "532f44e7677983ff40327ed5e7947466",
+    "semantic_hash": ""
+  },
+  "src/hooks/useScrollReveal.js": {
+    "mtime": 1781335722.956728,
+    "ast_hash": "46431be55ab9887def3dca732ff4a719",
+    "semantic_hash": ""
+  },
+  "src/main.jsx": {
+    "mtime": 1781335722.9692197,
+    "ast_hash": "a06bc27f6812253d84d82b1496d3cee6",
+    "semantic_hash": ""
+  },
+  "src/pages/AnalyticsPage.jsx": {
+    "mtime": 1781357722.3019855,
+    "ast_hash": "d1825dbcad114b1714f67e26ebb2e2fb",
+    "semantic_hash": ""
+  },
+  "src/pages/DashboardPage.jsx": {
+    "mtime": 1781357878.275827,
+    "ast_hash": "4485a701fd0c470033e6b91ea888d84d",
+    "semantic_hash": ""
+  },
+  "src/pages/DayHistoryPage.jsx": {
+    "mtime": 1781353785.5206428,
+    "ast_hash": "763d515ac48295f1932cc1b7b94f7ffe",
+    "semantic_hash": ""
+  },
+  "src/pages/LandingPage.jsx": {
+    "mtime": 1781353133.0405161,
+    "ast_hash": "98da2e8836ed158cb2d1b1050ba04944",
+    "semantic_hash": ""
+  },
+  "src/pages/LoginPage.jsx": {
+    "mtime": 1781335723.2199614,
+    "ast_hash": "48a355ce3e3804310bb8a751848919f2",
+    "semantic_hash": ""
+  },
+  "src/pages/NotesPage.jsx": {
+    "mtime": 1781358141.6273668,
+    "ast_hash": "04cbe2c430f3ee5df6a27de433f225fa",
+    "semantic_hash": ""
+  },
+  "src/pages/PlannerPage.jsx": {
+    "mtime": 1781372022.9934003,
+    "ast_hash": "fbac7ec9e9ad53fd36873f3388f38666",
+    "semantic_hash": ""
+  },
+  "src/pages/SettingsPage.jsx": {
+    "mtime": 1781371888.523244,
+    "ast_hash": "e009971b74154b7d332f30bd043ae2e4",
+    "semantic_hash": ""
+  },
+  "src/utils/alarmSound.js": {
+    "mtime": 1781335723.4277258,
+    "ast_hash": "7cfb8d861a50fda8adbaa80ca22d1ab5",
+    "semantic_hash": ""
+  },
+  "src/utils/alarmStorage.js": {
+    "mtime": 1781335723.488282,
+    "ast_hash": "a0948735b38a7bcde114e2ff9de67bb1",
+    "semantic_hash": ""
+  },
+  "src/utils/dateUtils.js": {
+    "mtime": 1781335723.495011,
+    "ast_hash": "c507c43b2c29011486ffec918dcbd3b0",
+    "semantic_hash": ""
+  },
+  "src/utils/prayerTimes.js": {
+    "mtime": 1781335723.5051253,
+    "ast_hash": "06fa8fc1b44130aba021421262f91eee",
+    "semantic_hash": ""
+  },
+  "vite.config.js": {
+    "mtime": 1778515571.0,
+    "ast_hash": "eee0bd06ce849ebd0777136c8a106957",
+    "semantic_hash": ""
+  },
+  ".claude/skills/stop-slop/CHANGELOG.md": {
+    "mtime": 1781263463.441355,
+    "ast_hash": "d446aa61e5c6db5aaa25fc266294a182",
+    "semantic_hash": ""
+  },
+  ".claude/skills/stop-slop/README.md": {
+    "mtime": 1781263463.4433558,
+    "ast_hash": "c4fa180a518d8fa5131e0d1e56756a49",
+    "semantic_hash": ""
+  },
+  ".claude/skills/stop-slop/SKILL.md": {
+    "mtime": 1781263463.4433558,
+    "ast_hash": "bd30ea398b7b9a7d93d1c5d2b8d8a2af",
+    "semantic_hash": ""
+  },
+  ".claude/skills/stop-slop/references/examples.md": {
+    "mtime": 1781263463.4443555,
+    "ast_hash": "b31054549c3440d651dd687034eb2150",
+    "semantic_hash": ""
+  },
+  ".claude/skills/stop-slop/references/phrases.md": {
+    "mtime": 1781263463.4453564,
+    "ast_hash": "9e363a08e8cb05dd21c419cd5ac2f18b",
+    "semantic_hash": ""
+  },
+  ".claude/skills/stop-slop/references/structures.md": {
+    "mtime": 1781263463.4463558,
+    "ast_hash": "47e9cae0268aa16085a797ef02d39ef4",
+    "semantic_hash": ""
+  },
+  "MEMORY.md": {
+    "mtime": 1781337617.829171,
+    "ast_hash": "d932d48a31161be9e3498ba21af10164",
+    "semantic_hash": ""
+  },
+  "PRODUCT_DNA.md": {
+    "mtime": 1781185492.8748987,
+    "ast_hash": "166e80b7c58558860e6972595bde19af",
+    "semantic_hash": ""
+  },
+  "PROJECT_MAP.md": {
+    "mtime": 1781186582.4175854,
+    "ast_hash": "a4fad084749a86b9cfeb4dcf7f011bbc",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1778531721.0,
+    "ast_hash": "08ccd18177071a452bff2a34122db96a",
+    "semantic_hash": ""
+  },
+  "SKILL.md": {
+    "mtime": 1781269442.5820081,
+    "ast_hash": "d75caca82cd16a1d389521d598634f12",
+    "semantic_hash": ""
+  },
+  "callflow-mizan.html": {
+    "mtime": 1781115280.9793322,
+    "ast_hash": "ca5c3e79257f4b5c5b5b5064fc855d80",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1781302432.8356366,
+    "ast_hash": "ef129481ff1d3bf2aea2aaffc49e9ed4",
+    "semantic_hash": ""
+  },
+  "pen-ultra (1).md": {
+    "mtime": 1781374917.6690853,
+    "ast_hash": "2082546633c08c8dfd2e24b2f98899df",
+    "semantic_hash": ""
+  },
+  "image.png": {
+    "mtime": 1781376314.2531095,
+    "ast_hash": "d40764f34d5b34a70fa7da8efbc66870",
+    "semantic_hash": ""
+  },
+  "public/brand/mizan-logo-vectorized.svg": {
+    "mtime": 1781282960.8708234,
+    "ast_hash": "7ea2e6f0600ee66ebda141437a75ea19",
+    "semantic_hash": ""
+  },
+  "public/mizan-icon.svg": {
+    "mtime": 1781302773.0827763,
+    "ast_hash": "df2c61d146debb80b38d86d66b2dc8ae",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\.claude\\settings.json": {
+    "mtime": 1778897169.0175056,
+    "ast_hash": "377914cd8773e005ab21380eabac18e0",
+    "semantic_hash": "377914cd8773e005ab21380eabac18e0"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\.claude\\settings.local.json": {
+    "mtime": 1781402096.545588,
+    "ast_hash": "b3f82fc5cbfc2abec11b4aba6e985cf7",
+    "semantic_hash": "b3f82fc5cbfc2abec11b4aba6e985cf7"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\package.json": {
+    "mtime": 1781335735.1916366,
+    "ast_hash": "8fecba9e6f8b8b9ca1ea86886eac7740",
+    "semantic_hash": "8fecba9e6f8b8b9ca1ea86886eac7740"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\platform-codex.json": {
+    "mtime": 1781115471.7290447,
+    "ast_hash": "43a236f6f9fb1480b6b786f8e1e36910",
+    "semantic_hash": "43a236f6f9fb1480b6b786f8e1e36910"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\platform-gemini.json": {
+    "mtime": 1781115410.9293582,
+    "ast_hash": "aef136ab889e7e8f393c2c8ee7f6d55c",
+    "semantic_hash": "aef136ab889e7e8f393c2c8ee7f6d55c"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\scripts\\subset-fonts.mjs": {
+    "mtime": 1781302200.5136542,
+    "ast_hash": "2d8be9cae3afbb2c2d68a4218e5be056",
+    "semantic_hash": "2d8be9cae3afbb2c2d68a4218e5be056"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\skills-lock.json": {
+    "mtime": 1781263463.9813404,
+    "ast_hash": "6ff1f347b90d511c2d164194d3c88b4a",
+    "semantic_hash": "6ff1f347b90d511c2d164194d3c88b4a"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\App.jsx": {
+    "mtime": 1781335721.9741237,
+    "ast_hash": "0da574bcdd16d0dcf2ad0364baa8fc15",
+    "semantic_hash": "0da574bcdd16d0dcf2ad0364baa8fc15"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\AdhanNotifier.jsx": {
+    "mtime": 1781371706.7561984,
+    "ast_hash": "63474f2ad54533dbccd84096d8fe095c",
+    "semantic_hash": "63474f2ad54533dbccd84096d8fe095c"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\AdhkarSection.jsx": {
+    "mtime": 1781370289.2827923,
+    "ast_hash": "a3c5b561fa0148ae7bce645607826987",
+    "semantic_hash": "a3c5b561fa0148ae7bce645607826987"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\DhikrSection.jsx": {
+    "mtime": 1781370291.7378244,
+    "ast_hash": "dcff3a67217a9e6833b1b4e693bc9b41",
+    "semantic_hash": "dcff3a67217a9e6833b1b4e693bc9b41"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\FocusTimer.jsx": {
+    "mtime": 1781371693.243095,
+    "ast_hash": "f2aad36d57f39f7b1a3792c62a0468e4",
+    "semantic_hash": "f2aad36d57f39f7b1a3792c62a0468e4"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\Layout.jsx": {
+    "mtime": 1781337547.6224892,
+    "ast_hash": "6cbf40cffdb1c289682e0aae538c7758",
+    "semantic_hash": "6cbf40cffdb1c289682e0aae538c7758"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\Logo.jsx": {
+    "mtime": 1781335722.2932556,
+    "ast_hash": "4487c10f0752ad407a88de98052df691",
+    "semantic_hash": "4487c10f0752ad407a88de98052df691"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\Mizan3DBackground.jsx": {
+    "mtime": 1781335722.301665,
+    "ast_hash": "a4ff336ad49e776aa6a68485678c6862",
+    "semantic_hash": "a4ff336ad49e776aa6a68485678c6862"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\Mizan3DScene.jsx": {
+    "mtime": 1781335722.3695774,
+    "ast_hash": "715eff18daeee3c723bb2457b3c90ad5",
+    "semantic_hash": "715eff18daeee3c723bb2457b3c90ad5"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\MizanHero.jsx": {
+    "mtime": 1781335722.428696,
+    "ast_hash": "dafbc48d7360dcf1d98e9d728a16d13c",
+    "semantic_hash": "dafbc48d7360dcf1d98e9d728a16d13c"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\MizanMark.jsx": {
+    "mtime": 1781352939.2803562,
+    "ast_hash": "801eb9a262ba629210f26c09c5bfaaba",
+    "semantic_hash": "801eb9a262ba629210f26c09c5bfaaba"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\MizanMosque.jsx": {
+    "mtime": 1781357531.1416006,
+    "ast_hash": "4f1ce867b27b656769ce2c19ed7c6faf",
+    "semantic_hash": "4f1ce867b27b656769ce2c19ed7c6faf"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\NotesSection.jsx": {
+    "mtime": 1781371780.1521082,
+    "ast_hash": "d484654a5e616d756aa082d8e8233f53",
+    "semantic_hash": "d484654a5e616d756aa082d8e8233f53"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\PrayerTimesWidget.jsx": {
+    "mtime": 1781337256.6907895,
+    "ast_hash": "8d13a0930aa6ec968c2e3c9d6f36f003",
+    "semantic_hash": "8d13a0930aa6ec968c2e3c9d6f36f003"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\QuranReader.jsx": {
+    "mtime": 1781371768.0169773,
+    "ast_hash": "724ab96b0541b58ca718e68615dcd494",
+    "semantic_hash": "724ab96b0541b58ca718e68615dcd494"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\ReminderNotifier.jsx": {
+    "mtime": 1781335722.6710258,
+    "ast_hash": "f8d24ca363a20bc0299427d24618c94b",
+    "semantic_hash": "f8d24ca363a20bc0299427d24618c94b"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\ScheduleManager.jsx": {
+    "mtime": 1781335722.7141716,
+    "ast_hash": "16ef52e9390074059043074e0fc84d70",
+    "semantic_hash": "16ef52e9390074059043074e0fc84d70"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\StatsBar.jsx": {
+    "mtime": 1781357687.3764992,
+    "ast_hash": "1f6d7f5676a92361ae4fc898d269b958",
+    "semantic_hash": "1f6d7f5676a92361ae4fc898d269b958"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\TaskSection.jsx": {
+    "mtime": 1781371885.852291,
+    "ast_hash": "fc17a8715a1a52897cdf9540c39b7592",
+    "semantic_hash": "fc17a8715a1a52897cdf9540c39b7592"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\TodaySchedule.jsx": {
+    "mtime": 1781371887.7261243,
+    "ast_hash": "f45fe8fa0c23b263db98e96b6155cc5a",
+    "semantic_hash": "f45fe8fa0c23b263db98e96b6155cc5a"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\glyphs.jsx": {
+    "mtime": 1781359147.241671,
+    "ast_hash": "6d43021cc17e419baca17b38ad02b13a",
+    "semantic_hash": "6d43021cc17e419baca17b38ad02b13a"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\icons3d\\Canvas3DIcon.jsx": {
+    "mtime": 1781335722.163286,
+    "ast_hash": "6e950bccba06144e67c9db6f87a97ed2",
+    "semantic_hash": "6e950bccba06144e67c9db6f87a97ed2"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\icons3d\\MoreIcons3D.jsx": {
+    "mtime": 1781335722.2174742,
+    "ast_hash": "e8a7fe2b95a74594b557dd18f32f9bbe",
+    "semantic_hash": "e8a7fe2b95a74594b557dd18f32f9bbe"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\icons3d\\PrayerBeads3D.jsx": {
+    "mtime": 1781335722.2257557,
+    "ast_hash": "b2358b0c20aa3eddfec48fe7b6c66adb",
+    "semantic_hash": "b2358b0c20aa3eddfec48fe7b6c66adb"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\icons3d\\TaskCheckmark3D.jsx": {
+    "mtime": 1781335722.235288,
+    "ast_hash": "2037c3f18c2cd5556b73b16f253f8d9b",
+    "semantic_hash": "2037c3f18c2cd5556b73b16f253f8d9b"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\icons3d\\index.js": {
+    "mtime": 1781335722.2081785,
+    "ast_hash": "d40bafe4b3774bc3eab43bf0e5bcc493",
+    "semantic_hash": "d40bafe4b3774bc3eab43bf0e5bcc493"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\components\\prayerIcons.jsx": {
+    "mtime": 1781337137.2663956,
+    "ast_hash": "65fbc8235e8e4205d3d86234e796ffec",
+    "semantic_hash": "65fbc8235e8e4205d3d86234e796ffec"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\contexts\\AppContext.jsx": {
+    "mtime": 1781337248.1410873,
+    "ast_hash": "4c80d06d87a6f84be2fe99b4df603b0c",
+    "semantic_hash": "4c80d06d87a6f84be2fe99b4df603b0c"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\contexts\\AuthContext.jsx": {
+    "mtime": 1781335722.8951807,
+    "ast_hash": "b5bc6352f3d7d6d8b7254e0a737ca8db",
+    "semantic_hash": "b5bc6352f3d7d6d8b7254e0a737ca8db"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\firebase.js": {
+    "mtime": 1781335722.9041984,
+    "ast_hash": "fe474a4d8fe8d6d78a6dcbde1daaecf5",
+    "semantic_hash": "fe474a4d8fe8d6d78a6dcbde1daaecf5"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\hooks\\useLookAt.js": {
+    "mtime": 1781335722.9107168,
+    "ast_hash": "532f44e7677983ff40327ed5e7947466",
+    "semantic_hash": "532f44e7677983ff40327ed5e7947466"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\hooks\\useScrollReveal.js": {
+    "mtime": 1781335722.956728,
+    "ast_hash": "46431be55ab9887def3dca732ff4a719",
+    "semantic_hash": "46431be55ab9887def3dca732ff4a719"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\main.jsx": {
+    "mtime": 1781335722.9692197,
+    "ast_hash": "a06bc27f6812253d84d82b1496d3cee6",
+    "semantic_hash": "a06bc27f6812253d84d82b1496d3cee6"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\pages\\AnalyticsPage.jsx": {
+    "mtime": 1781357722.3019855,
+    "ast_hash": "d1825dbcad114b1714f67e26ebb2e2fb",
+    "semantic_hash": "d1825dbcad114b1714f67e26ebb2e2fb"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\pages\\DashboardPage.jsx": {
+    "mtime": 1781357878.275827,
+    "ast_hash": "4485a701fd0c470033e6b91ea888d84d",
+    "semantic_hash": "4485a701fd0c470033e6b91ea888d84d"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\pages\\DayHistoryPage.jsx": {
+    "mtime": 1781353785.5206428,
+    "ast_hash": "763d515ac48295f1932cc1b7b94f7ffe",
+    "semantic_hash": "763d515ac48295f1932cc1b7b94f7ffe"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\pages\\LandingPage.jsx": {
+    "mtime": 1781353133.0405161,
+    "ast_hash": "98da2e8836ed158cb2d1b1050ba04944",
+    "semantic_hash": "98da2e8836ed158cb2d1b1050ba04944"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\pages\\LoginPage.jsx": {
+    "mtime": 1781335723.2199614,
+    "ast_hash": "48a355ce3e3804310bb8a751848919f2",
+    "semantic_hash": "48a355ce3e3804310bb8a751848919f2"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\pages\\NotesPage.jsx": {
+    "mtime": 1781358141.6273668,
+    "ast_hash": "04cbe2c430f3ee5df6a27de433f225fa",
+    "semantic_hash": "04cbe2c430f3ee5df6a27de433f225fa"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\pages\\PlannerPage.jsx": {
+    "mtime": 1781372022.9934003,
+    "ast_hash": "fbac7ec9e9ad53fd36873f3388f38666",
+    "semantic_hash": "fbac7ec9e9ad53fd36873f3388f38666"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\pages\\SettingsPage.jsx": {
+    "mtime": 1781371888.523244,
+    "ast_hash": "e009971b74154b7d332f30bd043ae2e4",
+    "semantic_hash": "e009971b74154b7d332f30bd043ae2e4"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\utils\\alarmSound.js": {
+    "mtime": 1781335723.4277258,
+    "ast_hash": "7cfb8d861a50fda8adbaa80ca22d1ab5",
+    "semantic_hash": "7cfb8d861a50fda8adbaa80ca22d1ab5"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\utils\\alarmStorage.js": {
+    "mtime": 1781335723.488282,
+    "ast_hash": "a0948735b38a7bcde114e2ff9de67bb1",
+    "semantic_hash": "a0948735b38a7bcde114e2ff9de67bb1"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\utils\\dateUtils.js": {
+    "mtime": 1781335723.495011,
+    "ast_hash": "c507c43b2c29011486ffec918dcbd3b0",
+    "semantic_hash": "c507c43b2c29011486ffec918dcbd3b0"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\src\\utils\\prayerTimes.js": {
+    "mtime": 1781335723.5051253,
+    "ast_hash": "06fa8fc1b44130aba021421262f91eee",
+    "semantic_hash": "06fa8fc1b44130aba021421262f91eee"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\vite.config.js": {
+    "mtime": 1778515571.0,
+    "ast_hash": "eee0bd06ce849ebd0777136c8a106957",
+    "semantic_hash": "eee0bd06ce849ebd0777136c8a106957"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\.claude\\skills\\stop-slop\\CHANGELOG.md": {
+    "mtime": 1781263463.441355,
+    "ast_hash": "d446aa61e5c6db5aaa25fc266294a182",
+    "semantic_hash": "d446aa61e5c6db5aaa25fc266294a182"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\.claude\\skills\\stop-slop\\README.md": {
+    "mtime": 1781263463.4433558,
+    "ast_hash": "c4fa180a518d8fa5131e0d1e56756a49",
+    "semantic_hash": "c4fa180a518d8fa5131e0d1e56756a49"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\.claude\\skills\\stop-slop\\SKILL.md": {
+    "mtime": 1781263463.4433558,
+    "ast_hash": "bd30ea398b7b9a7d93d1c5d2b8d8a2af",
+    "semantic_hash": "bd30ea398b7b9a7d93d1c5d2b8d8a2af"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\.claude\\skills\\stop-slop\\references\\examples.md": {
+    "mtime": 1781263463.4443555,
+    "ast_hash": "b31054549c3440d651dd687034eb2150",
+    "semantic_hash": "b31054549c3440d651dd687034eb2150"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\.claude\\skills\\stop-slop\\references\\phrases.md": {
+    "mtime": 1781263463.4453564,
+    "ast_hash": "9e363a08e8cb05dd21c419cd5ac2f18b",
+    "semantic_hash": "9e363a08e8cb05dd21c419cd5ac2f18b"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\.claude\\skills\\stop-slop\\references\\structures.md": {
+    "mtime": 1781263463.4463558,
+    "ast_hash": "47e9cae0268aa16085a797ef02d39ef4",
+    "semantic_hash": "47e9cae0268aa16085a797ef02d39ef4"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\MEMORY.md": {
+    "mtime": 1781337617.829171,
+    "ast_hash": "d932d48a31161be9e3498ba21af10164",
+    "semantic_hash": "d932d48a31161be9e3498ba21af10164"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\PRODUCT_DNA.md": {
+    "mtime": 1781185492.8748987,
+    "ast_hash": "166e80b7c58558860e6972595bde19af",
+    "semantic_hash": "166e80b7c58558860e6972595bde19af"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\PROJECT_MAP.md": {
+    "mtime": 1781186582.4175854,
+    "ast_hash": "a4fad084749a86b9cfeb4dcf7f011bbc",
+    "semantic_hash": "a4fad084749a86b9cfeb4dcf7f011bbc"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\README.md": {
+    "mtime": 1778531721.0,
+    "ast_hash": "08ccd18177071a452bff2a34122db96a",
+    "semantic_hash": "08ccd18177071a452bff2a34122db96a"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\SKILL.md": {
+    "mtime": 1781269442.5820081,
+    "ast_hash": "d75caca82cd16a1d389521d598634f12",
+    "semantic_hash": "d75caca82cd16a1d389521d598634f12"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\callflow-mizan.html": {
+    "mtime": 1781115280.9793322,
+    "ast_hash": "ca5c3e79257f4b5c5b5b5064fc855d80",
+    "semantic_hash": "ca5c3e79257f4b5c5b5b5064fc855d80"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\index.html": {
+    "mtime": 1781302432.8356366,
+    "ast_hash": "ef129481ff1d3bf2aea2aaffc49e9ed4",
+    "semantic_hash": "ef129481ff1d3bf2aea2aaffc49e9ed4"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\pen-ultra (1).md": {
+    "mtime": 1781374917.6690853,
+    "ast_hash": "2082546633c08c8dfd2e24b2f98899df",
+    "semantic_hash": "2082546633c08c8dfd2e24b2f98899df"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\image.png": {
+    "mtime": 1781376314.2531095,
+    "ast_hash": "d40764f34d5b34a70fa7da8efbc66870",
+    "semantic_hash": "d40764f34d5b34a70fa7da8efbc66870"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\public\\brand\\mizan-logo-vectorized.svg": {
+    "mtime": 1781282960.8708234,
+    "ast_hash": "7ea2e6f0600ee66ebda141437a75ea19",
+    "semantic_hash": "7ea2e6f0600ee66ebda141437a75ea19"
+  },
+  "C:\\Users\\JCC\\Downloads\\New folder\\public\\mizan-icon.svg": {
+    "mtime": 1781302773.0827763,
+    "ast_hash": "df2c61d146debb80b38d86d66b2dc8ae",
+    "semantic_hash": "df2c61d146debb80b38d86d66b2dc8ae"
+  }
+}

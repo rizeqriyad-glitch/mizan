@@ -2,6 +2,12 @@
 
 Newest first. One line per decision. Read me before any edit; append after every milestone.
 
+- 2026-06-13 · Crimson-consistency pass (build green, 919 KB gz 265): purged azure `rgba(51,156,255)`→`rgba(251,70,4)` & `rgba(102,181,255)`→`rgba(201,56,3)` literals across 18 files; removed الشروق from the 3 UI prayer lists + fixed two `repeat(6→5)` prayer grids (prayerTimes.js engine + AdhanNotifier sunrise tone left intact); الضحى now info-only (no check). data-reveal SPA bug already fixed on disk via `.armed`+`revealFailsafe`.
+- 2026-06-13 · Landing hero: WebGL `MizanHero` → `.crimson-hero-bg` CSS gradients/blobs (MizanHero.jsx orphaned, still on disk). Three.js still bundled via Mizan3DScene (DayHistory)/Logo/icons3d.
+- 2026-06-13 · Deduped animation libs: 18 `framer-motion` imports → `motion/react`; dropped `framer-motion` dep (bundle 1024→919 KB).
+- 2026-06-13 · Prayer icons: all prayer emoji → lucide via shared `src/components/prayerIcons.jsx` `prayerGlyph(id)` (size=1em inherits container font-size + currentColor crimson); swapped in FIXED_SECTIONS / PRAYER_ENTRIES / PRAYER_COLS / PRAYER_COLS_DB — zero render-site edits. Build green 922 KB. NOT visually QA'd (dashboard auth-gated).
+- 2026-06-13 · Layout iconography: sidebar nav (◈◧◫⏳◉◎◇) + sign-out (↩) + hamburger (☰) → lucide (LayoutDashboard/CalendarRange/StickyNote/History/BarChart3/Settings/Info/LogOut/Menu). lucide-react 0.294 lacks NotebookPen → StickyNote.
+- 2026-06-13 · PENDING: emoji→icon — prayers + Layout nav DONE; remaining = stats/badges/toasts/schedule-tabs (🔥⭐🕌📊🎯🏆🎉📅🗓…; 🕌 mosque has no lucide match → creative/hand-SVG pick); DayHistory→annual calendar (removes last Three.js); logo pick (HARD GATE, Higgsfield balance still 1/2 credits); LandingPage Sun/Moon toggle vestigial; §13 browser-console pass; nothing visually QA'd yet (dashboard auth-gated).
 - 2026-06-12 · §13 verification: `vite build` must pass twice clean; browser-console pass pending Chrome DevTools MCP (not connected this session).
 - 2026-06-12 · Follow-ups logged: subset fonts to woff2 (`pyftsubset --layout-features='*'`, Python unavailable on this machine); remove `framer-motion` dep (19 files still import it — new code uses `motion/react`); rewrite legacy var() references file-by-file then delete the bridge.
 - 2026-06-12 · Old `Mizan3DScene` kept for DayHistoryPage only — patched (rAF cancel + dispose, azure colors, particle alpha premultiply, idle skip). Landing uses new `MizanHero`.

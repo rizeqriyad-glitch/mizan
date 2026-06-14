@@ -1,9 +1,9 @@
 /* ============================================================
-   MIZAN — Global Design System · "Midnight Fajr"
+   MIZAN — Global Design System · "Crimson Dawn" (light only)
    ------------------------------------------------------------
-   Identity: the night that ends in Fajr.
-   Dark = night sky (jet/prussian) · Primary = dawn light (azure)
-   Accent = lantern ember (crimson-carrot, ≤10% of any view).
+   One palette: crimson-carrot 50→950. Background 50 · surfaces
+   100 · borders 200 · secondary text 700 · primary text 900 ·
+   CTA 500 (hover 600). No dark theme, no toggle.
 
    Legacy bridge: every old token name (--mizan-*, --bg-*,
    --accent-purple*, --gold/--ruby/… , --v-*) is aliased to the
@@ -75,32 +75,33 @@
   --transition:.2s cubic-bezier(.4,0,.2,1);
   --transition-slow:.4s cubic-bezier(.4,0,.2,1);
 
-  /* ══ Semantic tokens — DARK (default theme) ════════════ */
-  --bg:        var(--prussian-950);
-  --surface:   var(--jet-900);
-  --surface-2: #1b1f2e;
-  --text:      #eef0f6;
-  --text-2:    #b9c0d4;
-  --text-3:    #8e96ad;
-  --border:    color-mix(in oklab, #ffffff 10%, transparent);
-  --border-2:  color-mix(in oklab, #ffffff 16%, transparent);
-  --primary:   var(--azure-400);
-  --primary-contrast: #061018;
-  --accent:    var(--carrot-400);
-  --ring:      var(--azure-300);
-  --info:      var(--azure-300);
-  --grid-line: color-mix(in oklab, #ffffff 6%, transparent);
-  --success:#67b97a; --success-dim:color-mix(in oklab, #67b97a 14%, transparent);
-  --warning:#f0b13e; --warning-dim:color-mix(in oklab, #f0b13e 14%, transparent);
-  --error:#f47272;   --error-dim:color-mix(in oklab, #f47272 14%, transparent);
-  --info-dim:color-mix(in oklab, var(--azure-300) 14%, transparent);
-  color-scheme: dark;
+  /* ══ Semantic tokens — CRIMSON LIGHT (only theme) ══════ */
+  --bg:        var(--carrot-50);
+  --surface:   var(--carrot-100);
+  --surface-2: #fff6f1;
+  --text:      var(--carrot-900);
+  --text-2:    var(--carrot-700);
+  --text-3:    color-mix(in oklab, var(--carrot-700) 72%, var(--carrot-900));
+  --border:    var(--carrot-200);
+  --border-2:  var(--carrot-300);
+  --primary:   var(--carrot-500);
+  --primary-contrast: #ffffff;
+  --primary-hover: var(--carrot-600);
+  --accent:    var(--carrot-600);
+  --ring:      var(--carrot-500);
+  --info:      var(--carrot-600);
+  --grid-line: color-mix(in oklab, var(--carrot-900) 7%, transparent);
+  --success:var(--carrot-600); --success-dim:color-mix(in oklab, var(--carrot-600) 13%, transparent);
+  --warning:var(--carrot-700); --warning-dim:color-mix(in oklab, var(--carrot-400) 18%, transparent);
+  --error:var(--carrot-800);   --error-dim:color-mix(in oklab, var(--carrot-800) 12%, transparent);
+  --info-dim:color-mix(in oklab, var(--carrot-600) 12%, transparent);
+  color-scheme: light;
 
   /* ══ Legacy bridge (do not use in new code) ════════════ */
   --mizan-purple:   var(--primary);
   --mizan-cyan:     var(--info);
-  --mizan-gradient: linear-gradient(135deg, var(--azure-600), var(--azure-400));
-  --mizan-dark:     var(--jet-950);
+  --mizan-gradient: linear-gradient(135deg, var(--carrot-500), var(--carrot-300));
+  --mizan-dark:     var(--carrot-950);
   --mizan-surface:  var(--surface);
   --mizan-base:     var(--bg);
 
@@ -128,44 +129,16 @@
   --sapphire:var(--info);      --sapphire-dim:var(--info-dim);
   --amber:var(--warning);      --amber-dim:var(--warning-dim);
 
-  --glass-bg:color-mix(in oklab, var(--surface) 72%, transparent);
-  --glass-border:color-mix(in oklab, var(--primary) 16%, transparent);
+  --glass-bg:color-mix(in oklab, #ffffff 72%, transparent);
+  --glass-border:color-mix(in oklab, var(--carrot-500) 20%, transparent);
   --glass-blur:blur(16px) saturate(140%);
-  --glass-shadow:0 12px 32px rgba(4,8,20,.35), inset 0 1px 0 rgba(255,255,255,.06);
+  --glass-shadow:0 4px 24px rgba(251,70,4,.10), inset 0 1px 0 rgba(255,255,255,.7);
   --v-glass-bg:var(--glass-bg); --v-glass-border:var(--glass-border);
   --v-shadow:var(--glass-shadow);
 }
 
-/* Explicit dark block kept for components that target it directly */
-[data-theme="dark"] { color-scheme: dark; }
-
-/* ══ Semantic tokens — LIGHT ══════════════════════════════ */
-[data-theme="light"] {
-  --bg:        #f4f5f8;
-  --surface:   #ffffff;
-  --surface-2: var(--jet-100);
-  --text:      var(--jet-900);
-  --text-2:    #3d4257;
-  --text-3:    #5a6076;
-  --border:    color-mix(in oklab, var(--jet-900) 12%, transparent);
-  --border-2:  color-mix(in oklab, var(--jet-900) 20%, transparent);
-  --primary:   var(--azure-600);
-  --primary-contrast: #ffffff;
-  --accent:    var(--carrot-600);
-  --ring:      var(--azure-500);
-  --info:      #1d6fd6;
-  --grid-line: color-mix(in oklab, var(--jet-900) 7%, transparent);
-  --success:#2e7d44; --success-dim:color-mix(in oklab, #2e7d44 12%, transparent);
-  --warning:#9a6a08; --warning-dim:color-mix(in oklab, #b97f10 14%, transparent);
-  --error:#c23434;   --error-dim:color-mix(in oklab, #c23434 12%, transparent);
-  --info-dim:color-mix(in oklab, #1d6fd6 12%, transparent);
-  color-scheme: light;
-
-  --mizan-gradient: linear-gradient(135deg, var(--azure-700), var(--azure-500));
-  --glass-bg:color-mix(in oklab, #ffffff 70%, transparent);
-  --glass-border:color-mix(in oklab, var(--azure-700) 18%, transparent);
-  --glass-shadow:0 10px 28px rgba(21,22,30,.10), inset 0 1px 0 rgba(255,255,255,.7);
-}
+/* Light is the only theme; the attribute stays for any selector that targets it */
+[data-theme="light"], [data-theme="dark"] { color-scheme: light; }
 
 /* ── Language-resolved font roles ───────────────────────── */
 html[lang="ar"] {
@@ -193,11 +166,6 @@ body {
 html[lang="ar"] body { line-height: 1.8; }
 html[lang="ar"] * { letter-spacing: 0 !important; }
 
-/* Theme switch: transition colors only while .theming is present (set by toggle) */
-html.theming body, html.theming .glass-card, html.theming nav {
-  transition: background-color 250ms var(--ease-out), color 250ms var(--ease-out),
-              border-color 250ms var(--ease-out);
-}
 
 /* ── Scrollbar / focus / selection ──────────────────────── */
 ::-webkit-scrollbar { width:4px; height:4px; }
@@ -226,9 +194,8 @@ html.theming body, html.theming .glass-card, html.theming nav {
 h1 { font-family:var(--font-display);    font-size:var(--step-3); font-weight:600; line-height:1.25; }
 h2 { font-family:var(--font-display-sm); font-size:var(--step-2); font-weight:700; line-height:1.3; }
 h3 { font-family:var(--font-display-sm); font-size:var(--step-1); font-weight:700; line-height:1.35; }
-/* Palestine ships one weight — never synthesize bold */
-html[lang="ar"] h1 { font-weight:400; }
-html[lang="ar"] :is(h1,h2,h3) { line-height:1.5; }
+/* Arabic h1–h3 = Palestine (client-assigned role). One weight — never synthesize bold */
+html[lang="ar"] :is(h1,h2,h3) { font-family:var(--font-brand); font-weight:400; line-height:1.55; }
 
 .font-display { font-family:var(--font-display); }
 .font-quran   { font-family:var(--font-quran); }
@@ -241,12 +208,7 @@ html[lang="ar"] :is(h1,h2,h3) { line-height:1.5; }
 .text-purple { color:var(--primary); }
 .text-cyan   { color:var(--info); }
 .text-gradient, .gradient-text {
-  background:linear-gradient(135deg, var(--azure-300), var(--azure-500));
-  -webkit-background-clip:text; background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-[data-theme="light"] .text-gradient, [data-theme="light"] .gradient-text {
-  background:linear-gradient(135deg, var(--azure-700), var(--azure-500));
+  background:linear-gradient(135deg, var(--carrot-600), var(--carrot-400));
   -webkit-background-clip:text; background-clip:text;
   -webkit-text-fill-color:transparent;
 }
@@ -274,11 +236,8 @@ html[lang="ar"] :is(h1,h2,h3) { line-height:1.5; }
 }
 .glass-card:hover {
   transform:translateY(-3px);
-  border-color:color-mix(in oklab, var(--primary) 35%, transparent);
-  box-shadow:0 16px 40px rgba(4,8,20,.45), 0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent);
-}
-[data-theme="light"] .glass-card:hover {
-  box-shadow:0 14px 34px rgba(21,22,30,.14);
+  border-color:color-mix(in oklab, var(--primary) 38%, transparent);
+  box-shadow:0 10px 32px rgba(201,56,3,.16), 0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent);
 }
 
 .glass-icon-mizan {
@@ -328,13 +287,20 @@ html[lang="ar"] :is(h1,h2,h3) { line-height:1.5; }
 .animate-float        { animation:float 3s ease-in-out infinite; }
 .animate-glow         { animation:glow 2s ease-in-out infinite; }
 
-/* ── Scroll reveal (content visible by default on no-JS) ── */
+/* ── Scroll reveal — enhance-only, can never hide content ──
+   The observer adds .armed when it actually starts watching an
+   element. Anything that is never armed (page without the hook,
+   async-mounted nodes, JS failure) self-heals to visible via the
+   failsafe animation. Reveal classes enhance; they never gate. */
 [data-reveal] {
   opacity:0;
   transform:translateY(26px);
   transition:opacity .7s var(--ease-out), transform .7s var(--ease-out);
+  animation:revealFailsafe 0s .9s forwards;
 }
-[data-reveal].revealed { opacity:1; transform:none; }
+[data-reveal].armed { animation:none; }
+[data-reveal].revealed { opacity:1; transform:none; animation:none; }
+@keyframes revealFailsafe { to { opacity:1; transform:none; } }
 [data-reveal]:nth-child(1){transition-delay:0ms;}
 [data-reveal]:nth-child(2){transition-delay:70ms;}
 [data-reveal]:nth-child(3){transition-delay:140ms;}
@@ -406,11 +372,11 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
    ════════════════════════════════════════════════════════ */
 .aurora {
   position:absolute; inset:-20%;
-  filter:blur(64px); opacity:.45; pointer-events:none;
+  filter:blur(64px); opacity:.5; pointer-events:none;
   background:
-    radial-gradient(35% 45% at 24% 28%, color-mix(in oklab, var(--azure-700) 70%, transparent), transparent 70%),
-    radial-gradient(40% 50% at 76% 22%, color-mix(in oklab, var(--azure-500) 38%, transparent), transparent 70%),
-    radial-gradient(45% 55% at 50% 84%, color-mix(in oklab, var(--prussian-700) 75%, transparent), transparent 72%);
+    radial-gradient(35% 45% at 24% 28%, color-mix(in oklab, var(--carrot-300) 55%, transparent), transparent 70%),
+    radial-gradient(40% 50% at 76% 22%, color-mix(in oklab, var(--carrot-400) 30%, transparent), transparent 70%),
+    radial-gradient(45% 55% at 50% 84%, color-mix(in oklab, var(--carrot-200) 70%, transparent), transparent 72%);
   animation:aurora 18s var(--ease-in-out) infinite alternate;
 }
 @keyframes aurora { to { transform:rotate(6deg) scale(1.12) translateY(-4%); } }
@@ -460,7 +426,7 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
   box-shadow:0 8px 24px color-mix(in oklab, var(--primary) 32%, transparent);
   transition:transform var(--dur-2) var(--ease-spring), box-shadow var(--dur-2) var(--ease-out), background var(--dur-2) var(--ease-out);
 }
-.btn-cta:hover { transform:translateY(-2px); box-shadow:0 14px 32px color-mix(in oklab, var(--primary) 42%, transparent); }
+.btn-cta:hover { transform:translateY(-2px); background:var(--primary-hover); box-shadow:0 14px 32px color-mix(in oklab, var(--primary) 42%, transparent); }
 .btn-cta:active { transform:scale(.97); transition-duration:80ms; }
 .btn-cta--sm { padding:.55rem 1.25rem; font-size:.85rem; box-shadow:0 4px 14px color-mix(in oklab, var(--primary) 26%, transparent); }
 .btn-ghost {
@@ -618,4 +584,84 @@ input::placeholder, textarea::placeholder { color:var(--text-3); }
   .ld-cta-row .btn-ghost { display:none; }
   .ld-stat { flex-basis:100%; padding:.6rem 0; }
   .ld-stat + .ld-stat { border-inline-start:none; border-top:1px solid var(--border); }
+}
+
+/* ════════════════════════════════════════════════════════
+   CRIMSON HERO — layered CSS gradients (no WebGL)
+   base 135° wash · radial warmth overlay · 3 slow drift blurs
+   ════════════════════════════════════════════════════════ */
+.crimson-hero-bg { position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.crimson-hero-bg::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg, #ffece6 0%, #fedacd 50%, #fdb59b 100%);
+}
+.crimson-hero-bg::after {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse 80% 60% at 70% 40%, rgba(251,70,4,.08) 0%, transparent 70%);
+}
+.crimson-blob {
+  position:absolute; border-radius:50%;
+  background:radial-gradient(circle, rgba(252,107,54,.12) 0%, rgba(252,107,54,0) 70%);
+  filter:blur(40px);
+  will-change:transform;
+}
+.crimson-blob--a { width:46vw; height:46vw; top:-12%; inset-inline-start:-8%; animation:blobDriftA 40s var(--ease-in-out) infinite alternate; }
+.crimson-blob--b { width:38vw; height:38vw; bottom:-14%; inset-inline-end:-6%; animation:blobDriftB 50s var(--ease-in-out) infinite alternate; }
+.crimson-blob--c { width:30vw; height:30vw; top:34%; inset-inline-end:24%; animation:blobDriftC 35s var(--ease-in-out) infinite alternate; }
+@keyframes blobDriftA { to { transform:translate(9vw, 7vh) scale(1.12); } }
+@keyframes blobDriftB { to { transform:translate(-8vw, -6vh) scale(1.08); } }
+@keyframes blobDriftC { to { transform:translate(-6vw, 8vh) scale(.92); } }
+@media (prefers-reduced-motion: reduce) { .crimson-blob { animation:none; } }
+
+/* ════════════════════════════════════════════════════════
+   MIZAN TABLE — the one table recipe (spec: crimson, sticky)
+   ════════════════════════════════════════════════════════ */
+.mizan-table-wrap {
+  border-radius:16px;
+  border:1px solid #fdb59b;
+  box-shadow:0 4px 24px rgba(251,70,4,.10);
+  overflow:auto;
+  max-height:560px;
+  -webkit-overflow-scrolling:touch;
+  background:var(--carrot-50);
+}
+.mizan-table { width:100%; border-collapse:separate; border-spacing:0; }
+.mizan-table th {
+  position:sticky; top:0; z-index:2;
+  background:#fb4604; color:#fff;
+  font-family:var(--font-brand); font-weight:400;
+  font-size:1.02rem;
+  padding:14px 20px;
+  text-align:start; white-space:nowrap;
+}
+.mizan-table td { padding:14px 20px; border:none; white-space:nowrap; }
+.mizan-table tbody tr:nth-child(odd)  td { background:#ffece6; }
+.mizan-table tbody tr:nth-child(even) td { background:#fedacd; }
+.mizan-table tbody tr { transition:background 200ms var(--ease-out); }
+.mizan-table tbody tr:hover td { background:#fdb59b; }
+
+/* ════════════════════════════════════════════════════════
+   SLIDE-DOWN PANEL (notes editor · calendar day log)
+   grid-rows trick: animates without measuring heights
+   ════════════════════════════════════════════════════════ */
+.slide-panel {
+  display:grid;
+  grid-template-rows:0fr;
+  transition:grid-template-rows 320ms var(--ease-out);
+}
+.slide-panel.open { grid-template-rows:1fr; }
+.slide-panel > * { overflow:hidden; min-height:0; }
+
+/* ════════════════════════════════════════════════════════
+   3D ICON — spring bounce on press (scale 1→1.3→.9→1.05→1)
+   ════════════════════════════════════════════════════════ */
+@keyframes iconSpringBounce {
+  0%{transform:scale(1);} 30%{transform:scale(1.3);} 55%{transform:scale(.9);}
+  75%{transform:scale(1.05);} 100%{transform:scale(1);}
+}
+.icon3d { display:inline-flex; flex-shrink:0; line-height:0; }
+.icon3d.bouncing { animation:iconSpringBounce 500ms var(--ease-spring); }
+button.icon3d-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:none; padding:0; cursor:pointer; color:inherit;
 }
