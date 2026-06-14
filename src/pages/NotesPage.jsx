@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useApp } from '../contexts/AppContext'
+import { motion, AnimatePresence } from 'motion/react'
+import { useI18n } from '../contexts/I18nContext'
+import { glyph } from '../components/glyphs'
 import { useAuth } from '../contexts/AuthContext'
 import { doc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore'
 import { db } from '../firebase'
@@ -8,16 +9,17 @@ import { db } from '../firebase'
 const CATEGORIES = ['catGeneral', 'catQuran', 'catHadith', 'catFiqh', 'catReminder']
 
 const CAT_COLORS = {
-  // Tinted toward Mizan brand hue (Rule D: Color & Contrast)
-  catGeneral:  { color: 'var(--mizan-purple)', bg: 'rgba(51, 156, 255, 0.1)' },
-  catQuran:    { color: '#fbbf24',             bg: 'rgba(251, 191, 36, 0.1)' },
-  catHadith:   { color: '#10b981',             bg: 'rgba(16, 185, 129, 0.1)' },
-  catFiqh:     { color: 'var(--mizan-cyan)',   bg: 'rgba(102, 181, 255, 0.1)'  },
-  catReminder: { color: '#f87171',             bg: 'rgba(248, 113, 113, 0.1)' },
+  // Crimson-carrot ONLY — no off-palette hues. Categories read by their label;
+  // deep shades (600–800) add subtle variety while keeping AA contrast on the tint.
+  catGeneral:  { color: 'var(--carrot-600)', bg: 'rgba(251, 70, 4, 0.10)' },
+  catQuran:    { color: 'var(--carrot-700)', bg: 'rgba(251, 70, 4, 0.10)' },
+  catHadith:   { color: 'var(--carrot-800)', bg: 'rgba(251, 70, 4, 0.10)' },
+  catFiqh:     { color: 'var(--carrot-600)', bg: 'rgba(201, 56, 3, 0.12)' },
+  catReminder: { color: 'var(--carrot-700)', bg: 'rgba(251, 70, 4, 0.10)' },
 }
 
 export default function NotesPage() {
-  const { language, t } = useApp()
+  const { language, t } = useI18n()
   const { user } = useAuth()
   const isAr = language === 'ar'
 
@@ -286,7 +288,7 @@ export default function NotesPage() {
               [isAr ? 'left' : 'right']: '0.6rem',
               color: 'var(--text-muted)', fontSize: '0.8rem',
               pointerEvents: 'none',
-            }}>🔍</span>
+            }}>{glyph('search', 14)}</span>
           </div>
 
           {/* Category filter */}
@@ -297,7 +299,7 @@ export default function NotesPage() {
                 fontSize: '0.72rem', padding: '0.25rem 0.65rem',
                 borderRadius: 'var(--radius-full)',
                 border: `1px solid ${filterCat === 'all' ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`,
-                background: filterCat === 'all' ? 'rgba(51, 156, 255,0.1)' : 'transparent',
+                background: filterCat === 'all' ? 'rgba(251, 70, 4,0.1)' : 'transparent',
                 color: filterCat === 'all' ? 'var(--text-primary)' : 'var(--text-muted)',
                 cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
               }}

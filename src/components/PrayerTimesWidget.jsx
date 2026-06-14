@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
 import { formatPrayerTime, getNextPrayer, getCurrentPrayer } from '../utils/prayerTimes'
+import { prayerGlyph } from './prayerIcons'
 
 const PRAYER_ENTRIES = [
-  { id: 'fajr',    label: { en: 'Fajr',    ar: 'الفجر'  }, icon: '🌙', timeKey: 'fajr'    },
-  { id: 'shuruq',  label: { en: 'Sunrise', ar: 'الشروق' }, icon: '🌄', timeKey: 'sunrise', isMarker: true },
-  { id: 'duha',    label: { en: 'Duha',    ar: 'الضحى'  }, icon: '🌞', isVoluntary: true, timeLabel: { en: 'After sunrise', ar: 'بعد الشروق' } },
-  { id: 'dhuhr',   label: { en: 'Dhuhr',   ar: 'الظهر'  }, icon: '☀️',  timeKey: 'dhuhr'   },
-  { id: 'asr',     label: { en: 'Asr',     ar: 'العصر'  }, icon: '🌤',  timeKey: 'asr'     },
-  { id: 'maghrib', label: { en: 'Maghrib', ar: 'المغرب' }, icon: '🌅',  timeKey: 'maghrib' },
-  { id: 'isha',    label: { en: 'Isha',    ar: 'العشاء' }, icon: '🌌',  timeKey: 'isha'    },
-  { id: 'witr',    label: { en: 'Witr',    ar: 'الوتر'  }, icon: '🌜', isVoluntary: true, isMarker: true, timeLabel: { en: 'After Isha', ar: 'بعد العشاء' } },
+  { id: 'fajr',    label: { en: 'Fajr',    ar: 'الفجر'  }, icon: prayerGlyph('fajr'),    timeKey: 'fajr'    },
+  { id: 'duha',    label: { en: 'Duha',    ar: 'الضحى'  }, icon: prayerGlyph('duha'), isVoluntary: true, timeLabel: { en: 'After sunrise', ar: 'بعد الشروق' } },
+  { id: 'dhuhr',   label: { en: 'Dhuhr',   ar: 'الظهر'  }, icon: prayerGlyph('dhuhr'),   timeKey: 'dhuhr'   },
+  { id: 'asr',     label: { en: 'Asr',     ar: 'العصر'  }, icon: prayerGlyph('asr'),     timeKey: 'asr'     },
+  { id: 'maghrib', label: { en: 'Maghrib', ar: 'المغرب' }, icon: prayerGlyph('maghrib'), timeKey: 'maghrib' },
+  { id: 'isha',    label: { en: 'Isha',    ar: 'العشاء' }, icon: prayerGlyph('isha'),    timeKey: 'isha'    },
+  { id: 'witr',    label: { en: 'Witr',    ar: 'الوتر'  }, icon: prayerGlyph('witr'), isVoluntary: true, isMarker: true, timeLabel: { en: 'After Isha', ar: 'بعد العشاء' } },
 ]
 
 export default function PrayerTimesWidget() {
-  const { prayerTimes, timeFormat, language, togglePrayer, donePrayers, t } = useApp()
+  const { prayerTimes, timeFormat, togglePrayer, donePrayers } = useApp()
+  const { language, t } = useI18n()
   const [nextPrayer, setNextPrayer] = useState(null)
   const [currentPrayer, setCurrentPrayer] = useState(null)
   const [now, setNow] = useState(new Date())
@@ -87,10 +89,10 @@ export default function PrayerTimesWidget() {
           <div style={{
             fontSize: '0.75rem',
             color: 'var(--mizan-purple)',
-            background: 'rgba(51, 156, 255,0.1)',
+            background: 'rgba(251, 70, 4,0.1)',
             padding: '0.2rem 0.6rem',
             borderRadius: '9999px', // Mizan token for full-pill
-            border: '1px solid rgba(51, 156, 255,0.2)',
+            border: '1px solid rgba(251, 70, 4,0.2)',
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
           }}>
             {isAr ? 'القادمة' : 'Next'}: {nextPrayer.minutesUntil}m
@@ -117,7 +119,7 @@ export default function PrayerTimesWidget() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '0.6rem 1.25rem',
-                background: isNext ? 'rgba(51, 156, 255,0.08)' : 'transparent',
+                background: isNext ? 'rgba(251, 70, 4,0.08)' : 'transparent',
                 borderLeft: (!isAr && isCurrent) ? '2px solid var(--mizan-purple)' : (!isAr ? '2px solid transparent' : 'none'),
                 borderRight: (isAr && isCurrent) ? '2px solid var(--mizan-purple)' : (isAr ? '2px solid transparent' : 'none'),
                 transition: 'background var(--transition)',
@@ -180,8 +182,8 @@ export default function PrayerTimesWidget() {
                   </span>
                 )}
 
-                {/* Toggle button — not shown for time markers like Sunrise */}
-                {!prayer.isMarker && <button
+                {/* Toggle — obligatory prayers only; markers (Witr) and voluntary (Duha) are info-only */}
+                {!prayer.isMarker && !prayer.isVoluntary && <button
                   onClick={() => handleToggle(prayer.id)}
                   title={isDone
                     ? (isAr ? 'إلغاء التأشير' : 'Unmark')
@@ -190,7 +192,7 @@ export default function PrayerTimesWidget() {
                     width: 30, height: 30,
                     borderRadius: '50%', // Mizan token for icons
                     border: isDone ? '1.5px solid var(--mizan-cyan)' : '1.5px solid var(--v-glass-border)',
-                    background: isDone ? 'rgba(102, 181, 255,0.1)' : 'transparent',
+                    background: isDone ? 'rgba(201, 56, 3,0.1)' : 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer',
                     color: isDone ? 'var(--mizan-cyan)' : 'var(--text-muted)',
@@ -202,7 +204,7 @@ export default function PrayerTimesWidget() {
                     if (isDone) {
                       e.currentTarget.style.borderColor = 'var(--mizan-purple)'
                       e.currentTarget.style.color = 'var(--mizan-purple)'
-                      e.currentTarget.style.background = 'rgba(51, 156, 255,0.1)'
+                      e.currentTarget.style.background = 'rgba(251, 70, 4,0.1)'
                     } else {
                       e.currentTarget.style.borderColor = 'var(--mizan-cyan)'
                     }
@@ -210,7 +212,7 @@ export default function PrayerTimesWidget() {
                   onMouseLeave={e => {
                     e.currentTarget.style.borderColor = isDone ? 'var(--mizan-cyan)' : 'var(--v-glass-border)'
                     e.currentTarget.style.color = isDone ? 'var(--mizan-cyan)' : 'var(--text-muted)'
-                    e.currentTarget.style.background = isDone ? 'rgba(102, 181, 255,0.1)' : 'transparent'
+                    e.currentTarget.style.background = isDone ? 'rgba(201, 56, 3,0.1)' : 'transparent'
                   }}
                 >
                   {isDone ? '✓' : '○'}

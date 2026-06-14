@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useApp } from '../contexts/AppContext'
+import { motion, AnimatePresence } from 'motion/react'
+import { useI18n } from '../contexts/I18nContext'
+import { glyph } from './glyphs'
 import { useAuth } from '../contexts/AuthContext'
 import { doc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore'
 import { db } from '../firebase'
@@ -16,7 +17,7 @@ export const CAT_COLORS = {
 }
 
 export default function NotesSection() {
-  const { language, t } = useApp()
+  const { language, t } = useI18n()
   const { user } = useAuth()
   const isAr = language === 'ar'
 
@@ -115,7 +116,7 @@ export default function NotesSection() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{ fontSize: '1.1rem' }}>📝</span>
+          <span style={{ fontSize: '1.1rem' }}>{glyph('pencil')}</span>
           <span style={{
             fontSize: '0.85rem', fontWeight: 500,
             color: 'var(--text-secondary)',
@@ -128,7 +129,7 @@ export default function NotesSection() {
             <span style={{
               fontSize: '0.7rem',
               background: 'var(--gold-dim)', color: 'var(--gold)',
-            border: '1px solid rgba(51, 156, 255,0.2)', // Mizan purple border
+            border: '1px solid rgba(251, 70, 4,0.2)', // Mizan purple border
               borderRadius: 'var(--radius-full)',
               padding: '0.1rem 0.5rem',
             }}>
@@ -209,8 +210,8 @@ export default function NotesSection() {
                   style={{
                     padding: '0.4rem 1.1rem',
                     borderRadius: '10px', // Mizan token for buttons
-                    background: text.trim() ? 'rgba(51, 156, 255,0.1)' : 'transparent', // Mizan purple background
-                    border: `1px solid ${text.trim() ? 'rgba(51, 156, 255,0.3)' : 'var(--v-glass-border)'}`, // Mizan purple border
+                    background: text.trim() ? 'rgba(251, 70, 4,0.1)' : 'transparent', // Mizan purple background
+                    border: `1px solid ${text.trim() ? 'rgba(251, 70, 4,0.3)' : 'var(--v-glass-border)'}`, // Mizan purple border
                     color: text.trim() ? 'var(--gold)' : 'var(--text-muted)',
                     fontSize: '0.82rem', fontWeight: 500,
                     cursor: text.trim() && !saving ? 'pointer' : 'not-allowed',

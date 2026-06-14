@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { motion, AnimatePresence, Reorder } from 'framer-motion'
+import { motion, AnimatePresence, Reorder } from 'motion/react'
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 const DAYS_EN  = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -23,11 +24,11 @@ const BLANK = { labelEn: '', labelAr: '', icon: '📋', color: 'emerald', startT
 
 export default function ScheduleManager() {
   const {
-    language,
     scheduleFrequency, scheduleBlocks,
     changeScheduleFrequency,
     addScheduleBlock, editScheduleBlock, deleteScheduleBlock, reorderScheduleBlocks,
   } = useApp()
+  const { language } = useI18n()
   const isAr = language === 'ar'
 
   const [open,         setOpen]         = useState(false)
@@ -115,7 +116,7 @@ export default function ScheduleManager() {
             <span style={{
               fontSize: '0.67rem', padding: '0.1rem 0.42rem',
               borderRadius: 'var(--radius-full)',
-            background: 'rgba(102, 181, 255,0.1)', color: 'var(--mizan-cyan)', // Mizan cyan
+            background: 'rgba(201, 56, 3,0.1)', color: 'var(--mizan-cyan)', // Mizan cyan
               fontWeight: 600,
             }}>
               {scheduleBlocks.length}
@@ -147,7 +148,7 @@ export default function ScheduleManager() {
           onMouseEnter={e => {
             e.currentTarget.style.borderColor = 'var(--mizan-purple)' // Mizan purple
             e.currentTarget.style.color = 'var(--mizan-purple)' // Mizan purple
-            e.currentTarget.style.background = 'rgba(51, 156, 255,0.1)' // Mizan purple dim
+            e.currentTarget.style.background = 'rgba(251, 70, 4,0.1)' // Mizan purple dim
           }}
           onMouseLeave={e => {
             e.currentTarget.style.borderColor = 'var(--border-strong)'

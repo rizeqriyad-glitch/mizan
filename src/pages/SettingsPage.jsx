@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
+import { glyph } from '../components/glyphs'
 import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
 import { useNavigate } from 'react-router-dom'
 import { saveAlarmFile, clearAlarmFile } from '../utils/alarmStorage'
 import { setCustomAlarm, clearCustomAlarm, getCustomAlarmName } from '../utils/alarmSound'
@@ -110,7 +112,7 @@ function AlarmUploader({ isAr }) {
         whiteSpace: 'nowrap',
         fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
       }}>
-        {fileName ? `🎵 ${fileName}` : (isAr ? 'افتراضي (رادار)' : 'Default (Radar)')}
+        {fileName ? fileName : (isAr ? 'افتراضي (رادار)' : 'Default (Radar)')}
       </span>
 
       <input
@@ -137,7 +139,7 @@ function AlarmUploader({ isAr }) {
         onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--mizan-purple)'; e.currentTarget.style.color = 'var(--mizan-purple)' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--v-glass-border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
       >
-        {isAr ? '⬆ رفع ملف' : '⬆ Upload'}
+        {glyph('upload', 13)} {isAr ? 'رفع ملف' : 'Upload'}
       </button>
 
       {fileName && (
@@ -166,7 +168,8 @@ function AlarmUploader({ isAr }) {
 
 export default function SettingsPage() {
   const { user, logout } = useAuth()
-  const { language, changeLanguage, theme, changeTheme, timeFormat, changeTimeFormat, prayerNotifications, changePrayerNotifications, t } = useApp()
+  const { timeFormat, changeTimeFormat, prayerNotifications, changePrayerNotifications } = useApp()
+  const { language, changeLanguage, t } = useI18n()
   const navigate = useNavigate()
   const isAr = language === 'ar'
 
@@ -229,7 +232,7 @@ export default function SettingsPage() {
           ) : (
             <div className="glass-icon-mizan" style={{
               width: 48, height: 48, borderRadius: '50%',
-              background: 'rgba(51, 156, 255,0.1)',
+              background: 'rgba(251, 70, 4,0.1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'var(--mizan-purple)', fontWeight: 600,
             }}>
@@ -246,8 +249,8 @@ export default function SettingsPage() {
             <div style={{
               padding: '0.25rem 0.75rem',
               borderRadius: '9999px', // Mizan token for full-pill
-              background: 'rgba(102, 181, 255,0.1)',
-              border: '1px solid rgba(102, 181, 255,0.2)',
+              background: 'rgba(201, 56, 3,0.1)',
+              border: '1px solid rgba(201, 56, 3,0.2)',
               color: 'var(--emerald)',
               fontSize: '0.72rem',
             }}>
@@ -294,22 +297,6 @@ export default function SettingsPage() {
             ]}
             value={language}
             onChange={changeLanguage}
-            accentColor="var(--mizan-purple)"
-          />
-        </SettingRow>
-
-        <SettingRow
-          label={t('theme')}
-          description={isAr ? 'مظهر التطبيق' : 'Application appearance'}
-          isAr={isAr}
-        >
-          <ToggleGroup
-            options={[
-              { value: 'dark', label: isAr ? '🌙 داكن' : '🌙 Dark' },
-              { value: 'light', label: isAr ? '☀️ فاتح' : '☀️ Light' },
-            ]}
-            value={theme}
-            onChange={changeTheme}
             accentColor="var(--mizan-purple)"
           />
         </SettingRow>
@@ -416,11 +403,12 @@ export default function SettingsPage() {
             <div style={{
               width: 48, height: 48,
               borderRadius: '14px',
-              background: 'rgba(51, 156, 255,0.1)',
+              background: 'rgba(251, 70, 4,0.1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '1.6rem',
+              color: 'var(--primary)',
             }}>
-              ⚖️
+              {glyph('scale')}
             </div>
             <div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', color: 'var(--gold)', fontWeight: 600 }}>

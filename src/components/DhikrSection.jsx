@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useApp } from '../contexts/AppContext'
+import { motion, AnimatePresence } from 'motion/react'
+import { useI18n } from '../contexts/I18nContext'
+import { glyph } from './glyphs'
 import { useAuth } from '../contexts/AuthContext'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
@@ -82,7 +83,7 @@ const DHIKR_LIST = [
 ]
 
 export default function DhikrSection() {
-  const { language, t } = useApp()
+  const { language, t } = useI18n()
   const { user } = useAuth()
   const isAr = language === 'ar'
 
@@ -159,7 +160,7 @@ export default function DhikrSection() {
         onClick={() => setExpanded(v => !v)}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{ fontSize: '1.1rem' }}>📿</span>
+          <span style={{ fontSize: '1.1rem' }}>{glyph('dua')}</span>
           <span style={{
             fontSize: '0.85rem', fontWeight: 500,
             color: 'var(--text-secondary)',
@@ -170,9 +171,9 @@ export default function DhikrSection() {
           </span>
           <span style={{
             fontSize: '0.7rem',
-            background: totalDone === DHIKR_LIST.length ? 'rgba(102, 181, 255,0.1)' : 'rgba(51, 156, 255,0.1)',
+            background: totalDone === DHIKR_LIST.length ? 'rgba(201, 56, 3,0.1)' : 'rgba(251, 70, 4,0.1)',
             color: totalDone === DHIKR_LIST.length ? 'var(--mizan-cyan)' : 'var(--mizan-purple)',
-            border: `1px solid ${totalDone === DHIKR_LIST.length ? 'rgba(102, 181, 255,0.2)' : 'rgba(51, 156, 255,0.2)'}`,
+            border: `1px solid ${totalDone === DHIKR_LIST.length ? 'rgba(201, 56, 3,0.2)' : 'rgba(251, 70, 4,0.2)'}`,
             borderRadius: 'var(--radius-full)',
             padding: '0.1rem 0.5rem',
           }}>

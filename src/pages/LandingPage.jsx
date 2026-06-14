@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { motion, MotionConfig } from 'motion/react'
 import {
   CheckCircle, Sparkles, BookOpen, Repeat, Timer, PenLine,
-  Sun, Moon, ArrowLeft, ArrowRight,
+  ArrowLeft, ArrowRight,
 } from 'lucide-react'
-import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
 import { useAuth } from '../contexts/AuthContext'
-import MizanHero from '../components/MizanHero'
 import MizanMark from '../components/MizanMark'
 
 /* Featured pair gets card treatment; the rest are compact rows (no cloned grids). */
@@ -72,7 +71,7 @@ const item = {
 }
 
 export default function LandingPage() {
-  const { language, changeLanguage, theme, changeTheme, t, completedToday } = useApp()
+  const { language, changeLanguage, t } = useI18n()
   const { user } = useAuth()
   const navigate = useNavigate()
   const isAr = language === 'ar'
@@ -115,12 +114,6 @@ export default function LandingPage() {
 
   const goStart = () => navigate(user ? '/dashboard' : '/login')
 
-  const toggleTheme = () => {
-    document.documentElement.classList.add('theming')
-    changeTheme(theme === 'dark' ? 'light' : 'dark')
-    setTimeout(() => document.documentElement.classList.remove('theming'), 300)
-  }
-
   const onBrandClick = (e) => {
     e.preventDefault()
     const a = e.currentTarget
@@ -146,16 +139,6 @@ export default function LandingPage() {
               <span className="brand__name">ميزان</span>
             </a>
             <div className="ld-nav-actions">
-              <button
-                type="button"
-                className="btn-ui"
-                onClick={toggleTheme}
-                aria-label={theme === 'dark'
-                  ? (isAr ? 'الوضع الفاتح' : 'Switch to light theme')
-                  : (isAr ? 'الوضع الداكن' : 'Switch to dark theme')}
-              >
-                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
               <button type="button" className="btn-ui" onClick={() => changeLanguage(isAr ? 'en' : 'ar')}>
                 {isAr ? 'EN' : 'عربي'}
               </button>
@@ -169,7 +152,11 @@ export default function LandingPage() {
         <main id="main">
           {/* ── Hero ──────────────────────────────────────── */}
           <section className="ld-hero">
-            <MizanHero completed={completedToday?.length ?? 0} total={5} />
+            <div className="crimson-hero-bg" aria-hidden="true">
+              <span className="crimson-blob crimson-blob--a" />
+              <span className="crimson-blob crimson-blob--b" />
+              <span className="crimson-blob crimson-blob--c" />
+            </div>
             <motion.div
               className="ld-hero-content"
               variants={wrap}

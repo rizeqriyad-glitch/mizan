@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
+import { glyph } from './glyphs'
 import { useAuth } from '../contexts/AuthContext'
 import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
@@ -413,7 +414,7 @@ const EVENING_ADHKAR = [
 const SETS = { morning: MORNING_ADHKAR, evening: EVENING_ADHKAR }
 
 export default function AdhkarSection() {
-  const { language, t } = useApp()
+  const { language, t } = useI18n()
   const { user } = useAuth()
   const isAr = language === 'ar'
 
@@ -523,7 +524,7 @@ export default function AdhkarSection() {
         onClick={() => setExpanded(v => !v)}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <div className="glass-icon-mizan" style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>🤲</div>
+          <div className="glass-icon-mizan" style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', color: 'var(--primary)' }}>{glyph('dua')}</div>
           <span style={{
             fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)',
             letterSpacing: '0.06em', textTransform: 'uppercase',
@@ -533,9 +534,9 @@ export default function AdhkarSection() {
           </span>
           <span style={{
             fontSize: '0.7rem',
-            background: doneCount === list.length ? 'rgba(102, 181, 255,0.1)' : 'rgba(51, 156, 255,0.1)',
+            background: doneCount === list.length ? 'rgba(201, 56, 3,0.1)' : 'rgba(251, 70, 4,0.1)',
             color:      doneCount === list.length ? 'var(--mizan-cyan)' : 'var(--mizan-purple)',
-            border:     `1px solid ${doneCount === list.length ? 'rgba(102, 181, 255,0.2)' : 'rgba(51, 156, 255,0.2)'}`,
+            border:     `1px solid ${doneCount === list.length ? 'rgba(201, 56, 3,0.2)' : 'rgba(251, 70, 4,0.2)'}`,
             borderRadius: 'var(--radius-full)', padding: '0.1rem 0.5rem',
           }}>
             {doneCount}/{list.length}
@@ -565,7 +566,7 @@ export default function AdhkarSection() {
                   onClick={e => { e.stopPropagation(); setTab(key) }}
                   style={{
                     flex: 1, padding: '0.75rem',
-                    background: tab === key ? 'rgba(51, 156, 255,0.1)' : 'transparent',
+                    background: tab === key ? 'rgba(251, 70, 4,0.1)' : 'transparent',
                     border: 'none',
                     borderBottom: tab === key ? '2px solid var(--mizan-purple)' : '2px solid transparent',
                     color: tab === key ? 'var(--gold)' : 'var(--text-muted)',
@@ -575,8 +576,8 @@ export default function AdhkarSection() {
                   }}
                 >
                   {key === 'morning'
-                    ? (isAr ? '☀️ أذكار الصباح' : '☀️ Morning')
-                    : (isAr ? '🌙 أذكار المساء' : '🌙 Evening')}
+                    ? (isAr ? 'أذكار الصباح' : 'Morning')
+                    : (isAr ? 'أذكار المساء' : 'Evening')}
                 </button>
               ))}
             </div>
@@ -663,7 +664,7 @@ export default function AdhkarSection() {
                     <div style={{
                       width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
                       border: `1.5px solid ${isDone ? 'var(--mizan-cyan)' : 'var(--v-glass-border)'}`,
-                      background: isDone ? 'rgba(102, 181, 255,0.1)' : 'transparent',
+                      background: isDone ? 'rgba(201, 56, 3,0.1)' : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '0.7rem', fontWeight: 600,
                       color: isDone ? 'var(--emerald)' : 'var(--text-muted)',
@@ -679,7 +680,7 @@ export default function AdhkarSection() {
                     </span>
                     <span style={{
                       fontSize: '0.68rem',
-                      background: 'rgba(51, 156, 255,0.1)', color: 'var(--mizan-purple)',
+                      background: 'rgba(251, 70, 4,0.1)', color: 'var(--mizan-purple)',
                       border: '1px solid rgba(212,175,106,0.2)',
                       borderRadius: 'var(--radius-full)', padding: '0.05rem 0.45rem',
                     }}>
@@ -776,7 +777,7 @@ export default function AdhkarSection() {
                       style={{
                         width: 34, height: 34, borderRadius: '8px',
                         border: `1px solid ${isDone ? 'var(--mizan-cyan)' : 'var(--mizan-purple)'}`,
-                        background: isDone ? 'rgba(102, 181, 255,0.1)' : 'rgba(51, 156, 255,0.1)',
+                        background: isDone ? 'rgba(201, 56, 3,0.1)' : 'rgba(251, 70, 4,0.1)',
                         color: isDone ? 'var(--emerald)' : 'var(--gold)',
                         fontSize: '1.2rem', lineHeight: 1,
                         cursor: isDone ? 'default' : 'pointer',

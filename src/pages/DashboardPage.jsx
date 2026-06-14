@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { collection, query, where, onSnapshot, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
 import { getGreeting, getFormattedDate, getDayOfWeek } from '../utils/dateUtils'
 import PrayerTimesWidget from '../components/PrayerTimesWidget'
 import FocusTimer from '../components/FocusTimer'
@@ -12,6 +13,8 @@ import QuranReader from '../components/QuranReader'
 import AdhkarSection from '../components/AdhkarSection'
 import MizanMark from '../components/MizanMark'
 import { useScrollReveal } from '../hooks/useScrollReveal'
+import { prayerGlyph } from '../components/prayerIcons'
+import { glyph } from '../components/glyphs'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function localDateStr(d = new Date()) {
@@ -31,7 +34,8 @@ function fmtDur(mins) {
 // ── TodayProgram ──────────────────────────────────────────────────────────────
 function TodayProgram() {
   const { user } = useAuth()
-  const { language, prayerTimes, FIXED_SECTIONS: FS, scheduleBlocks, scheduleFrequency } = useApp()
+  const { prayerTimes, FIXED_SECTIONS: FS, scheduleBlocks, scheduleFrequency } = useApp()
+  const { language } = useI18n()
   const isAr = language === 'ar'
   const today = localDateStr()
 
@@ -97,8 +101,8 @@ function TodayProgram() {
                 <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.15rem 0 0.15rem 1.4rem' }}>
                   <span style={{ fontSize: '0.6rem', color: task.completed ? 'var(--emerald)' : 'var(--border-strong)', flexShrink: 0 }}>{task.completed ? '✓' : '○'}</span>
                   <span style={{ fontSize: '0.8rem', color: task.completed ? 'var(--text-muted)' : 'var(--text-primary)', textDecoration: task.completed ? 'line-through' : 'none', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.text}</span>
-                  {task.reminderTime && <span style={{ fontSize: '0.56rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.02rem 0.3rem', borderRadius: 99, flexShrink: 0 }}>🔔 {fmt12h(task.reminderTime)}</span>}
-                  {task.duration > 0 && <span style={{ fontSize: '0.56rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.02rem 0.3rem', borderRadius: 99, flexShrink: 0 }}>⏱ {fmtDur(task.duration)}</span>}
+                  {task.reminderTime && <span style={{ fontSize: '0.56rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.02rem 0.3rem', borderRadius: 99, flexShrink: 0 }}>{glyph('bell', 11)}{fmt12h(task.reminderTime)}</span>}
+                  {task.duration > 0 && <span style={{ fontSize: '0.56rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.02rem 0.3rem', borderRadius: 99, flexShrink: 0 }}>{glyph('timer', 11)}{fmtDur(task.duration)}</span>}
                 </div>
               ))}
             </div>
@@ -111,10 +115,10 @@ function TodayProgram() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} style={{ marginBottom: '1.5rem' }}>
       <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-        📋 {isAr ? 'برنامج اليوم المحفوظ' : "Today's Saved Program"}
+        {glyph('clipboard')}{isAr ? 'برنامج اليوم المحفوظ' : "Today's Saved Program"}
       </div>
-      {dayProgram?.prayerSaved && renderSection(FS, 'var(--gold)', '🕌', isAr ? 'الجدول الديني' : 'Prayer Timetable', true)}
-      {dayProgram?.customSaved && renderSection(visibleBlocks, 'var(--sapphire)', '📅', isAr ? 'جدولي' : 'My Schedule', false)}
+      {dayProgram?.prayerSaved && renderSection(FS, 'var(--gold)', glyph('mosque'), isAr ? 'الجدول الديني' : 'Prayer Timetable', true)}
+      {dayProgram?.customSaved && renderSection(visibleBlocks, 'var(--sapphire)', glyph('calendar'), isAr ? 'جدولي' : 'My Schedule', false)}
     </motion.div>
   )
 }
@@ -122,12 +126,11 @@ function TodayProgram() {
 
 // ── Saved Schedule constants ──────────────────────────────────────────────────
 const PRAYER_COLS_DB = [
-  { id: 'fajr',    icon: '🌙', en: 'Fajr',    ar: 'الفجر',   color: 'var(--sapphire)' },
-  { id: 'shuruq',  icon: '🌄', en: 'Sunrise', ar: 'الشروق',  color: 'var(--gold)'     },
-  { id: 'dhuhr',   icon: '☀️',  en: 'Dhuhr',   ar: 'الظهر',   color: 'var(--gold)'     },
-  { id: 'asr',     icon: '🌤', en: 'Asr',     ar: 'العصر',   color: 'var(--emerald)'  },
-  { id: 'maghrib', icon: '🌅', en: 'Maghrib',  ar: 'المغرب',  color: 'var(--ruby)'     },
-  { id: 'isha',    icon: '🌃', en: 'Isha',    ar: 'العشاء',  color: 'var(--sapphire)' },
+  { id: 'fajr',    icon: prayerGlyph('fajr'),    en: 'Fajr',    ar: 'الفجر',   color: 'var(--sapphire)' },
+  { id: 'dhuhr',   icon: prayerGlyph('dhuhr'),   en: 'Dhuhr',   ar: 'الظهر',   color: 'var(--gold)'     },
+  { id: 'asr',     icon: prayerGlyph('asr'),     en: 'Asr',     ar: 'العصر',   color: 'var(--emerald)'  },
+  { id: 'maghrib', icon: prayerGlyph('maghrib'), en: 'Maghrib',  ar: 'المغرب',  color: 'var(--ruby)'     },
+  { id: 'isha',    icon: prayerGlyph('isha'),    en: 'Isha',    ar: 'العشاء',  color: 'var(--sapphire)' },
 ]
 const FULL_DAYS_DB = [
   { key: 'sun', en: 'Sunday',    ar: 'الأحد'     },
@@ -143,7 +146,7 @@ const COLOR_MAP_DB = { gold: 'var(--gold)', emerald: 'var(--emerald)', sapphire:
 // ── SavedScheduleSection ──────────────────────────────────────────────────────
 function SavedScheduleSection() {
   const { user } = useAuth()
-  const { language } = useApp()
+  const { language } = useI18n()
   const isAr = language === 'ar'
   const todayKey = ['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()]
   const todayDate = localDateStr()
@@ -188,8 +191,8 @@ function SavedScheduleSection() {
   if (!hasPrayer && !hasCustom) return null
 
   const tabs = [
-    hasPrayer && { id: 'prayer', icon: '🕌', label: isAr ? 'جدول الصلوات' : 'Prayer Schedule', color: 'var(--gold)' },
-    hasCustom  && { id: 'custom', icon: '📅', label: isAr ? 'الجدول المخصص' : 'Custom Schedule', color: 'var(--sapphire)' },
+    hasPrayer && { id: 'prayer', icon: glyph('mosque'), label: isAr ? 'جدول الصلوات' : 'Prayer Schedule', color: 'var(--gold)' },
+    hasCustom  && { id: 'custom', icon: glyph('calendar'), label: isAr ? 'الجدول المخصص' : 'Custom Schedule', color: 'var(--sapphire)' },
   ].filter(Boolean)
 
   const tab = tabs.find(t => t.id === activeTab) ? activeTab : tabs[0]?.id
@@ -207,7 +210,7 @@ function SavedScheduleSection() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
         <div style={{ width: 3, height: 20, background: accent, borderRadius: 99, flexShrink: 0 }} />
         <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: accent, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-          📋 {isAr ? 'الجداول المحفوظة' : 'Saved Schedules'}
+          {glyph('clipboard')}{isAr ? 'الجداول المحفوظة' : 'Saved Schedules'}
         </span>
         <div style={{ flex: 1, height: 1, background: accent + '25' }} />
       </div>
@@ -243,7 +246,7 @@ function SavedScheduleSection() {
             <motion.div key="prayer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ padding: '1.25rem' }}
             >
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.875rem' }} className="sched-prayer-grid">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.875rem' }} className="sched-prayer-grid">
                 {PRAYER_COLS_DB.map(prayer => {
                   const colItems = prayerItems.filter(i => i.prayerId === prayer.id)
                   return (
@@ -272,8 +275,8 @@ function SavedScheduleSection() {
                                     <div style={{ fontSize: '0.72rem', fontWeight: 600, color: done ? 'var(--emerald)' : 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: done ? 'line-through' : 'none', opacity: done ? 0.75 : 1 }}>{item.text}</div>
                                     {!done && (item.reminderTime || item.duration > 0) && (
                                       <div style={{ display: 'flex', gap: '0.2rem', marginTop: '0.08rem' }}>
-                                        {item.reminderTime && <span style={{ fontSize: '0.57rem', color: 'var(--sapphire)' }}>🔔 {fmt12h(item.reminderTime)}</span>}
-                                        {item.duration > 0 && <span style={{ fontSize: '0.57rem', color: 'var(--text-muted)' }}>⏱ {fmtDur(item.duration)}</span>}
+                                        {item.reminderTime && <span style={{ fontSize: '0.57rem', color: 'var(--sapphire)' }}>{glyph('bell', 11)}{fmt12h(item.reminderTime)}</span>}
+                                        {item.duration > 0 && <span style={{ fontSize: '0.57rem', color: 'var(--text-muted)' }}>{glyph('timer', 11)}{fmtDur(item.duration)}</span>}
                                       </div>
                                     )}
                                   </div>
@@ -338,7 +341,7 @@ function SavedScheduleSection() {
             >
               <div style={{ maxWidth: 600, margin: '0 auto' }}> {/* This is a card-like element, apply glass-card */} {/* This is a container, not a card itself. */}
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.75rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                  🗓 {customSaved.date && new Date(customSaved.date + 'T00:00:00').toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  {glyph('calendarDays', 11)}{customSaved.date && new Date(customSaved.date + 'T00:00:00').toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </div>
                 {customTodayItems.map(item => {
                   const done = !!item.completed
@@ -356,8 +359,8 @@ function SavedScheduleSection() {
                         <div style={{ fontSize: '0.85rem', fontWeight: 600, color: done ? 'var(--emerald)' : 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', textDecoration: done ? 'line-through' : 'none', opacity: done ? 0.75 : 1 }}>{item.text}</div>
                         {!done && (item.reminderTime || item.duration > 0) && (
                           <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.15rem' }}>
-                            {item.reminderTime && <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)' }}>🔔 {fmt12h(item.reminderTime)}</span>}
-                            {item.duration > 0 && <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>⏱ {fmtDur(item.duration)}</span>}
+                            {item.reminderTime && <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)' }}>{glyph('bell', 11)}{fmt12h(item.reminderTime)}</span>}
+                            {item.duration > 0 && <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>{glyph('timer', 11)}{fmtDur(item.duration)}</span>}
                           </div>
                         )}
                       </div>
@@ -385,7 +388,8 @@ function SavedScheduleSection() {
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const { language, completedToday, t, loading } = useApp()
+  const { completedToday, loading } = useApp()
+  const { language, t } = useI18n()
   const isAr = language === 'ar'
 
   const greeting = getGreeting(language)
@@ -496,7 +500,7 @@ export default function DashboardPage() {
           gap: '1rem',
         }}
       >
-        <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>💬</span>
+        <span style={{ fontSize: '1.5rem', flexShrink: 0, color: 'var(--primary)' }}>{glyph('quote')}</span>
         <div>
           <p style={{
             fontFamily: 'var(--font-arabic)',

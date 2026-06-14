@@ -1,8 +1,11 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
+import { glyph } from './glyphs'
 
 export default function StatsBar() {
-  const { stats, tasks, language, t, prayersDone } = useApp()
+  const { stats, tasks, prayersDone } = useApp()
+  const { language, t } = useI18n()
   const isAr = language === 'ar'
 
   // Compute today's productivity score
@@ -13,32 +16,32 @@ export default function StatsBar() {
 
   const statCards = [
     {
-      icon: '🔥',
+      icon: glyph('streak'),
       value: stats.streak || 0,
       label: t('streak'),
       color: 'var(--mizan-purple)',
-      dim: 'rgba(51, 156, 255,0.1)',
+      dim: 'rgba(251, 70, 4,0.1)',
     },
     {
-      icon: '⭐',
+      icon: glyph('points'),
       value: stats.points || 0,
       label: t('points'),
       color: 'var(--mizan-purple)',
-      dim: 'rgba(51, 156, 255,0.1)',
+      dim: 'rgba(251, 70, 4,0.1)',
     },
     {
-      icon: '🕌',
+      icon: glyph('mosque'),
       value: `${prayersDone}/5`,
       label: t('prayersDone'),
       color: 'var(--mizan-cyan)',
-      dim: 'rgba(102, 181, 255,0.1)',
+      dim: 'rgba(201, 56, 3,0.1)',
     },
     {
-      icon: '📊',
+      icon: glyph('productivity'),
       value: `${score}%`,
       label: t('productivity'),
       color: score >= 70 ? 'var(--mizan-cyan)' : score >= 40 ? 'var(--mizan-purple)' : 'var(--ruby)', // Ruby is still used for low score, which is fine.
-      dim: score >= 70 ? 'rgba(102, 181, 255,0.1)' : score >= 40 ? 'rgba(51, 156, 255,0.1)' : 'var(--ruby-dim)', // Ruby dim is fine.
+      dim: score >= 70 ? 'rgba(201, 56, 3,0.1)' : score >= 40 ? 'rgba(251, 70, 4,0.1)' : 'var(--ruby-dim)', // Ruby dim is fine.
       progress: score,
     },
   ]
@@ -93,6 +96,7 @@ export default function StatsBar() {
               background: card.dim, // This dim color is already rgba, so it will blend with glass-icon-mizan's gradient
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '1rem',
+              color: card.color,
             }}>
               {card.icon}
             </div>

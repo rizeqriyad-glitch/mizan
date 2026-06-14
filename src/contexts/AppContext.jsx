@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+﻿import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import {
   doc, collection, onSnapshot, setDoc, updateDoc,
   addDoc, deleteDoc, serverTimestamp, query, where, orderBy, getDocs
@@ -7,6 +7,7 @@ import { db } from '../firebase'
 import { useAuth } from './AuthContext'
 import { fetchPrayerTimes, getMethodForTimezone, getMethodForCountry } from '../utils/prayerTimes'
 import { getTodayKey } from '../utils/dateUtils'
+import { prayerGlyph } from '../components/prayerIcons'
 
 const AppContext = createContext(null)
 
@@ -14,18 +15,17 @@ const OBLIGATORY_PRAYER_IDS = new Set(['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'
 
 // Fixed sections that cannot be deleted
 export const FIXED_SECTIONS = [
-  { id: 'fajr',    label: { en: 'Fajr',    ar: 'الفجر'  }, type: 'prayer', icon: '🌙' },
-  { id: 'dhuhr',   label: { en: 'Dhuhr',   ar: 'الظهر'  }, type: 'prayer', icon: '☀️' },
-  { id: 'asr',     label: { en: 'Asr',     ar: 'العصر'  }, type: 'prayer', icon: '🌤' },
-  { id: 'maghrib', label: { en: 'Maghrib', ar: 'المغرب' }, type: 'prayer', icon: '🌅' },
-  { id: 'isha',    label: { en: 'Isha',    ar: 'العشاء' }, type: 'prayer', icon: '🌌' },
+  { id: 'fajr',    label: { en: 'Fajr',    ar: 'Ø§Ù„ÙØ¬Ø±'  }, type: 'prayer', icon: prayerGlyph('fajr') },
+  { id: 'dhuhr',   label: { en: 'Dhuhr',   ar: 'Ø§Ù„Ø¸Ù‡Ø±'  }, type: 'prayer', icon: prayerGlyph('dhuhr') },
+  { id: 'asr',     label: { en: 'Asr',     ar: 'Ø§Ù„Ø¹ØµØ±'  }, type: 'prayer', icon: prayerGlyph('asr') },
+  { id: 'maghrib', label: { en: 'Maghrib', ar: 'Ø§Ù„Ù…ØºØ±Ø¨' }, type: 'prayer', icon: prayerGlyph('maghrib') },
+  { id: 'isha',    label: { en: 'Isha',    ar: 'Ø§Ù„Ø¹Ø´Ø§Ø¡' }, type: 'prayer', icon: prayerGlyph('isha') },
 ]
 
 export const AppProvider = ({ children }) => {
   const { user, userProfile, updateProfile } = useAuth()
 
-  const [language, setLanguage]         = useState(() => { try { return localStorage.getItem('mizan.lang') || 'ar' } catch { return 'ar' } })
-  const [theme, setTheme]               = useState(() => { try { return localStorage.getItem('mizan.theme') || 'dark' } catch { return 'dark' } })
+  const [theme] = useState('light') // light is the only theme â€” no toggle, no persistence
   const [timeFormat, setTimeFormat]     = useState('12h')
   const [prayerNotifications, setPrayerNotifications] = useState(true)
   const [scheduleType, setScheduleTypeState]           = useState('prayer')  // 'prayer' | 'custom'
@@ -40,7 +40,6 @@ export const AppProvider = ({ children }) => {
   const [goals, setGoals]               = useState([])
   const [gamification, setGamification] = useState({ totalXP: 0, badges: [], streak: 0, lastCompletionDate: null })
   const [donePrayers, setDonePrayers]   = useState({})
-  const [focusTimer, setFocusTimer]     = useState({ active: false, seconds: 1500, running: false })
   const [loading, setLoading]           = useState(true)
   const [prayerMethod, setPrayerMethod] = useState(null)
 
@@ -55,8 +54,6 @@ export const AppProvider = ({ children }) => {
   // Sync settings from profile
   useEffect(() => {
     if (userProfile) {
-      setLanguage(userProfile.language || 'ar')
-      setTheme(userProfile.theme || 'dark')
       setTimeFormat(userProfile.timeFormat || '12h')
       setPrayerNotifications(userProfile.prayerNotifications !== false) // default true
       setScheduleTypeState(userProfile.scheduleType || 'prayer')
@@ -67,20 +64,12 @@ export const AppProvider = ({ children }) => {
     }
   }, [userProfile])
 
-  // Apply theme to DOM
+  // Light is the only theme â€” pin the attribute once
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
+    document.documentElement.setAttribute('data-theme', 'light')
     // fonts now load via index.html @font-face; drop the legacy runtime injection
     document.getElementById('v-os-tokens')?.remove()
-    try { localStorage.setItem('mizan.theme', theme) } catch (e) { /* private mode */ }
-  }, [theme])
-
-  // Apply language/RTL to DOM
-  useEffect(() => {
-    document.documentElement.setAttribute('lang', language)
-    document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr')
-    try { localStorage.setItem('mizan.lang', language) } catch (e) { /* private mode */ }
-  }, [language])
+  }, [])
 
   // Resolve the best calculation method for a location.
   // 1. If user already has a saved method, use it.
@@ -116,7 +105,7 @@ export const AppProvider = ({ children }) => {
       updateProfile({ prayerMethod: method }).catch(() => {})
       return method
     } catch {
-      return 3 // Muslim World League — safe international default
+      return 3 // Muslim World League â€” safe international default
     }
   }, [updateProfile])
 
@@ -240,15 +229,8 @@ export const AppProvider = ({ children }) => {
     }
   }, [user])
 
-  const changeLanguage = async (lang) => {
-    setLanguage(lang)
-    if (user) await updateProfile({ language: lang })
-  }
-
-  const changeTheme = async (t) => {
-    setTheme(t)
-    if (user) await updateProfile({ theme: t })
-  }
+  // Kept for API compatibility; the app is light-only so this is inert
+  const changeTheme = async () => {}
 
   const changeTimeFormat = async (fmt) => {
     setTimeFormat(fmt)
@@ -378,7 +360,7 @@ export const AppProvider = ({ children }) => {
     await Promise.all(updates)
   }
 
-  // ── Weekly Planner ────────────────────────────────────────────────
+  // â”€â”€ Weekly Planner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const _uuid = () =>
     typeof crypto !== 'undefined' && crypto.randomUUID
       ? crypto.randomUUID()
@@ -387,7 +369,7 @@ export const AppProvider = ({ children }) => {
   const addGoal = async ({ title, titleAr, icon, color, deadline = null }) => {
     if (!user) return
     await addDoc(collection(db, 'users', user.uid, 'goals'), {
-      title, titleAr: titleAr || '', icon: icon || '🎯', color: color || 'gold',
+      title, titleAr: titleAr || '', icon: icon || 'ðŸŽ¯', color: color || 'gold',
       deadline, milestones: [], createdAt: serverTimestamp(),
     })
   }
@@ -490,11 +472,8 @@ export const AppProvider = ({ children }) => {
     }
   }
 
-  const t = (key) => translations[language]?.[key] || translations['en'][key] || key
-
   return (
     <AppContext.Provider value={{
-      language, changeLanguage,
       theme, changeTheme,
       timeFormat, changeTimeFormat,
       prayerNotifications, changePrayerNotifications,
@@ -507,10 +486,9 @@ export const AppProvider = ({ children }) => {
       completedToday, stats,
       donePrayers, prayersDone,
       addTask, editTask, deleteTask, toggleTask, togglePrayer, reorderTasks,
-      focusTimer, setFocusTimer,
       goals, gamification,
       addGoal, deleteGoal, addMilestone, deleteMilestone, toggleMilestone,
-      loading, t,
+      loading,
       FIXED_SECTIONS,
     }}>
       {children}
@@ -522,234 +500,4 @@ export const useApp = () => {
   const ctx = useContext(AppContext)
   if (!ctx) throw new Error('useApp must be inside AppProvider')
   return ctx
-}
-
-// ============================================================
-// Translations
-// ============================================================
-const translations = {
-  en: {
-    appName: 'Mizan',
-    tagline: 'Balance in All Things',
-    signInWithGoogle: 'Continue with Google',
-    signOut: 'Sign Out',
-    dashboard: 'Dashboard',
-    today: 'Today',
-    analytics: 'Analytics',
-    settings: 'Settings',
-    about: 'About',
-    focusMode: 'Focus Mode',
-    addTask: 'Add task...',
-    completed: 'Completed',
-    pending: 'Pending',
-    completedToday: 'Completed Today',
-    productivity: 'Productivity',
-    streak: 'Day Streak',
-    points: 'Points',
-    prayersDone: 'Prayers',
-    prayerTimes: 'Prayer Times',
-    startFocus: 'Start Focus',
-    stopFocus: 'Stop',
-    resetTimer: 'Reset',
-    goodMorning: 'Good Morning',
-    goodAfternoon: 'Good Afternoon',
-    goodEvening: 'Good Evening',
-    theme: 'Theme',
-    darkMode: 'Dark Mode',
-    lightMode: 'Light Mode',
-    language: 'Language',
-    timeFormat: 'Time Format',
-    hour12: '12-hour',
-    hour24: '24-hour',
-    english: 'English',
-    arabic: 'العربية',
-    prayerDone: 'Marked as done',
-    noTasksYet: 'No tasks yet. Add one below.',
-    deleteTask: 'Delete task',
-    editTask: 'Edit task',
-    save: 'Save',
-    cancel: 'Cancel',
-    weeklyReview: 'Weekly Review',
-    totalTasks: 'Total Tasks',
-    focusTime: 'Focus Time',
-    minutesFocused: 'min focused today',
-    motivationalQuote: 'The strong person is not the one who overcomes others, but the one who controls himself in anger.',
-    quoteSource: '— Sahih Al-Bukhari',
-    signInTitle: 'Welcome to Mizan',
-    signInSubtitle: 'Your Islamic productivity companion',
-    loadingPrayers: 'Fetching prayer times...',
-    currentPrayer: 'Current',
-    nextPrayer: 'Next prayer',
-    pomoWork: 'Focus',
-    pomoBreak: 'Break',
-    pomoLong: 'Long Break',
-    duha: 'Duha',
-    witr: 'Witr',
-    sunnah: 'Sunnah',
-    notes: 'Notes',
-    notesTitle: 'Notes & Learnings',
-    addNote: 'What did you learn or benefit from today?',
-    saveNote: 'Save',
-    noNotes: 'No notes yet. Record something you learned.',
-    deleteNote: 'Delete',
-    catGeneral: 'General',
-    catQuran: 'Quran',
-    catHadith: 'Hadith',
-    catFiqh: 'Fiqh',
-    catReminder: 'Reminder',
-    dhikrTitle: 'Daily Dhikr',
-    dhikrReset: 'Reset',
-    dhikrCompleted: 'Completed!',
-    quranTitle: 'Read Quran',
-    quranSelectSurah: 'Select Surah',
-    quranTranslation: 'Translation',
-    quranLoading: 'Loading...',
-    quranError: 'Failed to load. Try again.',
-    quranRetry: 'Retry',
-    quranVerse: 'Verse',
-    quranBismillah: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
-    adhkarTitle: 'Morning & Evening Adhkar',
-    adhkarMorning: 'Morning Adhkar',
-    adhkarEvening: 'Evening Adhkar',
-    adhkarSource: 'Source',
-    adhkarBenefit: 'Virtue',
-    adhkarProgress: 'completed',
-    notesPageTitle: 'Notes & Benefits',
-    notesSearch: 'Search notes...',
-    notesAll: 'All',
-    notesEmpty: 'Nothing saved yet.',
-    notesSaved: 'Note saved successfully',
-    notesSaveError: 'Failed to save. Check your connection.',
-    dayHistoryTitle: 'Day History',
-    landingHero: 'Balance in All Things',
-    landingSubtitle: 'A day built around the five prayers: salah, adhkar, Quran and deep work, with a streak that holds.',
-    landingStart: 'Start your balanced day',
-    landingFeatures: 'A whole day around your salah',
-    landingFeaturesSub: 'Six tools, one rhythm: worship anchors the day, work fills the space between.',
-    landingSeeFeatures: 'See the features',
-    landingAbout: 'About',
-    startTask: 'Start Task',
-    stopTask: 'Stop',
-    timesUp: "Time's up!",
-    durationLabel: 'Duration (optional)',
-    durationMin: 'min',
-    editDurations: 'Edit',
-    planner: 'Planner',
-    prayerAlerts: 'Prayer Alerts',
-    prayerAlertsDesc: 'Play Adhan and show notification at prayer times',
-    enabled: 'On',
-    disabled: 'Off',
-  },
-  ar: {
-    appName: 'ميزان',
-    tagline: 'التوازن في كل شيء',
-    signInWithGoogle: 'المتابعة مع Google',
-    signOut: 'تسجيل الخروج',
-    dashboard: 'لوحة التحكم',
-    today: 'اليوم',
-    analytics: 'التحليلات',
-    settings: 'الإعدادات',
-    about: 'حول التطبيق',
-    focusMode: 'وضع التركيز',
-    addTask: 'أضف مهمة...',
-    completed: 'مكتمل',
-    pending: 'قيد الانتظار',
-    completedToday: 'مكتمل اليوم',
-    productivity: 'الإنتاجية',
-    streak: 'سلسلة أيام',
-    points: 'النقاط',
-    prayersDone: 'الصلوات',
-    prayerTimes: 'مواقيت الصلاة',
-    startFocus: 'ابدأ التركيز',
-    stopFocus: 'إيقاف',
-    resetTimer: 'إعادة تعيين',
-    goodMorning: 'صباح الخير',
-    goodAfternoon: 'مساء الخير',
-    goodEvening: 'مساء النور',
-    theme: 'المظهر',
-    darkMode: 'الوضع الداكن',
-    lightMode: 'الوضع الفاتح',
-    language: 'اللغة',
-    timeFormat: 'تنسيق الوقت',
-    hour12: '12 ساعة',
-    hour24: '24 ساعة',
-    english: 'English',
-    arabic: 'العربية',
-    prayerDone: 'تم التأشير كمنجز',
-    noTasksYet: 'لا توجد مهام بعد. أضف واحدة أدناه.',
-    deleteTask: 'حذف المهمة',
-    editTask: 'تعديل المهمة',
-    save: 'حفظ',
-    cancel: 'إلغاء',
-    weeklyReview: 'المراجعة الأسبوعية',
-    totalTasks: 'إجمالي المهام',
-    focusTime: 'وقت التركيز',
-    minutesFocused: 'دقيقة تركيز اليوم',
-    motivationalQuote: 'ليس الشديد بالصُّرَعة، إنما الشديد الذي يملك نفسه عند الغضب.',
-    quoteSource: '— صحيح البخاري',
-    signInTitle: 'مرحباً بك في ميزان',
-    signInSubtitle: 'رفيقك في الإنتاجية الإسلامية',
-    loadingPrayers: 'جاري تحميل مواقيت الصلاة...',
-    currentPrayer: 'الحالية',
-    nextPrayer: 'الصلاة القادمة',
-    pomoWork: 'تركيز',
-    pomoBreak: 'استراحة',
-    pomoLong: 'استراحة طويلة',
-    duha: 'الضحى',
-    witr: 'الوتر',
-    sunnah: 'سُنَّة',
-    notes: 'الملاحظات',
-    notesTitle: 'ملاحظاتي والفوائد',
-    addNote: 'ماذا تعلمت أو استفدت اليوم؟',
-    saveNote: 'حفظ',
-    noNotes: 'لا توجد ملاحظات بعد.',
-    deleteNote: 'حذف',
-    catGeneral: 'عام',
-    catQuran: 'قرآن',
-    catHadith: 'حديث',
-    catFiqh: 'فقه',
-    catReminder: 'تذكير',
-    dhikrTitle: 'الأذكار اليومية',
-    dhikrReset: 'إعادة',
-    dhikrCompleted: 'اكتمل!',
-    quranTitle: 'اقرأ القرآن',
-    quranSelectSurah: 'اختر سورة',
-    quranTranslation: 'الترجمة',
-    quranLoading: 'جاري التحميل...',
-    quranError: 'فشل التحميل. حاول مجدداً.',
-    quranRetry: 'إعادة المحاولة',
-    quranVerse: 'آية',
-    quranBismillah: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
-    adhkarTitle: 'أذكار الصباح والمساء',
-    adhkarMorning: 'أذكار الصباح',
-    adhkarEvening: 'أذكار المساء',
-    adhkarSource: 'المصدر',
-    adhkarBenefit: 'الفضل',
-    adhkarProgress: 'مكتملة',
-    notesPageTitle: 'ملاحظاتي وفوائدي',
-    notesSearch: 'ابحث في الملاحظات...',
-    notesAll: 'الكل',
-    notesEmpty: 'لا يوجد شيء محفوظ بعد.',
-    notesSaved: 'تم الحفظ بنجاح',
-    notesSaveError: 'فشل الحفظ. تحقق من اتصالك.',
-    dayHistoryTitle: 'تاريخ اليوم',
-    landingHero: 'التوازن في كل شيء',
-    landingSubtitle: 'يومك يُبنى حول الصلوات الخمس: صلاة، وذكر، وقرآن، وعمل عميق، وثباتٌ محفوظ يومًا بعد يوم.',
-    landingStart: 'ابدأ يومك المتزن',
-    landingFeatures: 'يومٌ كامل حول صلاتك',
-    landingFeaturesSub: 'ست أدوات بإيقاع واحد: العبادة تثبّت اليوم، والعمل يملأ ما بينها.',
-    landingSeeFeatures: 'استعرض المزايا',
-    landingAbout: 'عن التطبيق',
-    startTask: 'ابدأ المهمة',
-    stopTask: 'إيقاف',
-    timesUp: 'انتهى الوقت!',
-    durationLabel: 'المدة (اختياري)',
-    durationMin: 'د',
-    editDurations: 'تعديل',
-    planner: 'المخطط',
-    prayerAlerts: 'تنبيهات الصلاة',
-    prayerAlertsDesc: 'تشغيل الأذان وإرسال إشعار عند دخول وقت الصلاة',
-    enabled: 'مفعّل',
-    disabled: 'معطّل',
-  }
 }

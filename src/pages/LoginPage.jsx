@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useAuth } from '../contexts/AuthContext'
-import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
 import MizanMark from '../components/MizanMark'
 
 export default function LoginPage() {
   const { user, signInWithGoogle } = useAuth()
-  const { language, changeLanguage, t } = useApp()
+  const { language, changeLanguage, t } = useI18n()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useApp } from '../contexts/AppContext'
+import { motion, AnimatePresence } from 'motion/react'
+import { useI18n } from '../contexts/I18nContext'
+import { glyph } from './glyphs'
 import { formatTimer } from '../utils/dateUtils'
 import { startRadarAlarm } from '../utils/alarmSound'
 
@@ -21,7 +22,7 @@ function loadCustomMinutes() {
 }
 
 export default function FocusTimer() {
-  const { language, t } = useApp()
+  const { language, t } = useI18n()
   const isAr = language === 'ar'
 
   const [customMins, setCustomMins] = useState(loadCustomMinutes)
@@ -407,7 +408,7 @@ export default function FocusTimer() {
           }}
         >
           {alarming
-            ? (isAr ? '⏰ إيقاف التنبيه' : '⏰ Stop Alarm')
+            ? <>{glyph('bell', 14)} {isAr ? 'إيقاف التنبيه' : 'Stop Alarm'}</>
             : running ? t('stopFocus') : t('startFocus')}
         </motion.button>
         <button

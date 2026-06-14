@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
+import { glyph } from './glyphs'
 import { startRadarAlarm } from '../utils/alarmSound'
 
 const ADHAN_URL = 'https://cdn.islamic.network/adhan/audio/adhan-makkah.mp3'
@@ -48,7 +50,8 @@ function savePlayed(played) {
 }
 
 export default function AdhanNotifier() {
-  const { prayerTimes, language, prayerNotifications } = useApp()
+  const { prayerTimes, prayerNotifications } = useApp()
+  const { language } = useI18n()
   const isAr = language === 'ar'
   const [toast, setToast]             = useState(null)
   const [audioBlocked, setAudioBlocked] = useState(false)
@@ -171,10 +174,10 @@ export default function AdhanNotifier() {
             position: 'fixed', top: '1.25rem', left: '50%',
             transform: 'translateX(-50%)', zIndex: 9999,
             background: 'var(--bg-card)',
-            border: '1px solid rgba(51, 156, 255,0.45)', // Mizan purple border
+            border: '1px solid rgba(251, 70, 4,0.45)', // Mizan purple border
             borderRadius: '16px', // Mizan token for large cards
             padding: '1rem 1.25rem',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(51, 156, 255,0.1)', // Mizan purple shadow
+            boxShadow: '0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(251, 70, 4,0.1)', // Mizan purple shadow
             display: 'flex', alignItems: 'center', gap: '0.875rem',
             minWidth: 300, maxWidth: '90vw',
             direction: isAr ? 'rtl' : 'ltr',
@@ -182,10 +185,10 @@ export default function AdhanNotifier() {
         >
           <div style={{
             width: 44, height: 44, borderRadius: 'var(--radius-md)',
-            background: 'rgba(51, 156, 255,0.1)', border: '1px solid rgba(51, 156, 255,0.3)', // Mizan purple background/border
+            background: 'rgba(251, 70, 4,0.1)', border: '1px solid rgba(251, 70, 4,0.3)', // Mizan purple background/border
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.4rem', flexShrink: 0,
-          }}>🕌</div> {/* Icon is fine */}
+            fontSize: '1.4rem', flexShrink: 0, color: 'var(--primary)',
+          }}>{glyph('mosque')}</div>
 
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: 'var(--font-arabic)', fontSize: '1rem', color: 'var(--gold)', direction: 'rtl', marginBottom: '0.2rem' }}>
@@ -199,8 +202,8 @@ export default function AdhanNotifier() {
             {audioBlocked && (
               <button onClick={playAdhan} style={{
                 marginTop: '0.45rem', padding: '0.25rem 0.75rem',
-                borderRadius: '8px', border: '1px solid rgba(51, 156, 255,0.35)', // Mizan tokens
-                background: 'rgba(51, 156, 255,0.1)', color: 'var(--mizan-purple)', // Mizan colors
+                borderRadius: '8px', border: '1px solid rgba(251, 70, 4,0.35)', // Mizan tokens
+                background: 'rgba(251, 70, 4,0.1)', color: 'var(--mizan-purple)', // Mizan colors
                 fontSize: '0.75rem', cursor: 'pointer', // Mizan tokens
                 fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
               }}>

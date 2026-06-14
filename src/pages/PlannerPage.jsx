@@ -1,10 +1,13 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { collection, query, where, onSnapshot, doc, setDoc, addDoc, deleteDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
 import { TimePicker12h, DurationPicker } from '../components/TaskSection'
+import { prayerGlyph } from '../components/prayerIcons'
+import { glyph } from '../components/glyphs'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const COLORS = ['gold', 'emerald', 'sapphire', 'ruby']
@@ -16,14 +19,14 @@ const COLOR_CSS = {
 }
 
 const BADGES_DEF = [
-  { id: 'first_step',   icon: '🎯', en: 'First Step',   ar: 'الخطوة الأولى' },
-  { id: 'goal_crusher', icon: '🏆', en: 'Goal Crusher', ar: 'محطم الأهداف' },
-  { id: 'week_warrior', icon: '⚔️', en: 'Week Warrior', ar: 'محارب الأسبوع' },
-  { id: 'overachiever', icon: '🚀', en: 'Overachiever', ar: 'المتفوق' },
+  { id: 'first_step',   icon: glyph('target'), en: 'First Step',   ar: 'الخطوة الأولى' },
+  { id: 'goal_crusher', icon: glyph('trophy'), en: 'Goal Crusher', ar: 'محطم الأهداف' },
+  { id: 'week_warrior', icon: glyph('swords'), en: 'Week Warrior', ar: 'محارب الأسبوع' },
+  { id: 'overachiever', icon: glyph('rocket'), en: 'Overachiever', ar: 'المتفوق' },
 ]
 
 const THRESHOLDS = [0.25, 0.5, 0.75, 1.0]
-const THRESHOLD_ICON = { 0.25: '🌱', 0.5: '🔥', 0.75: '⚡', 1.0: '🏆' }
+const THRESHOLD_ICON = { 0.25: glyph('sprout', 12), 0.5: glyph('streak', 12), 0.75: glyph('zap', 12), 1.0: glyph('trophy', 12) }
 
 const FILTERS = ['all', 'active', 'overdue', 'done']
 
@@ -108,7 +111,7 @@ function XPBar({ gamification, isAr }) {
       {/* Level badge */}
       <div style={{
         width: 56, height: 56, borderRadius: '50%',
-        background: 'rgba(51, 156, 255,0.1)', border: '2px solid var(--mizan-purple)',
+        background: 'rgba(251, 70, 4,0.1)', border: '2px solid var(--mizan-purple)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
       }}>
@@ -145,12 +148,12 @@ function XPBar({ gamification, isAr }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0.4rem',
         padding: '0.4rem 0.875rem',
-        background: streak > 0 ? 'rgba(51, 156, 255,0.1)' : 'var(--bg-input)',
+        background: streak > 0 ? 'rgba(251, 70, 4,0.1)' : 'var(--bg-input)',
         borderRadius: 'var(--radius-full)',
         border: `1px solid ${streak > 0 ? 'rgba(251,146,60,0.35)' : 'var(--border)'}`,
         flexShrink: 0,
       }}>
-        <span style={{ fontSize: '1rem' }}>{streak > 0 ? '🔥' : '💤'}</span>
+        <span style={{ fontSize: '1rem', color: 'var(--primary)' }}>{streak > 0 ? glyph('streak') : glyph('moon')}</span>
         <div style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
           <span style={{ fontSize: '0.88rem', fontWeight: 700, color: streak > 0 ? 'rgb(251,146,60)' : 'var(--text-muted)' }}>{streak}</span>
           <span style={{ fontSize: '0.72rem', color: streak > 0 ? 'rgba(251,146,60,0.8)' : 'var(--text-muted)', marginLeft: '0.3rem' }}>
@@ -215,7 +218,7 @@ function DeadlineBadge({ deadline, isAr, done }) {
       fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
       whiteSpace: 'nowrap',
     }}>
-      {days !== null && days >= 0 && !done ? '📅 ' : ''}{text}
+      {days !== null && days >= 0 && !done ? <>{glyph('calendar', 11)} </> : null}{text}
     </span>
   )
 }
@@ -244,7 +247,7 @@ function GoalCard({ goal, isAr, onToggle, onAddMilestone, onDeleteMilestone, onD
       style={{
         borderRadius: '16px',
         background: 'var(--bg-card)',
-        border: `1px solid ${goalDone ? 'rgba(102, 181, 255,0.2)' : 'var(--v-glass-border)'}`,
+        border: `1px solid ${goalDone ? 'rgba(201, 56, 3,0.2)' : 'var(--v-glass-border)'}`,
         borderTop: `3px solid ${goalDone ? 'var(--emerald)' : color.main}`,
         boxShadow: '0 4px 18px rgba(0,0,0,0.10)',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -476,7 +479,7 @@ function AddGoalModal({ onClose, onAdd, isAr }) {
           {/* Deadline */}
           <div>
             <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.35rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-              📅 {isAr ? 'الموعد النهائي' : 'Target Date'} <span style={{ opacity: 0.5 }}>({isAr ? 'اختياري' : 'optional'})</span>
+              {glyph('calendar', 12)} {isAr ? 'الموعد النهائي' : 'Target Date'} <span style={{ opacity: 0.5 }}>({isAr ? 'اختياري' : 'optional'})</span>
             </label>
             <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} // Input field
               min={todayStr()}
@@ -641,7 +644,7 @@ function SectionCard({ section, tasks, dayStr, isAr, language, accentColor, pray
           background: accentColor + '18', border: `1px solid ${accentColor}30`,
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem',
         }}>
-          {section.icon || (section.type === 'prayer' ? '🕌' : '📋')}
+          {section.icon || (section.type === 'prayer' ? glyph('mosque') : glyph('clipboard'))}
         </div>
 
         {/* Name + badges */}
@@ -703,10 +706,10 @@ function SectionCard({ section, tasks, dayStr, isAr, language, accentColor, pray
                 {(task.reminderTime || task.duration > 0) && !task.completed && (
                   <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
                     {task.reminderTime && ( // Reminder badge
-                      <span style={{ fontSize: '0.62rem', color: 'var(--mizan-cyan)', background: 'rgba(102, 181, 255,0.1)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>🔔 {fmt12h(task.reminderTime)}</span> // Mizan cyan
+                      <span style={{ fontSize: '0.62rem', color: 'var(--mizan-cyan)', background: 'rgba(201, 56, 3,0.1)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>{glyph('bell', 11)}{fmt12h(task.reminderTime)}</span> // Mizan cyan
                     )}
                     {task.duration > 0 && ( // Duration badge
-                      <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>⏱ {fmtDur(task.duration)}</span> // Glass background
+                      <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '0.05rem 0.4rem', borderRadius: 99 }}>{glyph('timer', 11)}{fmtDur(task.duration)}</span> // Glass background
                     )}
                   </div>
                 )}
@@ -831,12 +834,11 @@ function SectionGroupHeader({ icon, label, color, note, onClick, expanded, count
 
 // ── PRAYER_COLS ───────────────────────────────────────────────────────────────
 const PRAYER_COLS = [
-  { id: 'fajr',    icon: '🌙', en: 'Fajr',    ar: 'الفجر',   color: 'sapphire' },
-  { id: 'shuruq',  icon: '🌄', en: 'Sunrise', ar: 'الشروق',  color: 'gold'     },
-  { id: 'dhuhr',   icon: '☀️',  en: 'Dhuhr',   ar: 'الظهر',   color: 'gold'     },
-  { id: 'asr',     icon: '🌤', en: 'Asr',     ar: 'العصر',   color: 'emerald'  },
-  { id: 'maghrib', icon: '🌅', en: 'Maghrib',  ar: 'المغرب',  color: 'ruby'     },
-  { id: 'isha',    icon: '🌃', en: 'Isha',    ar: 'العشاء',  color: 'sapphire' },
+  { id: 'fajr',    icon: prayerGlyph('fajr'),    en: 'Fajr',    ar: 'الفجر',   color: 'sapphire' },
+  { id: 'dhuhr',   icon: prayerGlyph('dhuhr'),   en: 'Dhuhr',   ar: 'الظهر',   color: 'gold'     },
+  { id: 'asr',     icon: prayerGlyph('asr'),     en: 'Asr',     ar: 'العصر',   color: 'emerald'  },
+  { id: 'maghrib', icon: prayerGlyph('maghrib'), en: 'Maghrib',  ar: 'المغرب',  color: 'ruby'     },
+  { id: 'isha',    icon: prayerGlyph('isha'),    en: 'Isha',    ar: 'العشاء',  color: 'sapphire' },
 ]
 
 const FULL_DAYS = [
@@ -899,10 +901,10 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
       > {/* This is a modal, so it can be a glass-card. */}
         {/* Header */}
         <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1rem', background: `linear-gradient(135deg, ${c.main}08 0%, transparent 100%)`, position: 'sticky', top: 0, zIndex: 1, backdropFilter: 'blur(8px)' }}>
-          <div style={{ width: 48, height: 48, borderRadius: 14, background: c.main + '20', border: `1px solid ${c.main}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0 }}>✨</div>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: c.main + '20', border: `1px solid ${c.main}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0, color: 'var(--primary)' }}>{glyph('sparkle')}</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-              {isEditMode ? (isAr ? '✏️ تعديل المهمة' : '✏️ Edit Task') :
+              {isEditMode ? (isAr ? 'تعديل المهمة' : 'Edit Task') :
                mode === 'prayer' ? (isAr ? 'إضافة مهمة للصلاة' : 'Add Prayer Task') :
                mode === 'weekly' ? (isAr ? 'إضافة مهمة أسبوعية' : 'Add Weekly Task') :
                (isAr ? 'إضافة مهمة يومية' : 'Add Daily Task')}
@@ -956,11 +958,11 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
           {/* Reminder + Duration */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div>
-              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>🔔 {isAr ? 'تذكير' : 'Reminder'}</label>
+              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{glyph('bell', 11)}{isAr ? 'تذكير' : 'Reminder'}</label>
               <TimePicker12h value={reminderTime} onChange={setReminder} typeColor={c.main} isAr={isAr} />
             </div>
             <div>
-              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>⏱ {isAr ? 'المدة' : 'Duration'}</label>
+              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{glyph('timer', 11)}{isAr ? 'المدة' : 'Duration'}</label>
               <DurationPicker value={duration} onChange={setDuration} typeColor={c.main} isAr={isAr} />
             </div>
           </div>
@@ -968,7 +970,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
           {/* Prayer picker */}
           {mode === 'prayer' && (
             <div>
-              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.6rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>🕌 {isAr ? 'وقت الصلاة' : 'Prayer Time'}</label>
+              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.6rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{glyph('mosque')} {isAr ? 'وقت الصلاة' : 'Prayer Time'}</label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {PRAYER_COLS.map(p => {
                   const pc = COLOR_CSS[p.color] // Prayer time buttons
@@ -990,7 +992,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
           {mode === 'weekly' && (
             <div>
               <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                📅 {isAr ? 'الأيام' : 'Days'}
+                {glyph('calendar', 12)} {isAr ? 'الأيام' : 'Days'}
                 {selectedDays.length === 0 && <span style={{ fontSize: '0.58rem', color: 'var(--ruby)', background: 'var(--ruby-dim)', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 400 }}>{isAr ? 'اختر يوماً' : 'pick at least 1'}</span>}
                 {selectedDays.length > 0 && <span style={{ fontSize: '0.58rem', color: c.main, background: c.main + '18', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 700 }}>{selectedDays.length}</span>} {/* This is a badge, fine. */}
               </label>
@@ -1011,7 +1013,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
           {/* Daily date picker */}
           {mode === 'daily' && (
             <div>
-              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>📅 {isAr ? 'اليوم' : 'Day'}</label>
+              <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{glyph('calendar', 12)} {isAr ? 'اليوم' : 'Day'}</label>
               <input type="date" value={selectedDate} onChange={e => setDate(e.target.value)} // Input field
                 style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', border: `1.5px solid ${c.main}55`, borderRadius: 10, padding: '0.65rem 1rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}
               />
@@ -1027,8 +1029,8 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', marginBottom: '0.3rem' }}>{text}</div>
                 <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                  {reminderTime && <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.06rem 0.45rem', borderRadius: 99 }}>🔔 {fmt12h(reminderTime)}</span>}
-                  {duration > 0 && <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.06rem 0.45rem', borderRadius: 99 }}>⏱ {fmtDur(duration)}</span>}
+                  {reminderTime && <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.06rem 0.45rem', borderRadius: 99 }}>{glyph('bell', 11)}{fmt12h(reminderTime)}</span>}
+                  {duration > 0 && <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.06rem 0.45rem', borderRadius: 99 }}>{glyph('timer', 11)}{fmtDur(duration)}</span>}
                   {mode === 'weekly' && selectedDays.map(dk => { const d = FULL_DAYS.find(x => x.key === dk); return <span key={dk} style={{ fontSize: '0.62rem', color: c.main, background: c.main + '18', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 600, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? d?.ar : d?.en}</span> })}
                   {mode === 'prayer' && (() => { const p = PRAYER_COLS.find(x => x.id === prayerId); const pc = COLOR_CSS[p?.color]; return <span style={{ fontSize: '0.62rem', color: pc?.main, background: pc?.main + '18', padding: '0.06rem 0.45rem', borderRadius: 99, fontWeight: 600 }}>{p?.icon} {isAr ? p?.ar : p?.en}</span> })()}
                 </div>
@@ -1042,7 +1044,7 @@ function AddScheduleTaskModal({ mode, onAdd, onEdit, onClose, isAr, prayerTimes,
           <button onClick={onClose} style={{ padding: '0.65rem 1.25rem', borderRadius: 10, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.875rem', cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'إلغاء' : 'Cancel'}</button>
           <button onClick={handleAdd} disabled={!canAdd || saving}
             style={{ padding: '0.65rem 1.75rem', borderRadius: 10, border: 'none', background: canAdd ? `linear-gradient(135deg, ${c.main}, ${c.main}cc)` : 'var(--bg-input)', color: canAdd ? 'white' : 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 700, cursor: canAdd ? 'pointer' : 'default', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', opacity: saving ? 0.7 : 1, transition: 'all 0.15s', boxShadow: canAdd ? `0 4px 14px ${c.main}40` : 'none' }}>
-            {saving ? (isAr ? 'جارٍ...' : 'Saving...') : isEditMode ? (isAr ? '✦ حفظ التغييرات' : '✦ Save Changes') : (isAr ? '✦ إضافة المهمة' : '✦ Add Task')}
+            {saving ? (isAr ? 'جارٍ...' : 'Saving...') : isEditMode ? (isAr ? 'حفظ التغييرات' : 'Save Changes') : (isAr ? 'إضافة المهمة' : 'Add Task')}
           </button>
         </div>
       </motion.div>
@@ -1060,13 +1062,13 @@ function TaskChip({ item, isAr, onDelete, onEdit }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.35rem' }}>
         <span style={{ fontSize: '1rem', flexShrink: 0, lineHeight: 1.2 }}>{item.icon || '📋'}</span>
         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', flex: 1, lineHeight: 1.4, wordBreak: 'break-word' }}>{item.text}</span>
-        {onEdit && <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.7rem', padding: '0 0.1rem', flexShrink: 0, lineHeight: 1 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--sapphire)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'} title={isAr ? 'تعديل' : 'Edit'}>✏️</button>}
+        {onEdit && <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.7rem', padding: '0 0.1rem', flexShrink: 0, lineHeight: 1 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--sapphire)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'} title={isAr ? 'تعديل' : 'Edit'}>{glyph('pencil', 12)}</button>}
         <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.65rem', padding: '0 0.1rem', flexShrink: 0, lineHeight: 1 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--ruby)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'} title={isAr ? 'حذف' : 'Delete'}>✕</button>
       </div>
       {(item.reminderTime || item.duration > 0) && ( // These are badges, fine.
         <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.3rem', paddingInlineStart: '1.4rem', flexWrap: 'wrap' }}> 
-          {item.reminderTime && <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.07rem 0.4rem', borderRadius: 99 }}>🔔 {fmt12h(item.reminderTime)}</span>}
-          {item.duration > 0 && <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.07rem 0.4rem', borderRadius: 99 }}>⏱ {fmtDur(item.duration)}</span>}
+          {item.reminderTime && <span style={{ fontSize: '0.62rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.07rem 0.4rem', borderRadius: 99 }}>{glyph('bell', 11)}{fmt12h(item.reminderTime)}</span>}
+          {item.duration > 0 && <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', background: 'var(--bg-input)', padding: '0.07rem 0.4rem', borderRadius: 99 }}>{glyph('timer', 11)}{fmtDur(item.duration)}</span>}
         </div>
       )}
     </motion.div>
@@ -1090,7 +1092,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
     const c = done ? 'var(--emerald)' : accent
     return (
       <div onClick={() => toggleItem(item)}
-        style={{ display: 'flex', alignItems: 'center', gap: compact ? '0.25rem' : '0.35rem', padding: compact ? '0.25rem 0.35rem' : '0.3rem 0.4rem', background: done ? 'rgba(102, 181, 255,0.1)' : c + '10', borderLeft: `2px solid ${c}`, borderRadius: compact ? 6 : 7, marginBottom: compact ? '0.25rem' : '0.3rem', cursor: 'pointer', transition: 'all 0.18s', userSelect: 'none' }}
+        style={{ display: 'flex', alignItems: 'center', gap: compact ? '0.25rem' : '0.35rem', padding: compact ? '0.25rem 0.35rem' : '0.3rem 0.4rem', background: done ? 'rgba(201, 56, 3,0.1)' : c + '10', borderLeft: `2px solid ${c}`, borderRadius: compact ? 6 : 7, marginBottom: compact ? '0.25rem' : '0.3rem', cursor: 'pointer', transition: 'all 0.18s', userSelect: 'none' }}
         onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
         onMouseLeave={e => e.currentTarget.style.opacity = '1'}
       >
@@ -1099,7 +1101,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
         </div>
         {!compact && <span style={{ fontSize: '0.85rem', flexShrink: 0 }}>{item.icon}</span>}
         <span style={{ fontSize: compact ? '0.63rem' : '0.72rem', fontWeight: 600, color: done ? 'var(--emerald)' : 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: done ? 'line-through' : 'none', opacity: done ? 0.75 : 1, flex: 1 }}>{item.text}</span>
-        {!compact && !done && item.reminderTime && <span style={{ fontSize: '0.57rem', color: 'var(--mizan-cyan)', flexShrink: 0 }}>🔔 {fmt12h(item.reminderTime)}</span>}
+        {!compact && !done && item.reminderTime && <span style={{ fontSize: '0.57rem', color: 'var(--mizan-cyan)', flexShrink: 0 }}>{glyph('bell', 11)}{fmt12h(item.reminderTime)}</span>}
       </div>
     )
   }
@@ -1112,7 +1114,7 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}> {/* This is a section header, fine. */}
         <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 1rem', borderRadius: 99, background: 'var(--emerald-dim)', border: '1px solid rgba(74,222,128,0.3)' }}>
-          <span style={{ fontSize: '0.7rem' }}>✅</span> {/* Icon */}
+          <span style={{ fontSize: '0.7rem', color: 'var(--success)' }}>{glyph('check', 11)}</span>
           <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'الجدول المحفوظ' : 'Saved Schedule'}</span>
           <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>· {isAr ? 'انقر على المهمة لإتمامها' : 'click a task to complete it'}</span>
         </div>
@@ -1164,9 +1166,9 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
       )}
 
       {type === 'custom-daily' && (
-        <div className="glass-card" style={{ maxWidth: 560, margin: '0 auto', borderRadius: '16px', border: '1px solid rgba(102, 181, 255,0.25)', overflow: 'hidden' }}>
+        <div className="glass-card" style={{ maxWidth: 560, margin: '0 auto', borderRadius: '16px', border: '1px solid rgba(201, 56, 3,0.25)', overflow: 'hidden' }}>
           <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(74,222,128,0.12)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem' }}>🗓</span>
+            <span style={{ fontSize: '0.85rem' }}>{glyph('calendarDays', 13)}</span>
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', flex: 1 }}>
               {date && new Date(date + 'T00:00:00').toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
             </span>
@@ -1187,8 +1189,8 @@ function SavedSchedulePreview({ type, items, isAr, language, prayerTimes, date }
                 </div>
                 <span style={{ fontSize: '1rem', flexShrink: 0 }}>{item.icon}</span>
                 <span style={{ fontSize: '0.82rem', fontWeight: 600, color: done ? 'var(--emerald)' : 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', flex: 1, textDecoration: done ? 'line-through' : 'none', opacity: done ? 0.75 : 1 }}>{item.text}</span>
-                {!done && item.reminderTime && <span style={{ fontSize: '0.6rem', color: 'var(--sapphire)', flexShrink: 0 }}>🔔 {fmt12h(item.reminderTime)}</span>}
-                {!done && item.duration > 0 && <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', flexShrink: 0 }}>⏱ {fmtDur(item.duration)}</span>}
+                {!done && item.reminderTime && <span style={{ fontSize: '0.6rem', color: 'var(--sapphire)', flexShrink: 0 }}>{glyph('bell', 11)}{fmt12h(item.reminderTime)}</span>}
+                {!done && item.duration > 0 && <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', flexShrink: 0 }}>{glyph('timer', 11)}{fmtDur(item.duration)}</span>}
               </div>
             )
           })}
@@ -1250,19 +1252,19 @@ function PrayerScheduleView({ isAr, language, prayerTimes, onBack }) {
           {isAr ? '›' : '‹'}
         </button>
         <div style={{ flex: 1 }}>
-          <h2 style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--gold)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>🕌 {isAr ? 'الجدول الديني' : 'Prayer Schedule'}</h2>
+          <h2 style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--gold)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>{glyph('mosque')} {isAr ? 'الجدول الديني' : 'Prayer Schedule'}</h2>
           <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'أضف مهامك لكل وقت صلاة' : 'Add tasks to each prayer time'}</p>
         </div>
         {items.length > 0 && (
           <button onClick={saveSchedule} disabled={saving}
             style={{ padding: '0.65rem 1.4rem', borderRadius: 12, border: 'none', background: saved ? 'var(--emerald-dim)' : 'linear-gradient(135deg, var(--gold), #b8860b)', color: saved ? 'var(--emerald)' : 'var(--bg-base)', fontSize: '0.85rem', fontWeight: 700, cursor: saving ? 'default' : 'pointer', transition: 'all 0.2s', opacity: saving ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '0.45rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', boxShadow: saved ? 'none' : '0 4px 14px rgba(212,175,106,0.4)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            {saving ? '...' : saved ? (isAr ? '✓ محفوظ' : '✓ Saved') : (isAr ? '💾 حفظ الجدول' : '💾 Save Schedule')}
+            {saving ? '...' : saved ? (isAr ? '✓ محفوظ' : '✓ Saved') : (isAr ? 'حفظ الجدول' : 'Save Schedule')}
           </button>
         )}
       </div>
 
       {/* 5-column grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.875rem', marginBottom: '2rem' }} className="prayer-cols-grid">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.875rem', marginBottom: '2rem' }} className="prayer-cols-grid">
         {PRAYER_COLS.map(prayer => {
           const pc = COLOR_CSS[prayer.color] // These are cards, apply glass-card. // Each prayer column is a card.
           const colItems = items.filter(i => i.prayerId === prayer.id)
@@ -1395,13 +1397,13 @@ function WeeklyCustomView({ isAr, language, onBack }) {
           {isAr ? '›' : '‹'}
         </button>
         <div style={{ flex: 1 }}>
-          <h2 style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--sapphire)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>📅 {isAr ? 'الجدول الأسبوعي' : 'Weekly Schedule'}</h2>
+          <h2 style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--sapphire)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>{glyph('calendar')} {isAr ? 'الجدول الأسبوعي' : 'Weekly Schedule'}</h2>
           <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'نظّم مهامك عبر أيام الأسبوع' : 'Organize tasks across the week'}</p>
         </div>
         {items.length > 0 && (
           <button onClick={saveSchedule} disabled={saving}
             style={{ padding: '0.65rem 1.4rem', borderRadius: 12, border: 'none', background: saved ? 'var(--emerald-dim)' : 'linear-gradient(135deg, var(--sapphire), #2563eb)', color: saved ? 'var(--emerald)' : 'white', fontSize: '0.85rem', fontWeight: 700, cursor: saving ? 'default' : 'pointer', transition: 'all 0.2s', opacity: saving ? 0.7 : 1, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', boxShadow: saved ? 'none' : '0 4px 14px rgba(99,179,237,0.4)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            {saving ? '...' : saved ? (isAr ? '✓ محفوظ' : '✓ Saved') : (isAr ? '💾 حفظ الجدول' : '💾 Save Schedule')}
+            {saving ? '...' : saved ? (isAr ? '✓ محفوظ' : '✓ Saved') : (isAr ? 'حفظ الجدول' : 'Save Schedule')}
           </button>
         )}
       </div>
@@ -1527,7 +1529,7 @@ function DailyCustomView({ isAr, language, onBack }) {
           {isAr ? '›' : '‹'}
         </button>
         <div style={{ flex: 1 }}>
-          <h2 style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>🗓 {isAr ? 'الجدول اليومي' : 'Daily Schedule'}</h2>
+          <h2 style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>{glyph('calendarDays')} {isAr ? 'الجدول اليومي' : 'Daily Schedule'}</h2>
           <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{dateLabel}</p>
         </div>
         <input type="date" value={selDate} onChange={e => setSelDate(e.target.value)}
@@ -1536,16 +1538,16 @@ function DailyCustomView({ isAr, language, onBack }) {
         {dayItems.length > 0 && (
           <button onClick={saveSchedule} disabled={saving}
             style={{ padding: '0.65rem 1.4rem', borderRadius: 12, border: 'none', background: saved ? 'var(--emerald-dim)' : 'linear-gradient(135deg, var(--emerald), #059669)', color: saved ? 'var(--emerald)' : 'white', fontSize: '0.85rem', fontWeight: 700, cursor: saving ? 'default' : 'pointer', transition: 'all 0.2s', opacity: saving ? 0.7 : 1, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', boxShadow: saved ? 'none' : '0 4px 14px rgba(74,222,128,0.35)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            {saving ? '...' : saved ? (isAr ? '✓ محفوظ' : '✓ Saved') : (isAr ? '💾 حفظ الجدول' : '💾 Save Schedule')}
+            {saving ? '...' : saved ? (isAr ? '✓ محفوظ' : '✓ Saved') : (isAr ? 'حفظ الجدول' : 'Save Schedule')}
           </button>
         )}
       </div>
 
       {/* Single column */}
       <div style={{ maxWidth: 560, margin: '0 auto' }}>
-        <div className="glass-card" style={{ borderRadius: '18px', border: '1px solid rgba(102, 181, 255,0.25)', borderTop: '3px solid var(--emerald)', overflow: 'hidden', boxShadow: '0 6px 24px rgba(102, 181, 255,0.08)' }}> // Mizan cyan
+        <div className="glass-card" style={{ borderRadius: '18px', border: '1px solid rgba(201, 56, 3,0.25)', borderTop: '3px solid var(--emerald)', overflow: 'hidden', boxShadow: '0 6px 24px rgba(201, 56, 3,0.08)' }}> // Mizan cyan
           <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(74,222,128,0.12)', background: 'linear-gradient(135deg, rgba(74,222,128,0.08) 0%, transparent 100%)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>🗓</div>
+            <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0, color: 'var(--emerald)' }}>{glyph('calendarDays')}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--emerald)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{dateLabel}</div>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.08rem' }}>{dayItems.length} {isAr ? 'مهام' : dayItems.length === 1 ? 'task' : 'tasks'}</div>
@@ -1561,7 +1563,7 @@ function DailyCustomView({ isAr, language, onBack }) {
             </AnimatePresence>
             {dayItems.length === 0 && (
               <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📋</div>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem', color: 'var(--text-muted)' }}>{glyph('clipboard')}</div>
                 <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{isAr ? 'لا توجد مهام لهذا اليوم' : 'No tasks for this day'}</div>
                 <div style={{ fontSize: '0.72rem', marginTop: '0.35rem', opacity: 0.7 }}>{isAr ? 'اضغط + إضافة مهمة للبدء' : 'Click + Add Task to get started'}</div>
               </div>
@@ -1638,14 +1640,14 @@ function ScheduleTab({ isAr, language }) {
             {isAr ? '›' : '‹'}
           </button>
           <div>
-            <h2 style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--sapphire)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>📅 {isAr ? 'الجدول المخصص' : 'Custom Schedule'}</h2>
+            <h2 style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--sapphire)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: 0 }}>{glyph('calendar')} {isAr ? 'الجدول المخصص' : 'Custom Schedule'}</h2>
             <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{isAr ? 'اختر نوع الجدول' : 'Choose schedule type'}</p>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', maxWidth: 620, margin: '0 auto' }}>
           {[ // These are buttons, apply glass-card.
-            { mode: 'weekly', icon: '📅', title: isAr ? 'أسبوعي' : 'Weekly', desc: isAr ? 'جدول يتكرر كل أسبوع عبر الأيام السبعة' : 'Recurring across all 7 days of the week', color: 'var(--sapphire)', dim: 'var(--sapphire-dim)', glow: 'rgba(99,179,237,0.35)' },
-            { mode: 'daily',  icon: '🗓', title: isAr ? 'يومي'   : 'Daily',  desc: isAr ? 'جدول مخصص لتنظيم يوم محدد فقط'       : 'Focused plan for a single specific day',    color: 'var(--emerald)',  dim: 'var(--emerald-dim)',  glow: 'rgba(74,222,128,0.35)' },
+            { mode: 'weekly', icon: glyph('calendar'), title: isAr ? 'أسبوعي' : 'Weekly', desc: isAr ? 'جدول يتكرر كل أسبوع عبر الأيام السبعة' : 'Recurring across all 7 days of the week', color: 'var(--sapphire)', dim: 'var(--sapphire-dim)', glow: 'rgba(99,179,237,0.35)' },
+            { mode: 'daily',  icon: glyph('calendarDays'), title: isAr ? 'يومي'   : 'Daily',  desc: isAr ? 'جدول مخصص لتنظيم يوم محدد فقط'       : 'Focused plan for a single specific day',    color: 'var(--emerald)',  dim: 'var(--emerald-dim)',  glow: 'rgba(74,222,128,0.35)' },
           ].map(opt => (
             <motion.button key={opt.mode} whileHover={{ scale: 1.02, y: -4 }} whileTap={{ scale: 0.98 }}
               onClick={() => setCustomMode(opt.mode)}
@@ -1668,7 +1670,7 @@ function ScheduleTab({ isAr, language }) {
     <AnimatePresence mode="wait">
       <motion.div key="selector" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <div style={{ fontSize: '2.2rem', marginBottom: '0.75rem' }}>🗂</div>
+          <div style={{ fontSize: '2.2rem', marginBottom: '0.75rem', color: 'var(--text-muted)' }}>{glyph('clipboard')}</div>
           <h2 style={{ fontWeight: 700, fontSize: '1.4rem', color: 'var(--text-primary)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', margin: '0 0 0.5rem' }}>
             {isAr ? 'إنشاء جدول' : 'Create a Schedule'}
           </h2>
@@ -1680,14 +1682,14 @@ function ScheduleTab({ isAr, language }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', maxWidth: 760, margin: '0 auto' }} className="schedule-type-grid">
           {[
             {
-              id: 'custom', icon: '📅', badge: '✦',
+              id: 'custom', icon: glyph('calendar'), badge: glyph('sparkle'),
               title: isAr ? 'جدول مخصص' : 'Custom Schedule',
               desc: isAr ? 'أنشئ جدولاً يومياً أو أسبوعياً يناسب حياتك اليومية وأهدافك الشخصية' : 'Build a personalized daily or weekly plan tailored to your goals and routines',
               color: 'var(--sapphire)', dim: 'rgba(99,179,237,0.1)', border: 'rgba(99,179,237,0.28)', glow: 'rgba(99,179,237,0.35)',
               tags: isAr ? ['أسبوعي', 'يومي', 'مهام', 'تذكيرات'] : ['Weekly', 'Daily', 'Tasks', 'Reminders'],
             },
             {
-              id: 'prayer', icon: '🕌', badge: '☪️', // These are buttons, apply glass-card. // Each option is a button.
+              id: 'prayer', icon: glyph('mosque'), badge: glyph('sparkle'), // Each option is a button.
               title: isAr ? 'جدول الصلوات' : 'Prayer Schedule',
               desc: isAr ? 'خطط مهامك حول أوقات الصلوات الخمس لحياة منظمة وروحانية متوازنة' : 'Organize tasks around the five daily prayers for a balanced, mindful life',
               color: 'var(--gold)', dim: 'rgba(212,175,106,0.1)', border: 'rgba(212,175,106,0.28)', glow: 'rgba(212,175,106,0.4)',
@@ -1726,7 +1728,8 @@ function ScheduleTab({ isAr, language }) {
 
 // ── PlannerPage ───────────────────────────────────────────────────────────────
 export default function PlannerPage() {
-  const { language, goals, gamification, addGoal, deleteGoal, addMilestone, deleteMilestone, toggleMilestone } = useApp()
+  const { goals, gamification, addGoal, deleteGoal, addMilestone, deleteMilestone, toggleMilestone } = useApp()
+  const { language } = useI18n()
   const isAr = language === 'ar'
 
   const [activeTab,   setActiveTab]   = useState('goals')
@@ -1759,12 +1762,12 @@ export default function PlannerPage() {
     const { xpGain, allDone, newBadges, leveledUp, newLevel } = result
 
     if (allDone) {
-      showToast({ icon: '🎉', title: isAr ? 'أكملت هدفاً! 🏆' : 'Goal Complete!', sub: `+${xpGain} XP` })
+      showToast({ icon: glyph('party'), title: isAr ? 'أكملت هدفاً!' : 'Goal Complete!', sub: `+${xpGain} XP` })
     } else if (newBadges.length > 0) {
       const bd = BADGES_DEF.find(b => b.id === newBadges[0])
       if (bd) showToast({ icon: bd.icon, title: `${isAr ? bd.ar : bd.en} ${isAr ? 'مفتوح!' : 'Unlocked!'}`, sub: `+${xpGain} XP` })
     } else if (leveledUp) {
-      showToast({ icon: '⬆️', title: isAr ? `وصلت للمستوى ${newLevel}!` : `Level ${newLevel}!`, sub: isAr ? 'تهانينا!' : 'Congratulations!' })
+      showToast({ icon: glyph('levelup'), title: isAr ? `وصلت للمستوى ${newLevel}!` : `Level ${newLevel}!`, sub: isAr ? 'تهانينا!' : 'Congratulations!' })
     } else {
       showToast({ icon: '✓', title: `+${xpGain} XP`, sub: isAr ? 'أحسنت!' : 'Nice work!' })
     }
@@ -1807,7 +1810,7 @@ export default function PlannerPage() {
           </div>
           <motion.button onClick={() => setShowAddGoal(true)}
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-            style={{ padding: '0.7rem 1.5rem', borderRadius: '12px', border: 'none', background: 'var(--mizan-gradient)', color: '#ffffff', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', whiteSpace: 'nowrap', boxShadow: '0 8px 20px rgba(51, 156, 255,0.3)' }}
+            style={{ padding: '0.7rem 1.5rem', borderRadius: '12px', border: 'none', background: 'var(--mizan-gradient)', color: '#ffffff', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', whiteSpace: 'nowrap', boxShadow: '0 8px 20px rgba(251, 70, 4,0.3)' }}
           >
             {isAr ? '+ هدف جديد' : '+ New Goal'}
           </motion.button>
@@ -1817,8 +1820,8 @@ export default function PlannerPage() {
       {/* Tab switcher */}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.5rem' }}>
         {[
-          { id: 'goals',    label: isAr ? 'الأهداف'   : 'Goals',    icon: '🎯' },
-          { id: 'schedule', label: isAr ? 'الجدول'   : 'Schedule', icon: '📅' },
+          { id: 'goals',    label: isAr ? 'الأهداف'   : 'Goals',    icon: glyph('target') },
+          { id: 'schedule', label: isAr ? 'الجدول'   : 'Schedule', icon: glyph('calendar') },
         ].map(tab => {
           const active = activeTab === tab.id
           return (
@@ -1827,7 +1830,7 @@ export default function PlannerPage() {
                 display: 'flex', alignItems: 'center', gap: '0.4rem',
                 padding: '0.55rem 1.25rem', borderRadius: '9999px',
                 border: `1px solid ${active ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`,
-                background: active ? 'rgba(51, 156, 255,0.1)' : 'transparent', // Mizan purple background
+                background: active ? 'rgba(251, 70, 4,0.1)' : 'transparent', // Mizan purple background
                 color: active ? 'var(--gold)' : 'var(--text-muted)',
                 fontSize: '0.85rem', fontWeight: active ? 600 : 400,
                 cursor: 'pointer', transition: 'all var(--transition)',
@@ -1860,7 +1863,7 @@ export default function PlannerPage() {
               style={{
                 padding: '0.45rem 1rem', borderRadius: 'var(--radius-full)',
                 border: `1px solid ${active ? (isOverdue ? 'var(--mizan-cyan)' : 'var(--mizan-purple)') : 'var(--v-glass-border)'}`,
-                background: active ? (isOverdue ? 'rgba(102, 181, 255,0.1)' : 'rgba(51, 156, 255,0.1)') : 'transparent',
+                background: active ? (isOverdue ? 'rgba(201, 56, 3,0.1)' : 'rgba(251, 70, 4,0.1)') : 'transparent',
                 color: active ? (isOverdue ? 'var(--mizan-cyan)' : 'var(--mizan-purple)') : 'var(--text-muted)',
                 fontSize: '0.82rem', fontWeight: active ? 600 : 400,
                 cursor: 'pointer', transition: 'all var(--transition)',
@@ -1898,7 +1901,7 @@ export default function PlannerPage() {
             style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 2rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border)' }}
           >
             <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>
-              {filter === 'overdue' ? '✅' : filter === 'done' ? '🏆' : '🎯'}
+              {filter === 'overdue' ? glyph('check', 28) : filter === 'done' ? glyph('trophy', 28) : glyph('target', 28)}
             </div>
             <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem', fontSize: '1.1rem', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
               {filter === 'overdue' ? (isAr ? 'لا توجد أهداف متأخرة' : 'No overdue goals')
@@ -1911,9 +1914,9 @@ export default function PlannerPage() {
             </div>
             {filter === 'all' && (
               <button onClick={() => setShowAddGoal(true)}
-                style={{ padding: '0.7rem 1.75rem', borderRadius: '10px', border: '1px solid rgba(51, 156, 255,0.3)', background: 'rgba(51, 156, 255,0.1)', color: 'var(--mizan-purple)', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all var(--transition)' }} // Mizan purple button
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(51, 156, 255,0.2)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(51, 156, 255,0.1)'}
+                style={{ padding: '0.7rem 1.75rem', borderRadius: '10px', border: '1px solid rgba(251, 70, 4,0.3)', background: 'rgba(251, 70, 4,0.1)', color: 'var(--mizan-purple)', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', transition: 'all var(--transition)' }} // Mizan purple button
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(251, 70, 4,0.2)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(251, 70, 4,0.1)'}
               >
                 {isAr ? '+ إضافة هدف' : '+ Add Your First Goal'}
               </button>
@@ -1934,7 +1937,7 @@ export default function PlannerPage() {
             {BADGES_DEF.map(b => {
               const earned = (gamification.badges || []).includes(b.id)
               return (
-                <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.875rem', borderRadius: '10px', border: `1px solid ${earned ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`, background: earned ? 'rgba(51, 156, 255,0.1)' : 'var(--bg-input)', opacity: earned ? 1 : 0.4, transition: 'all 0.3s' }}>
+                <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.875rem', borderRadius: '10px', border: `1px solid ${earned ? 'var(--mizan-purple)' : 'var(--v-glass-border)'}`, background: earned ? 'rgba(251, 70, 4,0.1)' : 'var(--bg-input)', opacity: earned ? 1 : 0.4, transition: 'all 0.3s' }}>
                   <span style={{ fontSize: '1.1rem' }}>{b.icon}</span>
                   <span style={{ fontSize: '0.8rem', fontWeight: earned ? 600 : 400, color: earned ? 'var(--gold)' : 'var(--text-muted)', fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
                     {isAr ? b.ar : b.en}
@@ -1961,7 +1964,7 @@ export default function PlannerPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 64, scale: 0.88 }}
             transition={{ type: 'spring', stiffness: 220, damping: 22 }} // This is a toast, fine.
-            style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: '0.9rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.875rem', boxShadow: '0 8px 32px rgba(51, 156, 255,0.35)', zIndex: 999, minWidth: 240, maxWidth: 360, direction: isAr ? 'rtl' : 'ltr', pointerEvents: 'none' }}
+            style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: '0.9rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.875rem', boxShadow: '0 8px 32px rgba(251, 70, 4,0.35)', zIndex: 999, minWidth: 240, maxWidth: 360, direction: isAr ? 'rtl' : 'ltr', pointerEvents: 'none' }}
           >
             <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.4 }} style={{ fontSize: '1.85rem', flexShrink: 0 }}>
               {toast.icon}

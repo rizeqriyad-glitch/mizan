@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { motion, AnimatePresence, Reorder } from 'framer-motion'
+import { motion, AnimatePresence, Reorder } from 'motion/react'
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
+import { glyph } from './glyphs'
 import { startRadarAlarm } from '../utils/alarmSound'
 import { requestReminderPermission } from './ReminderNotifier'
 
@@ -198,7 +200,7 @@ export function TimePicker12h({ value, onChange, typeColor, isAr }) {
         fontWeight: value ? 600 : 400,
         transition: 'all var(--transition)',
       }}>
-        🕐 {value ? fmt12h(value) : (isAr ? 'ضبط وقت' : 'Set time')}
+        {glyph('timer', 12)}{value ? fmt12h(value) : (isAr ? 'ضبط وقت' : 'Set time')}
       </button>
       {open && pos && createPortal(dropdown, document.body)}
     </span>
@@ -341,7 +343,7 @@ export function DurationPicker({ value, onChange, typeColor, isAr }) {
         whiteSpace: 'nowrap', fontWeight: value ? 600 : 400,
         transition: 'all var(--transition)',
       }}>
-        ⏱ {display}
+        {glyph('timer', 11)} {display}
       </button>
       {open && pos && createPortal(dropdown, document.body)}
     </span>
@@ -350,7 +352,8 @@ export function DurationPicker({ value, onChange, typeColor, isAr }) {
 
 // ── TaskSection ───────────────────────────────────────────────────────────────
 export default function TaskSection({ section, prayerTime }) {
-  const { tasks, addTask, editTask, deleteTask, toggleTask, reorderTasks, language, t } = useApp()
+  const { tasks, addTask, editTask, deleteTask, toggleTask, reorderTasks } = useApp()
+  const { language, t } = useI18n()
   const [newTaskText,      setNewTaskText]      = useState('')
   const [newTaskDuration,  setNewTaskDuration]  = useState(null)   // number of minutes
   const [newTaskReminder,  setNewTaskReminder]  = useState('')
@@ -690,7 +693,7 @@ function TaskItem({
 
       {task.reminderTime && !task.completed && (
         <span style={{ fontSize: '0.68rem', color: 'var(--sapphire)', background: 'var(--sapphire-dim)', padding: '0.1rem 0.4rem', borderRadius: 99, border: '1px solid rgba(99,179,237,0.2)', flexShrink: 0, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-          🔔 {fmt12h(task.reminderTime)}
+          {glyph('bell', 11)}{fmt12h(task.reminderTime)}
         </span>
       )}
 

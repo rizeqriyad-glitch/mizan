@@ -1,4 +1,5 @@
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
 import TaskSection from './TaskSection'
 import ScheduleManager from './ScheduleManager'
 
@@ -6,9 +7,10 @@ const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
 export default function TodaySchedule() {
   const {
-    prayerTimes, language,
+    prayerTimes,
     FIXED_SECTIONS, scheduleBlocks, scheduleFrequency,
   } = useApp()
+  const { language } = useI18n()
   const isAr = language === 'ar'
   const todayDay = DAY_KEYS[new Date().getDay()]
 
@@ -21,7 +23,7 @@ export default function TodaySchedule() {
       {/* ── Prayer Timetable ── */}
       <GroupHeading
         color="var(--gold)"
-        label={isAr ? '🕌 الجدول الديني' : '🕌 Prayer Timetable'}
+        label={isAr ? 'الجدول الديني' : 'Prayer Timetable'}
         badge={prayerTimes?.fallback ? (isAr ? 'تقريبية' : 'approx') : null} // Keep badge
         badgeColor="var(--ruby)"
       />
@@ -37,7 +39,7 @@ export default function TodaySchedule() {
       <div style={{ marginTop: '1.75rem' }}>
         <GroupHeading
           color="var(--sapphire)"
-          label={isAr ? '📅 جدولي' : '📅 My Schedule'}
+          label={isAr ? 'جدولي' : 'My Schedule'}
           sub={scheduleFrequency === 'weekly' ? (isAr ? 'أسبوعي' : 'Weekly') : (isAr ? 'يومي' : 'Daily')}
         />
         <ScheduleManager />

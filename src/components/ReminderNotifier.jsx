@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { collection, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
 import { useAuth } from '../contexts/AuthContext'
 import { startRadarAlarm } from '../utils/alarmSound'
 import { getTodayKey } from '../utils/dateUtils'
@@ -47,7 +48,8 @@ function pushBrowserNotif(title, body) {
 }
 
 export default function ReminderNotifier() {
-  const { tasks, goals, language } = useApp()
+  const { tasks, goals } = useApp()
+  const { language } = useI18n()
   const { user } = useAuth()
   const isAr = language === 'ar'
   const [toasts, setToasts] = useState([])
@@ -170,10 +172,10 @@ export default function ReminderNotifier() {
             transform: 'translateX(-50%)',
             zIndex: 9997,
             background: 'var(--bg-card)',
-            border: '1px solid rgba(51, 156, 255,0.45)', // Mizan purple border
+            border: '1px solid rgba(251, 70, 4,0.45)', // Mizan purple border
             borderRadius: '16px', // Mizan token for large cards
             padding: '1rem 1.25rem',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(51, 156, 255,0.1)', // Mizan purple shadow
+            boxShadow: '0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(251, 70, 4,0.1)', // Mizan purple shadow
             display: 'flex', alignItems: 'center', gap: '0.875rem',
             minWidth: 300, maxWidth: '90vw',
             direction: isAr ? 'rtl' : 'ltr',
@@ -182,8 +184,8 @@ export default function ReminderNotifier() {
           {/* Icon */}
           <div style={{
             width: 44, height: 44, borderRadius: 'var(--radius-md)',
-            background: toast.icon === '🎯' ? 'rgba(51, 156, 255,0.1)' : 'rgba(102, 181, 255,0.1)', // Mizan colors
-            border: `1px solid ${toast.icon === '🎯' ? 'rgba(51, 156, 255,0.3)' : 'rgba(102, 181, 255,0.3)'}`, // Mizan colors
+            background: toast.icon === '🎯' ? 'rgba(251, 70, 4,0.1)' : 'rgba(201, 56, 3,0.1)', // Mizan colors
+            border: `1px solid ${toast.icon === '🎯' ? 'rgba(251, 70, 4,0.3)' : 'rgba(201, 56, 3,0.3)'}`, // Mizan colors
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '1.4rem', flexShrink: 0, // Mizan token for icons
           }}>

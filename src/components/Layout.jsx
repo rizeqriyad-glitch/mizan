@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'motion/react'
 import { useAuth } from '../contexts/AuthContext'
 import { useApp } from '../contexts/AppContext'
+import { useI18n } from '../contexts/I18nContext'
+import { useScrollReveal } from '../hooks/useScrollReveal'
 import AdhanNotifier from './AdhanNotifier'
 import ReminderNotifier from './ReminderNotifier'
 import MizanMark from './MizanMark'
+import { LayoutDashboard, CalendarRange, StickyNote, History, BarChart3, Settings, Info, LogOut, Menu } from 'lucide-react'
 
 function DigitalClock({ timeFormat, isAr }) {
   const [now, setNow] = useState(new Date())
@@ -54,19 +57,26 @@ function DigitalClock({ timeFormat, isAr }) {
 
 export default function Layout() {
   const { user, logout } = useAuth()
-  const { language, theme, changeTheme, timeFormat, t } = useApp()
+  const { timeFormat } = useApp()
+  const { language, t } = useI18n()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const isAr = language === 'ar'
 
+  // Arm scroll-reveal for whichever page the route just mounted —
+  // pages without their own hook still reveal (and the CSS failsafe
+  // guarantees nothing can ever stay hidden).
+  useScrollReveal(null, [pathname])
+
   const navItems = [
-    { to: '/dashboard',            icon: '◈', label: t('dashboard'),  exact: true },
-    { to: '/dashboard/planner',    icon: '◧', label: t('planner') },
-    { to: '/dashboard/notes',      icon: '◫', label: t('notes') },
-    { to: '/dashboard/history',    icon: '⏳', label: t('dayHistoryTitle') },
-    { to: '/dashboard/analytics',  icon: '◉', label: t('analytics') },
-    { to: '/dashboard/settings',   icon: '◎', label: t('settings') },
-    { to: '/',                     icon: '◇', label: t('about') },
+    { to: '/dashboard',            Icon: LayoutDashboard, label: t('dashboard'),  exact: true },
+    { to: '/dashboard/planner',    Icon: CalendarRange,   label: t('planner') },
+    { to: '/dashboard/notes',      Icon: StickyNote,     label: t('notes') },
+    { to: '/dashboard/history',    Icon: History,         label: t('dayHistoryTitle') },
+    { to: '/dashboard/analytics',  Icon: BarChart3,       label: t('analytics') },
+    { to: '/dashboard/settings',   Icon: Settings,        label: t('settings') },
+    { to: '/',                     Icon: Info,            label: t('about') },
   ]
 
   const handleLogout = async () => {
@@ -124,20 +134,7 @@ export default function Layout() {
           padding: '1.75rem 1.5rem 1.25rem',
           borderBottom: '1px solid var(--border)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <MizanMark size={38} />
-            <div>
-              <div style={{
-                fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)',
-                fontSize: '1.25rem',
-                fontWeight: 800, // Mizan token for display font
-                color: 'var(--mizan-purple)', // Mizan purple color
-                letterSpacing: '0.04em',
-              }}>
-                {isAr ? 'ميزان' : 'Mizan'}
-              </div>
-            </div>
-          </div>
+          <MizanMark size={38} showText linkTo="/" style={{ color: 'var(--text)' }} />
         </div>
 
         {/* User profile */}
@@ -155,7 +152,7 @@ export default function Layout() {
             ) : (
               <div style={{
                 width: 34, height: 34, borderRadius: '50%',
-                background: 'rgba(51, 156, 255,0.1)', display: 'flex', // Mizan purple background
+                background: 'rgba(251, 70, 4,0.1)', display: 'flex', // Mizan purple background
                 alignItems: 'center', justifyContent: 'center',
                 color: 'var(--mizan-purple)', fontWeight: 600, fontSize: '0.85rem', // Mizan purple color
               }}> {/* User initial icon */}
@@ -199,12 +196,12 @@ export default function Layout() {
                 fontWeight: 500,
                 color: isActive ? 'var(--gold)' : 'var(--text-secondary)',
                 background: isActive ? 'var(--gold-dim)' : 'transparent',
-                border: isActive ? '1px solid rgba(51, 156, 255,0.15)' : '1px solid transparent', // Mizan purple border
+                border: isActive ? '1px solid rgba(251, 70, 4,0.15)' : '1px solid transparent', // Mizan purple border
                 transition: 'all var(--transition)',
                 fontFamily: isAr ? 'var(--font-arabic)' : 'inherit', // Keep font family
               })}
             >
-              <span aria-hidden="true" style={{ fontSize: '1rem', opacity: 0.8 }}>{item.icon}</span>
+              <item.Icon size={18} aria-hidden="true" style={{ opacity: 0.8, flexShrink: 0 }} />
               {item.label}
             </NavLink>
           ))}
@@ -227,33 +224,6 @@ export default function Layout() {
           flexDirection: 'column',
           gap: '0.25rem',
         }}>
-          {/* Theme toggle */}
-          <button
-            onClick={() => changeTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label={theme === 'dark' ? t('lightMode') : t('darkMode')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              padding: '0.65rem 0.875rem',
-              borderRadius: 'var(--radius-md)',
-              color: 'var(--text-secondary)',
-              fontSize: '0.85rem',
-              background: 'transparent',
-              border: '1px solid transparent',
-              transition: 'all var(--transition)',
-              width: '100%',
-              textAlign: isAr ? 'right' : 'left',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-card)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
-            <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>
-              {theme === 'dark' ? t('lightMode') : t('darkMode')}
-            </span>
-          </button>
-
           {/* Sign out */}
           <button
             onClick={handleLogout}
@@ -274,7 +244,7 @@ export default function Layout() {
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--ruby-dim)'; e.currentTarget.style.color = 'var(--ruby)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' }}
           >
-            <span aria-hidden="true">↩</span>
+            <LogOut size={16} aria-hidden="true" style={{ flexShrink: 0 }} />
             <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'inherit' }}>{t('signOut')}</span>
           </button>
 
@@ -289,7 +259,7 @@ export default function Layout() {
             fontFamily: isAr ? 'var(--font-arabic)' : 'inherit',
             opacity: 0.7,
           }}>
-            {isAr ? '© ٢٠٢٥ ميزان · جميع الحقوق محفوظة' : '© 2025 Mizan · All rights reserved'}
+            {isAr ? '© ٢٠٢٦ ميزان · جميع الحقوق محفوظة' : '© 2026 Mizan · All rights reserved'}
           </div>
         </div>
       </motion.aside>
@@ -318,14 +288,9 @@ export default function Layout() {
             aria-expanded={sidebarOpen}
             style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', background: 'none', border: 'none' }}
           >
-            <span aria-hidden="true">☰</span>
+            <Menu size={22} aria-hidden="true" />
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <MizanMark size={28} animateIn={false} />
-            <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)', color: 'var(--mizan-purple)', fontSize: '1.15rem', fontWeight: 700 }}>
-              {isAr ? 'ميزان' : 'Mizan'}
-            </span>
-          </div>
+          <MizanMark size={26} showText animateIn={false} linkTo="/" style={{ color: 'var(--text)' }} />
           <div style={{ width: 28 }} />
         </div>
 
